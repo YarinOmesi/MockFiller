@@ -36,8 +36,14 @@ public class MockFillerSourceGeneratorTests
         directoryInfo = directoryInfo.Parent!;
         
         _referencedAssemblies = ImmutableArray.Create<string>(
-            $@"{directoryInfo.FullName}\TestsHelper.SourceGenerator.Attributes\bin\Release\netstandard2.0\TestsHelper.SourceGenerator.Attributes"
+            $"{directoryInfo.FullName}/TestsHelper.SourceGenerator.Attributes/bin/Release/netstandard2.0/TestsHelper.SourceGenerator.Attributes"
         );
+        string referencedAssemblyPath = _referencedAssemblies[0] + ".dll";
+        if (!File.Exists(referencedAssemblyPath))
+        {
+            throw new Exception($"Attributes Not Exists In Path {referencedAssemblyPath}");
+        }
+        
         _referencedPackages = ImmutableArray.Create<PackageIdentity>(
             new PackageIdentity("Microsoft.Extensions.Logging.Abstractions", "7.0.0"),
             new PackageIdentity("Moq", "4.18.4"),
