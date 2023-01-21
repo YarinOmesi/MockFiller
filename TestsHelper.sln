@@ -7,6 +7,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{4736ED08-4
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHelper.SourceGenerator.Attributes", "TestsHelper.SourceGenerator.Attributes\TestsHelper.SourceGenerator.Attributes.csproj", "{9659583C-E43B-4699-858D-E82BB81EA13A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Tests", "Sample.Tests\Sample.Tests.csproj", "{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHelper.SourceGenerator.Tests", "TestsHelper.SourceGenerator.Tests\TestsHelper.SourceGenerator.Tests.csproj", "{F6FF77F8-4422-4A55-942B-928940B7E0A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +23,17 @@ Global
 		{368C8450-FFFF-493D-B4E6-C8EC6CF4EB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{368C8450-FFFF-493D-B4E6-C8EC6CF4EB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{368C8450-FFFF-493D-B4E6-C8EC6CF4EB54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9659583C-E43B-4699-858D-E82BB81EA13A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9659583C-E43B-4699-858D-E82BB81EA13A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9659583C-E43B-4699-858D-E82BB81EA13A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9659583C-E43B-4699-858D-E82BB81EA13A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

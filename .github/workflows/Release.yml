@@ -1,0 +1,25 @@
+﻿name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/CI.yml
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files:  |
+            ${{ github.workspace }}/nupkgs/*.nupkg
+          tag_name: ${{ steps.tagName.outputs.tag }}
