@@ -44,7 +44,7 @@ public class TestedClass
     
     public TestedClass(ILoggerFactory factory)
     {
-    
+        /* Some Code */
     }
 }
 
