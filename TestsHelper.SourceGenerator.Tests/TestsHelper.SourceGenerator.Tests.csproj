@@ -23,12 +23,6 @@
       <None Include="Sources\*">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Include="Sources\ATestFixture_MoreThanOneFillMocks.cs">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Include="Sources\ATestFixture_NotPartial.cs">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
 </Project>

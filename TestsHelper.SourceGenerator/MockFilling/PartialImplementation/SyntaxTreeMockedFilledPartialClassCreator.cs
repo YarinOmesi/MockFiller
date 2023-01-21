@@ -143,7 +143,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
             .AddUsings(_usingNamespaces.Select(@namespace => UsingDirective(ParseName(@namespace))).ToArray())
             .AddMembers(NamespaceDeclaration(ParseName(_namespace!)).AddMembers(classDeclarationSyntax))
-            .NormalizeWhitespace();
+            .NormalizeWhitespace(eol:Environment.NewLine);
 
         return SourceText.From(compilationUnitSyntax.ToFullString(), Encoding.UTF8);
     }
