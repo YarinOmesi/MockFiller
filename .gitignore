@@ -1,6 +1,7 @@
 # Common IntelliJ Platform excludes
 
-
+**/nupkg
+**/NuGet.Config
 **/.idea
 
 # User specific
