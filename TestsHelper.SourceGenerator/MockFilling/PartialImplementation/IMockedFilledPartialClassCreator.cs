@@ -1,0 +1,14 @@
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+
+namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
+
+public interface IMockedFilledPartialClassCreator
+{
+    public void SetClass(ClassDeclarationSyntax declarationSyntax);
+    public void SetSelectedConstructor(IMethodSymbol selectedConstructor);
+    public void AddMockForType(ITypeSymbol typeSymbol, string name);
+    public void AddValueForParameter(string name, string parameterName);
+    public SourceText Build();
+}
