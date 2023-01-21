@@ -24,12 +24,20 @@ public class MockFillerSourceGeneratorTests
     [OneTimeSetUp]
     public void Setup()
     {
-        _referencedAssemblies = ImmutableArray.Create<string>();
+        const string solutionName = "TestsHelper";
+        var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
+        while (directoryInfo!.Name != solutionName)
+        {
+            directoryInfo = directoryInfo.Parent;
+        }
+        
+        _referencedAssemblies = ImmutableArray.Create<string>(
+            $@"{directoryInfo.FullName}\TestsHelper.SourceGenerator.Attributes\bin\Release\netstandard2.0\TestsHelper.SourceGenerator.Attributes"
+        );
         _referencedPackages = ImmutableArray.Create<PackageIdentity>(
             new PackageIdentity("Microsoft.Extensions.Logging.Abstractions", "7.0.0"),
             new PackageIdentity("Moq", "4.18.4"),
-            new PackageIdentity("NUnit", "3.13.3"),
-            new PackageIdentity("TestsHelper.SourceGenerator.Attributes", "1.0.0")
+            new PackageIdentity("NUnit", "3.13.3")
         );
     }
 
