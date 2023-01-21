@@ -13,11 +13,10 @@
         <PackageReference Include="Moq" Version="4.18.4" />
         <PackageReference Include="NUnit" Version="3.13.3" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.3.1" />
-        <PackageReference Include="TestsHelper.SourceGenerator.Attributes" Version="1.0.0"/>
-
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\TestsHelper.SourceGenerator.Attributes\TestsHelper.SourceGenerator.Attributes.csproj" />
         <ProjectReference Include="..\TestsHelper.SourceGenerator\TestsHelper.SourceGenerator.csproj" PrivateAssets="all" ReferenceOutputAssembly="true" OutputItemType="Analyzer" />
     </ItemGroup>
     
