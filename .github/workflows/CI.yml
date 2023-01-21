@@ -1,6 +1,7 @@
 ﻿name: Build
 
 on:
+  workflow_call: 
   push:
   pull_request:
 
@@ -19,3 +20,11 @@ jobs:
         run: dotnet build -c Release --no-restore
       - name: Test
         run: dotnet test -c Release --no-build --verbosity normal
+      - name: Pack
+        run: dotnet pack -c Release --no-build -o nupkgs
+      - uses: actions/cache@v2
+        id: restore-build
+        with:
+          path: ./*
+          key: ${{ github.sha }}
+

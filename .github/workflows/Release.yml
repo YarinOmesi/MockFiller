@@ -3,29 +3,23 @@
 on:
   push:
     tags:
+      - "*"
 
 jobs:
   build:
+    uses: ./.github/workflows/CI.yml
+  release:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set Up .NET
-        uses: actions/setup-dotnet@v2
+      - uses: actions/cache@v3
+        id: restore-build
         with:
-          dotnet-version: 6.0.x
-      - name: Restore
-        run: dotnet restore
-      - name: Build
-        run: dotnet build -c Release --no-restore
-      - name: Test
-        run: dotnet test -c Release --no-build --verbosity normal
-      - name: Pack
-        run: dotnet pack -c Release --no-build -o nupkgs
-      - name: print
-        run: ls
-      - name: Publish
-        uses: actions/upload-artifact@v3
+          path: ./*
+          key: ${{ github.sha }}
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
         with:
-          name: packages
-          path: nupkgs/*
-          if-no-files-found: error
+          files:  |
+            ${{ github.workspace }}/nupkgs/*.nupkg
+          tag_name: ${{ steps.tagName.outputs.tag }}
