@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,12 +25,15 @@ public class MockFillerSourceGeneratorTests
     [OneTimeSetUp]
     public void Setup()
     {
-        const string solutionName = "TestsHelper";
+
+        string projectName = GetType().Assembly.GetName().Name!;
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
-        while (directoryInfo!.Name != solutionName)
+        while (directoryInfo!.Name != projectName)
         {
             directoryInfo = directoryInfo.Parent;
         }
+
+        directoryInfo = directoryInfo.Parent!;
         
         _referencedAssemblies = ImmutableArray.Create<string>(
             $@"{directoryInfo.FullName}\TestsHelper.SourceGenerator.Attributes\bin\Release\netstandard2.0\TestsHelper.SourceGenerator.Attributes"
