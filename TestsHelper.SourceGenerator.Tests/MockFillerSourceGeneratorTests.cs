@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using NUnit.Framework;
-using TestsHelper.SourceGenerator.MockFilling;
+using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 using VerifyCS =
     TestsHelper.SourceGenerator.Tests.CSharpSourceGeneratorVerifier<

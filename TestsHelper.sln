@@ -5,6 +5,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{4736ED08-493F-4737-BF60-DC514BE6AB38}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHelper.SourceGenerator.Attributes", "TestsHelper.SourceGenerator.Attributes\TestsHelper.SourceGenerator.Attributes.csproj", "{9659583C-E43B-4699-858D-E82BB81EA13A}"
