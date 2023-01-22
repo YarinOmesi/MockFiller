@@ -12,7 +12,7 @@ public partial class Test
     private TestedClass _testedClass;
 
     
-    //private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
+    private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 
     [SetUp]
     public void Setup()
