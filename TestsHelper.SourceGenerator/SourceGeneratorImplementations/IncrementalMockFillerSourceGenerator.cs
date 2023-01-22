@@ -27,7 +27,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 
     private static bool Predicate(SyntaxNode node, CancellationToken cancellationToken)
     {
-        return node is ClassDeclarationSyntax {AttributeLists.Count: > 0};
+        return node is ClassDeclarationSyntax;
     }
 
     private static ResultClass Transform(GeneratorSyntaxContext context, CancellationToken token)
