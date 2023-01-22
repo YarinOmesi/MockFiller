@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace TestsHelper.SourceGenerator.MockFilling;
+namespace TestsHelper.SourceGenerator.Diagnostics;
 
 public static class DiagnosticRegistry
 {
