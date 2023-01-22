@@ -3,10 +3,11 @@
 Creating tested class instance with mocks!
 
 refer to [Test File Example](./Sample.Tests/Test.cs) to see an example
+and [Source Generator Tests](./TestsHelper.SourceGenerator.Tests/MockFillerSourceGeneratorTests.cs).
 
 ## How To Use
 
-All you need to do is to mark you test fixture class as `partial`.
+All you need to do is to mark your test fixture class as `partial`.
 
 Create field of the desired tested class and mark it with attribute `[FillMocks]`.
 
@@ -40,34 +41,38 @@ For This Code
 // Class Being Tested
 public class TestedClass
 {
+    private IDependency _dependency;
     private ILogger _logger;
-    
-    public TestedClass(ILoggerFactory factory)
+
+    public TestedClass(IDependency dependency, ILoggerFactory factory)
     {
-        /* Some Code */
+        /* Code */    
     }
 }
 
 // Test Fixture class
-public partial class MyTestFixture
+public partial class Test
 {
     [FillMocks]
-    private TestedClass _testedClasss;
-    
-   /* Rest Of The Class */
+    private TestedClass _testedClass;
+
+    /* Rest Of Implementation... */
 }
 ```
 
 The Generated Code Will Be
 
 ```csharp
-public partial class MyTestFixture
+public partial class Test
 {
-    private Mock<ILoggerFactory> _loggerFactoryMock;
+    private Mock<IDependency> _dependencyMock;
+    private Mock<ILoggerFactory> _factoryMock;
     
-   private TestedClass Build()
-   {
-        return new TestedClass(_loggerFactoryMock.Object);
-   }
+    private TestedClass Build()
+    {
+        _dependencyMock = new Mock<IDependency>();
+        _factoryMock = new Mock<ILoggerFactory>();
+        return new TestedClass(_dependencyMock.Object, _factoryMock.Object);
+    }
 }
 ```
