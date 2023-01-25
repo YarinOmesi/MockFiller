@@ -16,8 +16,6 @@ public class MockFillerImplementation
     {
         IMockedFilledPartialClassCreator partialImplementation = new SyntaxTreeMockedFilledPartialClassCreator();
 
-        partialImplementation.SetClass(classToFillMockIn.DeclarationSyntax);
-
         ImmutableList<IMethodSymbol> constructors = classToFillMockIn.TestedClassMember
             .GetMembers()
             .Where(symbol => symbol.Kind == SymbolKind.Method)
@@ -27,8 +25,7 @@ public class MockFillerImplementation
 
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
-
-        partialImplementation.SetSelectedConstructor(selectedConstructor);
+        partialImplementation.SetClassInfo(classToFillMockIn.DeclarationSyntax, selectedConstructor);
 
         ImmutableDictionary<string, IFieldSymbol> defaultValueFields =
             FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor);
