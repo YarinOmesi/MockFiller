@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Tests", "Sample.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHelper.SourceGenerator.Tests", "TestsHelper.SourceGenerator.Tests\TestsHelper.SourceGenerator.Tests.csproj", "{F6FF77F8-4422-4A55-942B-928940B7E0A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsHelper.SourceGenerator.MockWrapping", "TestsHelper.SourceGenerator.MockWrapping\TestsHelper.SourceGenerator.MockWrapping.csproj", "{D67C6508-2814-4AC6-AAF4-9262553B3367}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6FF77F8-4422-4A55-942B-928940B7E0A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D67C6508-2814-4AC6-AAF4-9262553B3367}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D67C6508-2814-4AC6-AAF4-9262553B3367}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D67C6508-2814-4AC6-AAF4-9262553B3367}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D67C6508-2814-4AC6-AAF4-9262553B3367}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
