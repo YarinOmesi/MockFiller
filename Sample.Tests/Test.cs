@@ -3,9 +3,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 using TestsHelper.SourceGenerator.Attributes;
+using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace Sample.Tests;
 
+[GenerateMockWrappers]
 [TestFixture]
 public partial class Test
 {

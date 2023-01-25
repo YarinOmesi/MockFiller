@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\TestsHelper.SourceGenerator.Attributes\TestsHelper.SourceGenerator.Attributes.csproj" />
+        <ProjectReference Include="..\TestsHelper.SourceGenerator.MockWrapping\TestsHelper.SourceGenerator.MockWrapping.csproj" />
         <ProjectReference Include="..\TestsHelper.SourceGenerator\TestsHelper.SourceGenerator.csproj" PrivateAssets="all" ReferenceOutputAssembly="true" OutputItemType="Analyzer" />
     </ItemGroup>
     
