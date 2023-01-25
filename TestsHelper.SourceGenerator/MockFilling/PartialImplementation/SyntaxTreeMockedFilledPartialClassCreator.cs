@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using TestsHelper.SourceGenerator.FluentSyntaxCreation;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
@@ -325,26 +326,4 @@ public readonly struct Value<T>
 
     private static GeneratedMock GenerateMock(Mock mock) => new(mock, CreateMockField(mock));
 
-    private readonly record struct GeneratedMock(Mock Mock, FieldDeclarationSyntax FieldDeclarationSyntax)
-    {
-        public Mock Mock { get; } = Mock;
-        public FieldDeclarationSyntax FieldDeclarationSyntax { get; } = FieldDeclarationSyntax;
-
-        public string ParameterName => Mock.ParameterName;
-
-        public string MockVariableName => FieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
-        public TypeSyntax MockVariableType => FieldDeclarationSyntax.Declaration.Type;
-    }
-
-    private readonly record struct Mock(ITypeSymbol Type, string ParameterName)
-    {
-        public ITypeSymbol Type { get; } = Type;
-        public string ParameterName { get; } = ParameterName;
-    }
-
-    private readonly record struct ValueForParameter(string Name, string ParameterName)
-    {
-        public string Name { get; } = Name;
-        public string ParameterName { get; } = ParameterName;
-    }
 }
