@@ -37,7 +37,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
         _selectedConstructor = selectedConstructor;
     }
 
-    public void AddMockForType(ITypeSymbol typeSymbol, string name)
+    public void AddMockForType(ITypeSymbol typeSymbol, string parameterName)
     {
         // TODO: Test Case The type is in global namespace (NoNamespace) 
         // TODO: Test Case The Type is in some namespace
@@ -46,7 +46,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             _usingNamespaces.Add(GetNamespace(typeSymbol));
         }
 
-        _mocks.Add(new Mock(typeSymbol.Name, name));
+        _mocks.Add(new Mock(typeSymbol, parameterName));
         _usingNamespaces.Add("Moq");
     }
 
@@ -152,11 +152,11 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
     {
         GenericNameSyntax type = GenericName(
             Identifier("Mock"),
-            TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName(mock.Type)))
+            TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName(mock.Type.Name)))
         );
 
         VariableDeclarationSyntax declaration = VariableDeclaration(type)
-            .AddVariables(VariableDeclarator($"_{mock.Name}Mock"));
+            .AddVariables(VariableDeclarator($"_{mock.ParameterName}Mock"));
 
         return FieldDeclaration(declaration)
             .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
@@ -170,16 +170,16 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
         public Mock Mock { get; } = Mock;
         public FieldDeclarationSyntax FieldDeclarationSyntax { get; } = FieldDeclarationSyntax;
 
-        public string ParameterName => Mock.Name;
+        public string ParameterName => Mock.ParameterName;
 
         public string MockVariableName => FieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
         public TypeSyntax MockVariableType => FieldDeclarationSyntax.Declaration.Type;
     }
 
-    private readonly record struct Mock(string Type, string Name)
+    private readonly record struct Mock(ITypeSymbol Type, string ParameterName)
     {
-        public string Type { get; } = Type;
-        public string Name { get; } = Name;
+        public ITypeSymbol Type { get; } = Type;
+        public string ParameterName { get; } = ParameterName;
     }
 
     private readonly record struct ValueForParameter(string Name, string ParameterName)

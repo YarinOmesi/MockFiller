@@ -8,7 +8,7 @@ public interface IMockedFilledPartialClassCreator
 {
     public void SetClass(ClassDeclarationSyntax declarationSyntax);
     public void SetSelectedConstructor(IMethodSymbol selectedConstructor);
-    public void AddMockForType(ITypeSymbol typeSymbol, string name);
+    public void AddMockForType(ITypeSymbol typeSymbol, string parameterName);
     public void AddValueForParameter(string name, string parameterName);
     public SourceText Build();
 }
