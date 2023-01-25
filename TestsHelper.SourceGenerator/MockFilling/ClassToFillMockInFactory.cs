@@ -11,6 +11,8 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class ClassToFillMockInFactory
 {
+    private const string MockWrappersAttributeFullName = "TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappersAttribute";
+
     public bool TryCreate(ClassDeclarationSyntax declarationSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
     {
         ImmutableList<MemberDeclarationSyntax> membersWithAttribute =
@@ -42,9 +44,10 @@ public class ClassToFillMockInFactory
 
         ITypeSymbol testedClassTypeSymbol = model.GetTypeInfo(type).Type!;
         INamedTypeSymbol declarationSymbol = model.GetDeclaredSymbol(declarationSyntax)!;
+        bool generateMockWrappers = declarationSyntax.AttributeLists.ContainsAttribute(model, MockWrappersAttributeFullName);
         // TODO: diagnostic if there are null
 
-        classToFillMockIn = new ClassToFillMockIn(declarationSyntax, declarationSymbol, testedClassTypeSymbol);
+        classToFillMockIn = new ClassToFillMockIn(declarationSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
         return true;
     }
 
