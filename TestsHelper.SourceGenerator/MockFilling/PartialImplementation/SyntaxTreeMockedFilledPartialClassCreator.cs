@@ -23,6 +23,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
     private readonly List<Mock> _mocks = new();
     private readonly List<ValueForParameter> _valueForParameters = new();
     private WorkingClassInfo? _workingClassInfo;
+    private bool _generateMockWrappers = false;
 
 
     public void SetClassInfo(ClassDeclarationSyntax declarationSyntax, IMethodSymbol selectedConstructor)
@@ -32,6 +33,11 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             : string.Empty;
 
         _workingClassInfo = new WorkingClassInfo(@namespace, declarationSyntax.Identifier.Text, selectedConstructor);
+    }
+
+    public void SetGenerateMockWrapper(bool generate)
+    {
+        _generateMockWrappers = generate;
     }
 
     public void AddMockForType(ITypeSymbol typeSymbol, string parameterName)
@@ -86,14 +92,17 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
         }
 
 
-        SetupMethodResult setupMethodResult = _setupMethodCreator.Create(mockFields);
-        foreach (string cyberUsing in setupMethodResult.Usings)
+        if (_generateMockWrappers)
         {
-            _usingNamespaces.Add(cyberUsing);
-        }
+            SetupMethodResult setupMethodResult = _setupMethodCreator.Create(mockFields);
+            foreach (string cyberUsing in setupMethodResult.Usings)
+            {
+                _usingNamespaces.Add(cyberUsing);
+            }
 
-        // Add all members from setup method result
-        classDeclarationSyntax = classDeclarationSyntax.AddMembers(setupMethodResult.MemberDeclarations.ToArray());
+            // Add all members from setup method result
+            classDeclarationSyntax = classDeclarationSyntax.AddMembers(setupMethodResult.MemberDeclarations.ToArray());
+        }
 
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
             .AddUsings(_usingNamespaces.Select(@namespace => UsingDirective(ParseName(@namespace))).ToArray())

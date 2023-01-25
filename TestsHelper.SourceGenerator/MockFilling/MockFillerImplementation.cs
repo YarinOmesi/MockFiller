@@ -22,6 +22,8 @@ public class MockFillerImplementation
             .OfType<IMethodSymbol>()
             .Where(methodSymbol => methodSymbol.MethodKind == MethodKind.Constructor)
             .ToImmutableList();
+        
+        partialImplementation.SetGenerateMockWrapper(classToFillMockIn.GenerateMockWrappers);
 
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
