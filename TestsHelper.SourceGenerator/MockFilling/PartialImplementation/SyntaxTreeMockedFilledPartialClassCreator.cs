@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using TestsHelper.SourceGenerator.FluentSyntaxCreation;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
@@ -52,7 +53,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
     public void AddValueForParameter(string name, string parameterName)
     {
-        _valueForParameters.Add(new ValueForParameter( name, parameterName));
+        _valueForParameters.Add(new ValueForParameter(name, parameterName));
     }
 
     private static string GetNamespace(ITypeSymbol symbol)
@@ -84,11 +85,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
         foreach (GeneratedMock generatedMock in generatedMocks)
         {
-            argumentsByName[generatedMock.ParameterName] = MemberAccessExpression(
-                SyntaxKind.SimpleMemberAccessExpression,
-                IdentifierName(generatedMock.MockVariableName),
-                IdentifierName("Object")
-            );
+            argumentsByName[generatedMock.ParameterName] = generatedMock.MockVariableName.AccessMember("Object");
         }
 
         foreach (ValueForParameter valueForParameter in _valueForParameters)
