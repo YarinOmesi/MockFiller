@@ -23,6 +23,13 @@ namespace MyNamespace
             return _dependencyMock.Setup(expression);
         }
 
+        private ISetup<IDependency> Setup_dependency_Add(Value<String>? name = null)
+        {
+            Expression<Action<IDependency>> expression = dependency => dependency.Add(Cyber.Fill<String>());
+            expression = Cyber.UpdateExpressionWithParameters(expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
+            return _dependencyMock.Setup(expression);
+        }
+
         public static class Cyber
         {
             // This Method Should Not Be Ran It Used As A Filler For Types

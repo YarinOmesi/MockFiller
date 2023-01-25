@@ -170,9 +170,19 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
         foreach (IMethodSymbol method in publicMethods)
         {
-            // TODO: handle void methods
-            GenericNameSyntax callback = "Func".Generic(mockedClassType.Name, method.ReturnType.Name);
-            NameSyntax returnType = "ISetup".Generic(mockedClassType.Name, method.ReturnType.Name);
+            GenericNameSyntax callback;
+            GenericNameSyntax returnType;
+
+            if (method.ReturnType.SpecialType == SpecialType.System_Void)
+            {
+                callback = "Action".Generic(mockedClassType.Name);
+                returnType = "ISetup".Generic(mockedClassType.Name);
+            }
+            else
+            {
+                returnType = "ISetup".Generic(mockedClassType.Name, method.ReturnType.Name);
+                callback = "Func".Generic(mockedClassType.Name, method.ReturnType.Name);
+            }
 
             List<ParameterSyntax> parameters = method.Parameters
                 .Select(parameter => Parameter(Identifier(parameter.Name))
