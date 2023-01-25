@@ -9,13 +9,21 @@ namespace TestsHelper.SourceGenerator;
 
 public static class AttributeHelpers
 {
+    public static bool ContainsAttribute(
+        this SyntaxList<AttributeListSyntax> attributeListSyntax,
+        SemanticModel semanticModel,
+        string fullName)
+    {
+        return attributeListSyntax.Any(list => list.Attributes.Any(syntax => IsAttributeSame(syntax, semanticModel, fullName)));
+    }
+
     public static bool ContainsAttribute<T>(this SyntaxList<AttributeListSyntax> attributeListSyntax, SemanticModel semanticModel)
         where T : Attribute
     {
-        return attributeListSyntax.Any(list => list.Attributes.Any(syntax => IsAttributeSame<T>(syntax, semanticModel)));
+        return attributeListSyntax.ContainsAttribute(semanticModel, typeof(T).FullName);
     }
 
-    private static bool IsAttributeSame<T>(AttributeSyntax attributeSyntax, SemanticModel semanticModel) where T : Attribute
+    private static bool IsAttributeSame(AttributeSyntax attributeSyntax, SemanticModel semanticModel, string attributeFullName)
     {
         TypeInfo typeInfo = semanticModel.GetTypeInfo(attributeSyntax);
         if (typeInfo.Type is IErrorTypeSymbol errorTypeSymbol)
@@ -24,7 +32,7 @@ public static class AttributeHelpers
         }
 
         string fullName = typeInfo.Type!.ToDisplayString();
-        return typeof(T).FullName == fullName;
+        return attributeFullName == fullName;
     }
 
     public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute<T>(this TypeDeclarationSyntax classDeclarationSyntax,
