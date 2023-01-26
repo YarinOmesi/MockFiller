@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -21,11 +22,16 @@ public class MockFillerSourceGeneratorTests
 {
     private ImmutableArray<string> _referencedAssemblies;
     private ImmutableArray<PackageIdentity> _referencedPackages;
+    private DirectoryInfo _currentDirectoryInfo;
+#if DEBUG
+    private const string Configuration = "Debug";
+#else
+    private const string Configuration = "Release";
+#endif
 
     [OneTimeSetUp]
     public void Setup()
     {
-
         string projectName = GetType().Assembly.GetName().Name!;
         var directoryInfo = new DirectoryInfo(Environment.CurrentDirectory);
         while (directoryInfo!.Name != projectName)
@@ -33,17 +39,16 @@ public class MockFillerSourceGeneratorTests
             directoryInfo = directoryInfo.Parent;
         }
 
-        directoryInfo = directoryInfo.Parent!;
-        
+        _currentDirectoryInfo = directoryInfo.Parent!;
         _referencedAssemblies = ImmutableArray.Create<string>(
-            $"{directoryInfo.FullName}/TestsHelper.SourceGenerator.Attributes/bin/Release/netstandard2.0/TestsHelper.SourceGenerator.Attributes"
+            $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.Attributes/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.Attributes"
         );
         string referencedAssemblyPath = _referencedAssemblies[0] + ".dll";
         if (!File.Exists(referencedAssemblyPath))
         {
             throw new Exception($"Attributes Not Exists In Path {referencedAssemblyPath}");
         }
-        
+
         _referencedPackages = ImmutableArray.Create<PackageIdentity>(
             new PackageIdentity("Microsoft.Extensions.Logging.Abstractions", "7.0.0"),
             new PackageIdentity("Moq", "4.18.4"),
@@ -76,6 +81,35 @@ public class MockFillerSourceGeneratorTests
     }
 
     [Test]
+    public async Task TestHappyFlow_OnValidCassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
+    {
+        // Arrange
+        var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping";
+        var test = new VerifyCS.Test {
+            LanguageVersion = LanguageVersion.CSharp10,
+            TestState = {
+                ReferenceAssemblies = ReferenceAssemblies.Default
+                    .AddAssemblies(_referencedAssemblies)
+                    .AddAssemblies(ImmutableArray.Create(generateMockProjectPath))
+                    .AddPackages(_referencedPackages),
+                Sources = {
+                    CreateSource("Sources/IDependency.cs"),
+                    CreateSource("Sources/ATestFixture_WithGenerateMocks.cs", overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/TestedClass.cs"),
+                },
+                GeneratedSources = {
+                    CreateExpectedSource<MockFillerSourceGenerator>(
+                        "Sources/ATestFixture.FilledMock.Wrappers.generated.cs",
+                        overrideFileName: "ATestFixture.FilledMock.generated.cs"
+                    )
+                }
+            }
+        };
+        // Act + Assert
+        await test.RunAsync();
+    }
+
+    [Test]
     public async Task ClassNotPartial_DoNotGenerate_ReportError()
     {
         // Arrange
@@ -87,7 +121,7 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_NotPartial.cs", "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_NotPartial.cs", overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
@@ -113,7 +147,7 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs", "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs",  overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
