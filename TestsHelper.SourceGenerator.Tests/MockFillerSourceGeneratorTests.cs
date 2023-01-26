@@ -94,13 +94,13 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_WithGenerateMocks.cs", "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_WithGenerateMocks.cs", overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
                     CreateExpectedSource<MockFillerSourceGenerator>(
                         "Sources/ATestFixture.FilledMock.Wrappers.generated.cs",
-                        "ATestFixture.FilledMock.generated.cs"
+                        overrideFileName: "ATestFixture.FilledMock.generated.cs"
                     )
                 }
             }
@@ -121,7 +121,7 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_NotPartial.cs", "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_NotPartial.cs", overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
@@ -147,7 +147,7 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs", "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs",  overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
