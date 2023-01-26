@@ -122,9 +122,3 @@ public class SetupMethodCreator
     private static InvocationExpressionSyntax Cyber_Fill(string type) => "Cyber".AccessMember("Fill".Generic(type)).Invoke();
     private static MemberAccessExpressionSyntax ValueAny(string type) => "Value".Generic(type).AccessMember("Any");
 }
-
-public readonly record struct SetupMethodResult(string[] Usings, IReadOnlyList<MemberDeclarationSyntax> MemberDeclarations)
-{
-    public string[] Usings { get; } = Usings;
-    public IReadOnlyList<MemberDeclarationSyntax> MemberDeclarations { get; } = MemberDeclarations;
-}
