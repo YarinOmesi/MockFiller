@@ -15,7 +15,7 @@ public class BuildMethodCreator
 
     public MethodDeclarationSyntax Create(
         WorkingClassInfo classInfo,
-        GeneratedMock[] generatedMocks,
+        IReadOnlyList<TypeMockResult> typeMockResults,
         List<ValueForParameter> valueForParameters)
     {
         IdentifierNameSyntax objectToBuild = IdentifierName(classInfo.SelectedConstructor.ContainingType.Name);
@@ -26,9 +26,11 @@ public class BuildMethodCreator
 
         Dictionary<string, ExpressionSyntax> argumentsByName = new();
 
-        foreach (GeneratedMock generatedMock in generatedMocks)
+        foreach (TypeMockResult result in typeMockResults)
         {
-            argumentsByName[generatedMock.ParameterName] = generatedMock.MockVariableName.AccessMember("Object");
+            argumentsByName[result.ParameterName] = $"_{result.ParameterName}"
+                .AccessMember(result.MockPropertyName)
+                .AccessMember("Object");
         }
 
         foreach (ValueForParameter valueForParameter in valueForParameters)
@@ -36,27 +38,27 @@ public class BuildMethodCreator
             argumentsByName[valueForParameter.ParameterName] = IdentifierName(valueForParameter.Name);
         }
 
-        List<ArgumentSyntax> arguments = classInfo.SelectedConstructor.Parameters
-            .Select(parameter => Argument(argumentsByName[parameter.Name]))
+        List<ExpressionSyntax> arguments = classInfo.SelectedConstructor.Parameters
+            .Select(parameter => argumentsByName[parameter.Name])
             .ToList();
 
         // new TestedClass(arguments)
-        ObjectCreationExpressionSyntax testedClassCreating = ObjectCreationExpression(objectToBuild)
-            .WithArgumentList(ArgumentList(SeparatedList(arguments)));
+        ObjectCreationExpressionSyntax testedClassCreating = objectToBuild.New(arguments: arguments.ToArray());
 
         List<StatementSyntax> body = new();
 
-        foreach (GeneratedMock generatedMock in generatedMocks)
+        foreach (TypeMockResult result in typeMockResults)
         {
-            // _mock = new Mock<>();
-            body.Add(IdentifierName(generatedMock.MockVariableName)
-                .Assign(ObjectCreationExpression(generatedMock.MockVariableType).WithArgumentList(ArgumentList()))
-                .ToStatement()
-            );
+            // _parameterName = new Wrapper_Type(new Mock<>());
+            StatementSyntax init = IdentifierName($"_{result.ParameterName}")
+                .Assign(IdentifierName(result.Name).New(result.GeneratedMock.MockVariableType.New()))
+                .ToStatement();
+            
+            body.Add(init);
         }
 
         // return <testedClassCreating>;
-        body.Add(ReturnStatement(testedClassCreating).WithSemicolonToken(SemicolonToken));
+        body.Add(testedClassCreating.Return());
         method = method.WithBody(Block(body));
 
         return method;
