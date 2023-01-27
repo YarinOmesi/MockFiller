@@ -1,14 +1,15 @@
-﻿using Moq;
+﻿using TestsHelper.SourceGenerator.MockWrapping;
+using Moq;
 
 namespace MyNamespace
 {
     public partial class ATestFixture
     {
-        private Mock<IDependency> _dependencyMock;
+        private Wrapper_IDependency _dependency;
         private TestedClass Build()
         {
-            _dependencyMock = new Mock<IDependency>();
-            return new TestedClass(_dependencyMock.Object, _defaultValueFactory);
+            _dependency = new Wrapper_IDependency(new Mock<IDependency>());
+            return new TestedClass(_dependency.Mock.Object, _defaultValueFactory);
         }
     }
 }
