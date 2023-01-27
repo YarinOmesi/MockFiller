@@ -24,11 +24,25 @@ namespace MyNamespace
             return _dependencyMock.Setup(expression);
         }
 
+        private void Verify_dependency_MakeString(Value<Int32>? number = null, Times? times = null)
+        {
+            Expression<Func<IDependency, String>> expression = dependency => dependency.MakeString(Cyber.Fill<Int32>());
+            expression = Cyber.UpdateExpressionWithParameters(expression, new[]{Cyber.CreateExpressionFor(number ?? Value<Int32>.Any)});
+            _dependencyMock.Verify(expression, times ?? Times.AtLeastOnce());
+        }
+
         private ISetup<IDependency> Setup_dependency_Add(Value<String>? name = null)
         {
             Expression<Action<IDependency>> expression = dependency => dependency.Add(Cyber.Fill<String>());
             expression = Cyber.UpdateExpressionWithParameters(expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
             return _dependencyMock.Setup(expression);
+        }
+
+        private void Verify_dependency_Add(Value<String>? name = null, Times? times = null)
+        {
+            Expression<Action<IDependency>> expression = dependency => dependency.Add(Cyber.Fill<String>());
+            expression = Cyber.UpdateExpressionWithParameters(expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
+            _dependencyMock.Verify(expression, times ?? Times.AtLeastOnce());
         }
     }
 }

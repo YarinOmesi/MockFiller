@@ -37,6 +37,7 @@ public partial class Test
         string result = _testedClass.VeryComplicatedLogic(numbrer);
 
         // Assert
+        _dependencyMock.Verify(dependency => dependency.MakeString(2), Times.Once);
         Assert.That(result, Is.EqualTo("2"));
     }
 
@@ -48,12 +49,13 @@ public partial class Test
 
 
         Setup_dependency_MakeString()
-            .Returns<int>(n=> n.ToString());
+            .Returns<int>(n => n.ToString());
 
         // Act
         string result = _testedClass.VeryComplicatedLogic(number);
 
         // Assert
+        Verify_dependency_MakeString(2, Times.Once());
         Assert.That(result, Is.EqualTo("2"));
     }
 }

@@ -9,10 +9,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Logics;
 
-public class SetupMethodCreator
+public class WrappingMockMethodCreator
 {
     private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
-
+    private static readonly PredefinedTypeSyntax VoidTypeSyntax = PredefinedType(Token(SyntaxKind.VoidKeyword));
 
     private static readonly string[] CyberUsings = new[] {
         "TestsHelper.SourceGenerator.MockWrapping",
@@ -24,9 +24,11 @@ public class SetupMethodCreator
         "System.Linq"
     };
 
-    public SetupMethodResult Create(IEnumerable<GeneratedMock> generatedMocks)
+    private static readonly LiteralExpressionSyntax NullValueSyntax = LiteralExpression(SyntaxKind.NullLiteralExpression);
+
+    public WrapMockMethodResult Create(IEnumerable<GeneratedMock> generatedMocks)
     {
-        return new SetupMethodResult(CyberUsings, generatedMocks.SelectMany(CreateForMock).ToList());
+        return new WrapMockMethodResult(CyberUsings, generatedMocks.SelectMany(CreateForMock).ToList());
     }
 
     private static List<MethodDeclarationSyntax> CreateForMock(GeneratedMock generatedMock)
@@ -43,45 +45,74 @@ public class SetupMethodCreator
         foreach (IMethodSymbol method in publicMethods)
         {
             GenericNameSyntax callback;
-            GenericNameSyntax returnType;
+            GenericNameSyntax setupReturnType;
 
             if (method.ReturnType.SpecialType == SpecialType.System_Void)
             {
                 callback = "Action".Generic(mockedClassType.Name);
-                returnType = "ISetup".Generic(mockedClassType.Name);
+                setupReturnType = "ISetup".Generic(mockedClassType.Name);
             }
             else
             {
-                returnType = "ISetup".Generic(mockedClassType.Name, method.ReturnType.Name);
+                setupReturnType = "ISetup".Generic(mockedClassType.Name, method.ReturnType.Name);
                 callback = "Func".Generic(mockedClassType.Name, method.ReturnType.Name);
             }
 
             List<ParameterSyntax> parameters = method.Parameters
                 .Select(parameter => Parameter(Identifier(parameter.Name))
                         .WithType(NullableType("Value".Generic(parameter.Type.Name))) // Value<>?
-                        .WithDefault(EqualsValueClause(LiteralExpression(SyntaxKind.NullLiteralExpression))) // = null
+                        .WithDefault(EqualsValueClause(NullValueSyntax)) // = null
                 )
                 .ToList();
 
-
+            // expression = <parameterName> => <parameterName>.<methodName>(Fill<T>()....)  
             VariableDeclaratorSyntax variableDeclarator = CreateMethodCallExpressionVariableDeclarator(generatedMock.ParameterName, method);
 
+            // Fill method call parameters
             ExpressionSyntax patchedExpression = Cyber_CretePatchedExpression(method, variableDeclarator.Identifier.Name());
 
-            // return <mock>.Setup();
-            ExpressionSyntax returnValue =
+            StatementSyntax[] expressionBuildingStatements = new StatementSyntax[] {
+                LocalDeclarationStatement("Expression".Generic(callback).DeclareVariable(variableDeclarator)),
+                IdentifierName(variableDeclarator.Identifier).Assign(value: patchedExpression).ToStatement()
+            };
+
+            // <mock>.Setup();
+            ExpressionSyntax setupReturnValue =
                 generatedMock.MockVariableName.AccessMember("Setup").Invoke(variableDeclarator.Identifier.Name());
 
-            MethodDeclarationSyntax methodDeclarationSyntax =
-                MethodDeclaration(returnType, $"Setup_{generatedMock.ParameterName}_{method.Name}")
+            MethodDeclarationSyntax setupMethodDeclaration =
+                MethodDeclaration(setupReturnType, $"Setup_{generatedMock.ParameterName}_{method.Name}")
                     .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
                     .WithParameterList(ParameterList(SeparatedList(parameters)))
-                    .WithBody(Block(
-                        LocalDeclarationStatement("Expression".Generic(callback).DeclareVariable(variableDeclarator)),
-                        IdentifierName(variableDeclarator.Identifier).Assign(value: patchedExpression).ToStatement(),
-                        ReturnStatement(returnValue).WithSemicolonToken(SemicolonToken))
-                    );
-            methods.Add(methodDeclarationSyntax.NormalizeWhitespace());
+                    .AddBodyStatements(expressionBuildingStatements)
+                    .AddBodyStatements(ReturnStatement(setupReturnValue).WithSemicolonToken(SemicolonToken));
+
+            methods.Add(setupMethodDeclaration.NormalizeWhitespace());
+
+
+            ParameterSyntax timesParameter = Parameter(Identifier("times"))
+                .WithType(NullableType(IdentifierName("Times")))
+                .WithDefault(EqualsValueClause(NullValueSyntax));
+            
+            // Times.AtLeastOnce()
+            ExpressionSyntax defaultTimes = "Times".AccessMember("AtLeastOnce").Invoke();
+
+            // <mock>.Verify();
+            ExpressionSyntax verifyReturnValue = generatedMock.MockVariableName.AccessMember("Verify")
+                .Invoke(
+                    variableDeclarator.Identifier.Name(),
+                    timesParameter.Identifier.Name().Coalesce(defaultTimes)
+                );
+
+
+            MethodDeclarationSyntax verifyMethodDeclaration =
+                MethodDeclaration(VoidTypeSyntax, $"Verify_{generatedMock.ParameterName}_{method.Name}")
+                    .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)))
+                    .WithParameterList(ParameterList(SeparatedList(parameters)))
+                    .AddParameterListParameters(timesParameter)
+                    .AddBodyStatements(expressionBuildingStatements)
+                    .AddBodyStatements(verifyReturnValue.ToStatement());
+            methods.Add(verifyMethodDeclaration.NormalizeWhitespace());
         }
 
         return methods;
