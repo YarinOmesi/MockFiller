@@ -24,9 +24,9 @@ public class SetupMethodCreator
         "System.Linq"
     };
 
-    public SetupMethodResult Create(IEnumerable<GeneratedMock> generatedMocks)
+    public WrapMockMethodResult Create(IEnumerable<GeneratedMock> generatedMocks)
     {
-        return new SetupMethodResult(CyberUsings, generatedMocks.SelectMany(CreateForMock).ToList());
+        return new WrapMockMethodResult(CyberUsings, generatedMocks.SelectMany(CreateForMock).ToList());
     }
 
     private static List<MethodDeclarationSyntax> CreateForMock(GeneratedMock generatedMock)

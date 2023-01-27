@@ -94,14 +94,14 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
         if (_generateMockWrappers)
         {
-            SetupMethodResult setupMethodResult = _setupMethodCreator.Create(mockFields);
-            foreach (string cyberUsing in setupMethodResult.Usings)
+            WrapMockMethodResult wrapMockMethodResult = _setupMethodCreator.Create(mockFields);
+            foreach (string cyberUsing in wrapMockMethodResult.Usings)
             {
                 _usingNamespaces.Add(cyberUsing);
             }
 
             // Add all members from setup method result
-            classDeclarationSyntax = classDeclarationSyntax.AddMembers(setupMethodResult.MemberDeclarations.ToArray());
+            classDeclarationSyntax = classDeclarationSyntax.AddMembers(wrapMockMethodResult.MemberDeclarations.ToArray());
         }
 
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
