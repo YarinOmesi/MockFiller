@@ -34,27 +34,33 @@ defaultValue[Constructor Parameter Name]
 private ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 ```
 
-#### Generate Setup Mock Wrappers
+#### Generate Mock Wrappers
 
 By marking the test fixture cass with `[TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappers]` attribute,
-it will generate mock setup wrapper.
+it will generate mock wrappers.
 
-A Setup method will be generated for each public method of dependencies.
+A Setup and verify method will be generated for each public method of dependencies.
 
 Setup method name template `Setup_<ParameterName>_<MethodName>()`
+Verify method name template `Verify_<ParameterName>_<MethodName>()`
 
 ##### Demonstration
 
 instead of doing this
 
 ```csharp
+// Setup
 _dependencyMock.Setup(dependency => dependency.MakeString(It.IsAny<int>(), "Yarin"))
     .Returns<int>((number) => number.ToString());
+
+// Verify
+_dependencyMock.Verify(dependency => dependency.MakeString(It.IsAny<int>(), "Yarin"), Times.Once)
 ```
 
 you can do this
 
 ```csharp
+/* -- Setup -- */ 
 // Default parameter is Any
 Setup_dependency_MakeString(name:"Yarin")
     .Returns<int>(n=> n.ToString());
@@ -62,6 +68,9 @@ Setup_dependency_MakeString(name:"Yarin")
 // Any Not Implicitly assumed
 Setup_dependency_MakeString(Value<int>.Any,"Yarin")
     .Returns<int>(n=> n.ToString());
+
+/* -- Verify -- */
+Setup_dependency_MakeString(Value<int>.Any,"Yarin", Times.Once())
 ```
 
 ### Example
