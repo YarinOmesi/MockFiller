@@ -13,8 +13,8 @@ public class TestedClass
         _logger = factory.CreateLogger<TestedClass>();
     }
 
-    public int VeryComplicatedLogic()
+    public string VeryComplicatedLogic(int number)
     {
-        return 0;
+        return _dependency.MakeString(number + 1);
     }
 }

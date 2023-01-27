@@ -9,11 +9,6 @@ public class MemoryDiagnosticReporter : IDiagnosticReporter
 
     private readonly List<Diagnostic> _diagnostics;
 
-    public MemoryDiagnosticReporter(List<Diagnostic> diagnostics)
-    {
-        _diagnostics = diagnostics;
-    }
-
     public MemoryDiagnosticReporter()
     {
         _diagnostics = new List<Diagnostic>();

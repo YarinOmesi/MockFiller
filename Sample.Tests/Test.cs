@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using NUnit.Framework;
 using TestsHelper.SourceGenerator.Attributes;
+using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace Sample.Tests;
 
+[GenerateMockWrappers]
 [TestFixture]
 public partial class Test
 {
@@ -21,14 +24,38 @@ public partial class Test
     }
 
     [Test]
-    public void METHOD_On_Effect()
+    public void Setup_WithoutWrapper()
     {
         // Arrange
-        
-        // Act
-        _testedClass.VeryComplicatedLogic();
-        // Assert
+        int numbrer = 1;
 
+
+        _dependencyMock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
+            .Returns<int>((number) => number.ToString());
+
+        // Act
+        string result = _testedClass.VeryComplicatedLogic(numbrer);
+
+        // Assert
+        _dependencyMock.Verify(dependency => dependency.MakeString(2), Times.Once);
+        Assert.That(result, Is.EqualTo("2"));
+    }
+
+    [Test]
+    public void Setup_WithWrapper()
+    {
+        // Arrange
+        int number = 1;
+
+
+        Setup_dependency_MakeString()
+            .Returns<int>(n => n.ToString());
+
+        // Act
+        string result = _testedClass.VeryComplicatedLogic(number);
+
+        // Assert
+        Verify_dependency_MakeString(2, Times.Once());
+        Assert.That(result, Is.EqualTo("2"));
     }
 }
-
