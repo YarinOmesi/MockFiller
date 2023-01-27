@@ -9,7 +9,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Logics;
 
-public class SetupMethodCreator
+public class WrappingMockMethodCreator
 {
     private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
 

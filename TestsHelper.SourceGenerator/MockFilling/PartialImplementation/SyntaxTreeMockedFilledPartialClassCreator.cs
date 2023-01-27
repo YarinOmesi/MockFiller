@@ -16,7 +16,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 {
     private readonly BuildMethodCreator _buildMethodCreator = new BuildMethodCreator();
     private readonly MockGenerator _mockGenerator = new MockGenerator();
-    private readonly SetupMethodCreator _setupMethodCreator = new SetupMethodCreator();
+    private readonly WrappingMockMethodCreator _wrappingMockMethodCreator = new WrappingMockMethodCreator();
 
 
     private readonly HashSet<string> _usingNamespaces = new();
@@ -94,13 +94,13 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
         if (_generateMockWrappers)
         {
-            WrapMockMethodResult wrapMockMethodResult = _setupMethodCreator.Create(mockFields);
+            WrapMockMethodResult wrapMockMethodResult = _wrappingMockMethodCreator.Create(mockFields);
             foreach (string cyberUsing in wrapMockMethodResult.Usings)
             {
                 _usingNamespaces.Add(cyberUsing);
             }
 
-            // Add all members from setup method result
+            // Add all members from wrapping method result
             classDeclarationSyntax = classDeclarationSyntax.AddMembers(wrapMockMethodResult.MemberDeclarations.ToArray());
         }
 
