@@ -2,13 +2,12 @@
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Models;
 
-public readonly record struct GeneratedMock(Mock Mock, FieldDeclarationSyntax FieldDeclarationSyntax)
+public readonly record struct GeneratedMock(Mock Mock, TypeSyntax MockVariableType, string TypeNamespace)
 {
     public Mock Mock { get; } = Mock;
-    public FieldDeclarationSyntax FieldDeclarationSyntax { get; } = FieldDeclarationSyntax;
 
     public string ParameterName => Mock.ParameterName;
 
-    public string MockVariableName => FieldDeclarationSyntax.Declaration.Variables[0].Identifier.Text;
-    public TypeSyntax MockVariableType => FieldDeclarationSyntax.Declaration.Type;
+    public TypeSyntax MockVariableType { get; } = MockVariableType;
+    public string TypeNamespace { get; } = TypeNamespace;
 }
