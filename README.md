@@ -39,7 +39,7 @@ private ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 By marking the test fixture cass with `[TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappers]` attribute,
 it will generate mock wrappers.
 
-A Setup and verify method will be generated for each public method of dependencies.
+A Setup and verify methods will be generated for each public method of dependencies.
 
 Setup method name template `Setup_<ParameterName>_<MethodName>()`
 Verify method name template `Verify_<ParameterName>_<MethodName>()`
