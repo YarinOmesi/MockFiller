@@ -10,6 +10,8 @@ namespace TestsHelper.SourceGenerator.FluentSyntaxCreation;
 
 public static class Extensions
 {
+    private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
+
     public static GenericNameSyntax Generic(this SyntaxToken type, params TypeSyntax[] arguments) =>
         GenericName(type, TypeArgumentList(SeparatedList(arguments)));
 
@@ -19,9 +21,6 @@ public static class Extensions
     public static GenericNameSyntax Generic(this string type, IEnumerable<TypeSyntax> arguments) => Identifier(type).Generic(arguments);
 
     public static GenericNameSyntax Generic(this string type, params string[] arguments) =>
-        type.Generic(arguments.Select(IdentifierName));
-
-    public static GenericNameSyntax Generic(this string type, IEnumerable<string> arguments) =>
         type.Generic(arguments.Select(IdentifierName));
 
     public static GenericNameSyntax Generic(this string type, TypeSyntax argument) =>
@@ -74,14 +73,17 @@ public static class Extensions
         return ImplicitArrayCreationExpression(initializerExpressionSyntax);
     }
 
-    public static VariableDeclarationSyntax DeclareVariables(this TypeSyntax type, IEnumerable<VariableDeclaratorSyntax> variables)
-    {
-        return VariableDeclaration(type, SeparatedList(variables));
-    }
-
     public static VariableDeclarationSyntax DeclareVariable(this TypeSyntax type, VariableDeclaratorSyntax variable)
     {
         return VariableDeclaration(type, SingletonSeparatedList(variable));
+    }
+
+    public static VariableDeclarationSyntax DeclareVariable(this TypeSyntax type, string name, ExpressionSyntax? initializer = null)
+    {
+        if (initializer == null)
+            return type.DeclareVariable(VariableDeclarator(name));
+
+        return type.DeclareVariable(VariableDeclarator(name).WithInitializer(EqualsValueClause(initializer)));
     }
 
     public static AssignmentExpressionSyntax Assign(this ExpressionSyntax container, ExpressionSyntax value)
@@ -89,10 +91,34 @@ public static class Extensions
         return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, container, value);
     }
 
+    public static AssignmentExpressionSyntax Assign(this string container, string value) => IdentifierName(container).Assign(IdentifierName(value));
+
     public static ExpressionStatementSyntax ToStatement(this ExpressionSyntax expressionSyntax) => ExpressionStatement(expressionSyntax);
 
-    public static VariableDeclaratorSyntax WithInitializer(this VariableDeclaratorSyntax var, ExpressionSyntax value)
+    public static FieldDeclarationSyntax AddModifier(this FieldDeclarationSyntax field, SyntaxKind kind) => field.AddModifiers(Token(kind));
+
+    public static FieldDeclarationSyntax AddModifiers(this FieldDeclarationSyntax field, params SyntaxKind[] kinds)
     {
-        return var.WithInitializer(EqualsValueClause(value));
+        return kinds.Aggregate(field, (current, syntaxKind) => current.AddModifier(syntaxKind));
     }
+
+    public static ObjectCreationExpressionSyntax New(this TypeSyntax typeSyntax, params ExpressionSyntax[] arguments)
+    {
+        SeparatedSyntaxList<ArgumentSyntax> argumentsList = arguments.Length == 1
+            ? SingletonSeparatedList(Argument(arguments[0]))
+            : SeparatedList(arguments.Select(Argument));
+
+        return ObjectCreationExpression(typeSyntax)
+            .WithArgumentList(ArgumentList(argumentsList));
+    }
+
+    public static ParameterSyntax Parameter(this string name, TypeSyntax type) => SyntaxFactory.Parameter(Identifier(name)).WithType(type);
+
+    public static FieldDeclarationSyntax DeclareField(this string type, string name, ExpressionSyntax? initializer = null) =>
+        IdentifierName(type).DeclareField(name, initializer);
+
+    public static FieldDeclarationSyntax DeclareField(this TypeSyntax type, string name, ExpressionSyntax? initializer = null) =>
+        FieldDeclaration(type.DeclareVariable(name, initializer));
+
+    public static ReturnStatementSyntax Return(this ExpressionSyntax expression) => ReturnStatement(expression).WithSemicolonToken(SemicolonToken);
 }
