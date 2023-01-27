@@ -41,8 +41,10 @@ public class MockFillerSourceGenerator : ISourceGenerator
         {
             try
             {
-                MockFillerOutput mockFillerOutput = MockFillerImplementation.Generate(classToFillMockIn);
-                context.AddSource(mockFillerOutput.FileName, mockFillerOutput.SourceCode);
+                foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
+                {
+                    context.AddSource(result.FileName, result.SourceCode);    
+                }
             }
             catch (DiagnosticException e)
             {
