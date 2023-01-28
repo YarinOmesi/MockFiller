@@ -12,7 +12,7 @@ namespace Sample.Tests;
 public partial class Test
 {
     [FillMocks]
-    private TestedClass _testedClass;
+    private TestedClass _testedClass = null!;
 
     
     private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;

@@ -22,7 +22,7 @@ public class MockFillerSourceGeneratorTests
 {
     private ImmutableArray<string> _referencedAssemblies;
     private ImmutableArray<PackageIdentity> _referencedPackages;
-    private DirectoryInfo _currentDirectoryInfo;
+    private DirectoryInfo _currentDirectoryInfo = null!;
 #if DEBUG
     private const string Configuration = "Debug";
 #else
