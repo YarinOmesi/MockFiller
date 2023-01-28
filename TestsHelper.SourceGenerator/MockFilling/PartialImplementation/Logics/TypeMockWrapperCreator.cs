@@ -213,12 +213,12 @@ public class TypeMockWrapperCreator
         GenericNameSyntax type = "Expression".Generic(moqCallbackType);
         
         // private readonly Expression<callback> name = x => x.method();
-        return type.DeclareField(expressionVariableName, CreateExpressionLambda(expressionVariableName, method))
+        return type.DeclareField(expressionVariableName, CreateMoqExpressionLambda(expressionVariableName, method))
             .AddModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.ReadOnlyKeyword)
             .WithSemicolonToken(SemicolonToken);
     }
 
-    private static SimpleLambdaExpressionSyntax CreateExpressionLambda(string parameterName, IMethodSymbol method)
+    private static SimpleLambdaExpressionSyntax CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
     {
         List<InvocationExpressionSyntax> allParameterTypesFilled = method.Parameters
             .Select(parameter => Cyber_Fill(parameter.Type.Name))
