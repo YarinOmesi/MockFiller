@@ -31,7 +31,6 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void Visit(Expression? expression)
         {
             if (expression == null) return;
-
             if (!_candidates.TryPeek(out _candidate) || _candidate == null) return;
 
             if (CheckEqual(expression.NodeType, _candidate.NodeType) && CheckEqual(expression.Type, _candidate.Type))
