@@ -1,4 +1,4 @@
-﻿# Mock Filler
+﻿# Mock Filler :star:
 [![Build](https://github.com/YarinOmesi/MockFiller/actions/workflows/CI.yml/badge.svg)](https://github.com/YarinOmesi/MockFiller/actions/workflows/CI.yml)
 
 Creating tested class instance with mocks!
@@ -35,14 +35,14 @@ To declare a default value instead of creating a mock, create a field with name 
 
 defaultValue[Constructor Parameter Name]
 
-> :alert: Be aware that default value is case insensitive
+> :exclamation: Be aware that default value is case insensitive
 
 To set a default value for parameter named `factory`
 ```csharp
 private ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 ```
 
-#### Generate Mock Wrappers
+#### Generate Mock Wrappers :crystal_ball:
 
 Generate Mock Wrappers By marking the class with `[TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappers]` attribute.
 
