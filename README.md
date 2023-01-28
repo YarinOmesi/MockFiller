@@ -84,19 +84,15 @@ _dependency.MakeString.Verify(Value<int>.Any, "Yarin", Times.Once())
 For This Code
 
 ```csharp
-// Class Being Tested
 public class TestedClass
 {
     private IDependency _dependency;
     private ILogger _logger;
 
-    public TestedClass(IDependency dependency, ILoggerFactory factory)
-    {
-        /* Code */    
-    }
+    public TestedClass(IDependency dependency, ILoggerFactory factory) // c'tor
 }
-
-// Test Fixture class
+```
+```csharp
 public partial class Test
 {
     [FillMocks]
