@@ -1,89 +1,72 @@
 ﻿/* Copyright (C) 2007 - 2008  Versant Inc.  http://www.db4o.com */
 /* https://github.com/lytico/db4o/blob/master/db4o.net/Db4objects.Db4o.Linq/Db4objects.Db4o.Linq/Expressions */
 
-#nullable disable
-
-using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq.Expressions;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
 {
     internal class ExpressionComparison : ExpressionVisitor
     {
-        private bool _areEqual = true;
+        private Queue<Expression> _candidates = null!;
+        private Expression? _candidate;
 
-        private Queue<Expression> _candidates;
-        private Expression _candidate;
+        private const string TypeMismatchTemplate = "Expression Mismatch\n  Expected: {0}\n  Actual: {1}";
+        private const string TypeParameterTemplate = "\n\tString: {0}\n\tNodeType: {1}\n\tType: {2}";
 
-        public bool AreEqual
+        public void AssertEquals(Expression a, Expression b)
         {
-            get { return _areEqual; }
+            var prevFilter = StackFilter.DefaultFilter;
+            StackFilter.DefaultFilter = new StackFilter(".", ".");
+            Assert.Multiple(() =>
+            {
+                _candidates = new Queue<Expression>(new ExpressionEnumeration(b));
+                Visit(a);
+            });
+            StackFilter.DefaultFilter = prevFilter;
         }
 
-        public ExpressionComparison(Expression a, Expression b)
+        protected override void Visit(Expression? expression)
         {
-            _candidates = new Queue<Expression>(new ExpressionEnumeration(b));
+            if (expression == null) return;
 
-            Visit(a);
+            if (!_candidates.TryPeek(out _candidate) || _candidate == null) return;
 
-            if (_candidates.Count > 0) Stop();
+            if (CheckEqual(expression.NodeType, _candidate.NodeType) && CheckEqual(expression.Type, _candidate.Type))
+            {
+                _candidates.Dequeue();
+
+                base.Visit(expression);
+                return;
+            }
+
+            Assert.Fail(
+                TypeMismatchTemplate,
+                string.Format(TypeParameterTemplate, expression, expression.NodeType, expression.Type),
+                string.Format(TypeParameterTemplate, _candidate, _candidate.NodeType, _candidate.Type)
+            );
         }
 
-        private Expression PeekCandidate()
-        {
-            if (_candidates.Count == 0) return null;
-            return _candidates.Peek();
-        }
+        private bool CheckEqual<T>(T? t, T? candidate) => EqualityComparer<T>.Default.Equals(t, candidate);
 
-        private Expression PopCandidate()
-        {
-            return _candidates.Dequeue();
-        }
-
-        private bool CheckAreOfSameType(Expression candidate, Expression expression)
-        {
-            if (!CheckEqual(expression.NodeType, candidate.NodeType)) return false;
-            if (!CheckEqual(expression.Type, candidate.Type)) return false;
-
-            return true;
-        }
-
-        private void Stop()
-        {
-            _areEqual = false;
-        }
 
         private T CandidateFor<T>(T original) where T : Expression
         {
-            return (T) _candidate;
-        }
-
-        protected override void Visit(Expression expression)
-        {
-            if (expression == null) return;
-            if (!AreEqual) return;
-
-            _candidate = PeekCandidate();
-            if (!CheckNotNull(_candidate)) return;
-            if (!CheckAreOfSameType(_candidate, expression)) return;
-
-            PopCandidate();
-
-            base.Visit(expression);
+            return (_candidate as T)!;
         }
 
         protected override void VisitConstant(ConstantExpression constant)
         {
             var candidate = CandidateFor(constant);
-            if (!CheckEqual(constant.Value, candidate.Value)) return;
+            Assert.AreEqual(constant.Value, candidate.Value, "Constant Values Are Not Equal");
         }
 
         protected override void VisitMemberAccess(MemberExpression member)
         {
             var candidate = CandidateFor(member);
-            if (!CheckEqual(member.Member, candidate.Member)) return;
+            Assert.AreEqual(member.Member, candidate.Member, "Members of MemberAccess Are Not Equal");
 
             base.VisitMemberAccess(member);
         }
@@ -91,7 +74,7 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void VisitMethodCall(MethodCallExpression methodCall)
         {
             var candidate = CandidateFor(methodCall);
-            if (!CheckEqual(methodCall.Method, candidate.Method)) return;
+            Assert.AreEqual(methodCall.Method, candidate.Method, "Method of MethodCall Are Not Equal");
 
             base.VisitMethodCall(methodCall);
         }
@@ -99,13 +82,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void VisitParameter(ParameterExpression parameter)
         {
             var candidate = CandidateFor(parameter);
-            if (!CheckEqual(parameter.Name, candidate.Name)) return;
+            Assert.AreEqual(parameter.Name, candidate.Name, "Parameter Name Are Not Equal");
         }
 
         protected override void VisitTypeIs(TypeBinaryExpression type)
         {
             var candidate = CandidateFor(type);
-            if (!CheckEqual(type.TypeOperand, candidate.TypeOperand)) return;
+            Assert.AreEqual(type.TypeOperand, candidate.TypeOperand, "TypeOperand Are Not Equal");
 
             base.VisitTypeIs(type);
         }
@@ -113,9 +96,9 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void VisitBinary(BinaryExpression binary)
         {
             var candidate = CandidateFor(binary);
-            if (!CheckEqual(binary.Method, candidate.Method)) return;
-            if (!CheckEqual(binary.IsLifted, candidate.IsLifted)) return;
-            if (!CheckEqual(binary.IsLiftedToNull, candidate.IsLiftedToNull)) return;
+            Assert.AreEqual(binary.Method, candidate.Method, "Method Are Not Equal");
+            Assert.AreEqual(binary.IsLifted, candidate.IsLifted, "IsLifted Are Not Equal");
+            Assert.AreEqual(binary.IsLiftedToNull, candidate.IsLiftedToNull, "IsLiftedToNull Are Not Equal");
 
             base.VisitBinary(binary);
         }
@@ -123,9 +106,9 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void VisitUnary(UnaryExpression unary)
         {
             var candidate = CandidateFor(unary);
-            if (!CheckEqual(unary.Method, candidate.Method)) return;
-            if (!CheckEqual(unary.IsLifted, candidate.IsLifted)) return;
-            if (!CheckEqual(unary.IsLiftedToNull, candidate.IsLiftedToNull)) return;
+            Assert.AreEqual(unary.Method, candidate.Method, "Method Are Not Equal");
+            Assert.AreEqual(unary.IsLifted, candidate.IsLifted, "IsLifted Are Not Equal");
+            Assert.AreEqual(unary.IsLiftedToNull, candidate.IsLiftedToNull, "IsLiftedToNull Are Not Equal");
 
             base.VisitUnary(unary);
         }
@@ -133,56 +116,10 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions
         protected override void VisitNew(NewExpression nex)
         {
             var candidate = CandidateFor(nex);
-            if (!CheckEqual(nex.Constructor, candidate.Constructor)) return;
-            CompareList(nex.Members, candidate.Members);
+            Assert.AreEqual(nex.Constructor, candidate.Constructor, "Constructor Are Not Equal");
+            CollectionAssert.AreEqual(nex.Members, candidate.Members, "Members Are Not Equal");
 
             base.VisitNew(nex);
-        }
-
-        private void CompareList<T>(ReadOnlyCollection<T> collection, ReadOnlyCollection<T> candidates)
-        {
-            CompareList(collection, candidates, (item, candidate) => EqualityComparer<T>.Default.Equals(item, candidate));
-        }
-
-        private void CompareList<T>(ReadOnlyCollection<T> collection, ReadOnlyCollection<T> candidates, Func<T, T, bool> comparer)
-        {
-            if (!CheckAreOfSameSize(collection, candidates)) return;
-
-            for (int i = 0; i < collection.Count; i++)
-            {
-                if (!comparer(collection[i], candidates[i]))
-                {
-                    Stop();
-                    return;
-                }
-            }
-        }
-
-        private bool CheckAreOfSameSize<T>(ReadOnlyCollection<T> collection, ReadOnlyCollection<T> candidate)
-        {
-            return CheckEqual(collection.Count, candidate.Count);
-        }
-
-        private bool CheckNotNull<T>(T t) where T : class
-        {
-            if (t == null)
-            {
-                Stop();
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool CheckEqual<T>(T t, T candidate)
-        {
-            if (!EqualityComparer<T>.Default.Equals(t, candidate))
-            {
-                Stop();
-                return false;
-            }
-
-            return true;
         }
     }
 }
