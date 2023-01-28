@@ -118,6 +118,6 @@ public partial class Test
         }
     }
 ```
-Example of Wrapper class with `[GenerateMockWrappers]` attribute [IDependency With Wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs)
+Example of Wrapper class with `[GenerateMockWrappers]` attribute [IDependency with wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs)
 
-Example of Wrapper class without mocked wrappers  [IDependency Without Wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.generated.cs)
+Example of Wrapper class without mocked wrappers  [IDependency without wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.generated.cs)
