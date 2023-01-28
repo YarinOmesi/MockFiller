@@ -90,9 +90,9 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             _usingNamespaces.Remove(classInfo.Namespace);
         }
 
-        _usingNamespaces.Add("TestsHelper.SourceGenerator.MockWrapping");
         foreach (TypeMockResult typeMockResult in typeMockResults)
         {
+            _usingNamespaces.Add(typeMockResult.Namespace);
             results.Add(new FileResult(
                 $"Wrapper.{typeMockResult.WrappedType.Name}.generated.cs",
                 SourceText.From(typeMockResult.CompilationUnitSyntax.ToFullString(), Encoding.UTF8)
