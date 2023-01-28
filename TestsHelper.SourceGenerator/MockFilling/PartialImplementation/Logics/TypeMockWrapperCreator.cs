@@ -103,7 +103,7 @@ public class TypeMockWrapperCreator
             Name: wrapperClass.Identifier.Text,
             Namespace: classNamespace,
             GeneratedMock: generatedMock,
-            MockProperty: mockField,
+            MockPropertyName: mockField.Identifier.Text,
             CompilationUnitSyntax: compilationUnitSyntax
         );
     }

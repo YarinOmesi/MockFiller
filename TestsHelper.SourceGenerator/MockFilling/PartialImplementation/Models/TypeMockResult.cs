@@ -7,13 +7,12 @@ public readonly record struct TypeMockResult(
     string Name, 
     string Namespace,
     GeneratedMock GeneratedMock,
-    PropertyDeclarationSyntax MockProperty,
+    string MockPropertyName,
     CompilationUnitSyntax CompilationUnitSyntax)
 {
     public string Name { get; } = Name;
     public string Namespace { get; } = Namespace;
-    public PropertyDeclarationSyntax MockProperty { get; } = MockProperty;
-    public string MockPropertyName { get; } = MockProperty.Identifier.Text;
+    public string MockPropertyName { get; } = MockPropertyName;
     public CompilationUnitSyntax CompilationUnitSyntax { get; } = CompilationUnitSyntax;
     public GeneratedMock GeneratedMock { get; } = GeneratedMock;
 
