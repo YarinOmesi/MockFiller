@@ -11,10 +11,9 @@ namespace Sample.Tests;
 [TestFixture]
 public partial class Test
 {
-    [FillMocks]
+    [FillMocks] 
     private TestedClass _testedClass = null!;
 
-    
     private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 
     [SetUp]
@@ -29,8 +28,6 @@ public partial class Test
         // Arrange
         int numbrer = 1;
 
-
-        
         _dependency.Mock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
             .Returns<int>((number) => number.ToString());
 
@@ -47,7 +44,6 @@ public partial class Test
     {
         // Arrange
         int number = 1;
-
 
         _dependency.MakeString.Setup()
             .Returns<int>(n => n.ToString());
