@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.FluentSyntaxCreation;
@@ -11,8 +10,6 @@ namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Logics;
 
 public class BuildMethodCreator
 {
-    private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
-
     public MethodDeclarationSyntax Create(
         WorkingClassInfo classInfo,
         IReadOnlyList<TypeMockResult> typeMockResults,
