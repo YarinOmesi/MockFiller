@@ -18,6 +18,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 {
     private readonly BuildMethodCreator _buildMethodCreator = new BuildMethodCreator();
     private readonly MockGenerator _mockGenerator = new MockGenerator();
+    private readonly TypeMockWrapperCreator _typeMockWrapperCreator = new TypeMockWrapperCreator();
 
 
     private readonly HashSet<string> _usingNamespaces = new();
@@ -61,13 +62,14 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
     public IReadOnlyList<FileResult> Build()
     {
         List<FileResult> results = new();
-        var typeMockWrapperCreator = new TypeMockWrapperCreator(_generateMockWrappers);
 
         WorkingClassInfo classInfo = _workingClassInfo!.Value;
 
         GeneratedMock[] mockFields = _mocks.Select(_mockGenerator.Generate).ToArray();
 
-        List<TypeMockResult> typeMockResults = mockFields.Select(typeMockWrapperCreator.Create).ToList();
+        List<TypeMockResult> typeMockResults = mockFields
+            .Select(mock => _typeMockWrapperCreator.Create(mock, _generateMockWrappers))
+            .ToList();
 
         IEnumerable<FieldDeclarationSyntax> classFields = typeMockResults.Select(result =>
             IdentifierName(result.Name)

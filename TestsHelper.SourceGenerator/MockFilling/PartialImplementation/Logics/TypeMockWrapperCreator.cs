@@ -27,14 +27,7 @@ public class TypeMockWrapperCreator
         "System.Linq"
     };
 
-    private readonly bool _creteMockWrapperMethod;
-
-    public TypeMockWrapperCreator(bool creteMockWrapperMethod)
-    {
-        _creteMockWrapperMethod = creteMockWrapperMethod;
-    }
-
-    public TypeMockResult Create(GeneratedMock generatedMock)
+    public TypeMockResult Create(GeneratedMock generatedMock, bool createMockWrapperMethod)
     {
         ClassDeclarationSyntax wrapperClass = ClassDeclaration($"Wrapper_{generatedMock.Mock.Type.Name}")
             .AddModifiers(Token(SyntaxKind.PublicKeyword));
@@ -55,35 +48,38 @@ public class TypeMockWrapperCreator
             mockField.Identifier.Name().Assign(mockParameter.Identifier.Name()).ToStatement()
         };
 
-        ITypeSymbol mockedClassType = generatedMock.Mock.Type;
-        List<IMethodSymbol> publicMethods = mockedClassType.GetMembers()
-            .OfType<IMethodSymbol>()
-            .Where(method => method.DeclaredAccessibility == Accessibility.Public)
-            .ToList();
-
         List<ClassDeclarationSyntax> methodWrapperClasses = new();
 
-        foreach (IMethodSymbol method in publicMethods)
+        if (createMockWrapperMethod)
         {
-            // Method_type
-            ClassDeclarationSyntax methodWrapper = CreateMethodWrapperClass(generatedMock, method);
+            ITypeSymbol mockedClassType = generatedMock.Mock.Type;
+            List<IMethodSymbol> publicMethods = mockedClassType.GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(method => method.DeclaredAccessibility == Accessibility.Public)
+                .ToList();
 
-            // public Method_type name { get; }
-            PropertyDeclarationSyntax methodProperty = PropertyDeclaration(methodWrapper.Identifier.Name(), method.Name)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .WithAccessorList(AccessorList(List(new[] {
-                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SemicolonToken)
-                })));
+            foreach (IMethodSymbol method in publicMethods)
+            {
+                // Method_type
+                ClassDeclarationSyntax methodWrapper = CreateMethodWrapperClass(generatedMock, method);
 
-            wrapperClass = wrapperClass.AddMembers(methodProperty);
+                // public Method_type name { get; }
+                PropertyDeclarationSyntax methodProperty = PropertyDeclaration(methodWrapper.Identifier.Name(), method.Name)
+                    .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                    .WithAccessorList(AccessorList(List(new[] {
+                        AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SemicolonToken)
+                    })));
 
-            constructorStatements.Add(
-                // new Wrapper_type(new Mock<>)
-                methodProperty.Identifier.Name()
-                    .Assign(methodWrapper.Identifier.Name().New(arguments: mockParameter.Identifier.Name()))
-                    .ToStatement()
-            );
-            methodWrapperClasses.Add(methodWrapper);
+                wrapperClass = wrapperClass.AddMembers(methodProperty);
+
+                constructorStatements.Add(
+                    // new Wrapper_type(new Mock<>)
+                    methodProperty.Identifier.Name()
+                        .Assign(methodWrapper.Identifier.Name().New(arguments: mockParameter.Identifier.Name()))
+                        .ToStatement()
+                );
+                methodWrapperClasses.Add(methodWrapper);
+            }
         }
 
         // Add ctor
@@ -143,13 +139,10 @@ public class TypeMockWrapperCreator
             )
             .ToList();
 
-        if (_creteMockWrapperMethod)
-        {
-            // Setup
-            methodWrapper = methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
-            // Verify
-            methodWrapper = methodWrapper.AddMembers(CreateVerifyMethod(expressionFieldName, mockVariableName, method, parameters));
-        }
+        // Setup
+        methodWrapper = methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
+        // Verify
+        methodWrapper = methodWrapper.AddMembers(CreateVerifyMethod(expressionFieldName, mockVariableName, method, parameters));
 
         return methodWrapper;
     }
