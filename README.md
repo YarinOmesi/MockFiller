@@ -1,4 +1,4 @@
-﻿# Mock Filler :star:
+# Mock Filler :star:
 [![Build](https://github.com/YarinOmesi/MockFiller/actions/workflows/CI.yml/badge.svg)](https://github.com/YarinOmesi/MockFiller/actions/workflows/CI.yml)
 
 Creating tested class instance with mocks!
