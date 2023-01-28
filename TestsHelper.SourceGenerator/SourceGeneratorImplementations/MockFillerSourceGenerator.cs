@@ -11,6 +11,7 @@ using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 
+[Generator]
 public class MockFillerSourceGenerator : ISourceGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
