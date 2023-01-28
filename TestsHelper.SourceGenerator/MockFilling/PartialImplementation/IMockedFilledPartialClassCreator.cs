@@ -1,6 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
+using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
@@ -10,5 +11,5 @@ public interface IMockedFilledPartialClassCreator
     public void SetGenerateMockWrapper(bool generate);
     public void AddMockForType(ITypeSymbol typeSymbol, string parameterName);
     public void AddValueForParameter(string name, string parameterName);
-    public SourceText Build();
+    public IReadOnlyList<FileResult> Build();
 }

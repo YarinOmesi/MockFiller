@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
@@ -12,7 +11,7 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class MockFillerImplementation
 {
-    public MockFillerOutput Generate(ClassToFillMockIn classToFillMockIn)
+    public IReadOnlyList<FileResult> Generate(ClassToFillMockIn classToFillMockIn)
     {
         IMockedFilledPartialClassCreator partialImplementation = new SyntaxTreeMockedFilledPartialClassCreator();
 
@@ -49,11 +48,7 @@ public class MockFillerImplementation
             }
         }
 
-        SourceText sourceCode = partialImplementation.Build();
-        return new MockFillerOutput(
-            FileName: $"{classToFillMockIn.DeclarationSyntax.Identifier.Text}.FilledMock.generated.cs",
-            SourceCode: sourceCode
-        );
+        return partialImplementation.Build();
     }
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)

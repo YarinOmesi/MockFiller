@@ -29,7 +29,7 @@ public static class Cyber
         }
         
         List<Expression> newArguments = body.Arguments.ToList();
-        newArguments[0] = Expression.Constant(value.IsDefault ? default : value._Value);
+        newArguments[0] = Expression.Constant(value.IsDefault ? default : value.ActualValue);
 
         return body.Update(body.Object, newArguments);
     }

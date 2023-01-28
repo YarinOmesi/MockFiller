@@ -11,6 +11,7 @@ using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 
+[Generator]
 public class MockFillerSourceGenerator : ISourceGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
@@ -41,8 +42,10 @@ public class MockFillerSourceGenerator : ISourceGenerator
         {
             try
             {
-                MockFillerOutput mockFillerOutput = MockFillerImplementation.Generate(classToFillMockIn);
-                context.AddSource(mockFillerOutput.FileName, mockFillerOutput.SourceCode);
+                foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
+                {
+                    context.AddSource(result.FileName, result.SourceCode);    
+                }
             }
             catch (DiagnosticException e)
             {

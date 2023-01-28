@@ -11,10 +11,9 @@ namespace Sample.Tests;
 [TestFixture]
 public partial class Test
 {
-    [FillMocks]
-    private TestedClass _testedClass;
+    [FillMocks] 
+    private TestedClass _testedClass = null!;
 
-    
     private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
 
     [SetUp]
@@ -29,15 +28,14 @@ public partial class Test
         // Arrange
         int numbrer = 1;
 
-
-        _dependencyMock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
+        _dependency.Mock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
             .Returns<int>((number) => number.ToString());
 
         // Act
         string result = _testedClass.VeryComplicatedLogic(numbrer);
 
         // Assert
-        _dependencyMock.Verify(dependency => dependency.MakeString(2), Times.Once);
+        _dependency.Mock.Verify(dependency => dependency.MakeString(2), Times.Once);
         Assert.That(result, Is.EqualTo("2"));
     }
 
@@ -47,15 +45,14 @@ public partial class Test
         // Arrange
         int number = 1;
 
-
-        Setup_dependency_MakeString()
+        _dependency.MakeString.Setup()
             .Returns<int>(n => n.ToString());
 
         // Act
         string result = _testedClass.VeryComplicatedLogic(number);
 
         // Assert
-        Verify_dependency_MakeString(2, Times.Once());
+        _dependency.MakeString.Verify(2, Times.Once());
         Assert.That(result, Is.EqualTo("2"));
     }
 }

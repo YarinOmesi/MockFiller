@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using TestsHelper.SourceGenerator.FluentSyntaxCreation;
+using TestsHelper.SourceGenerator.MockFilling.Models;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Logics;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -16,7 +18,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 {
     private readonly BuildMethodCreator _buildMethodCreator = new BuildMethodCreator();
     private readonly MockGenerator _mockGenerator = new MockGenerator();
-    private readonly WrappingMockMethodCreator _wrappingMockMethodCreator = new WrappingMockMethodCreator();
+    private readonly TypeMockWrapperCreator _typeMockWrapperCreator = new TypeMockWrapperCreator();
 
 
     private readonly HashSet<string> _usingNamespaces = new();
@@ -42,11 +44,9 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
 
     public void AddMockForType(ITypeSymbol typeSymbol, string parameterName)
     {
-        // TODO: Test Case The type is in global namespace (NoNamespace) 
-        // TODO: Test Case The Type is in some namespace
         if (typeSymbol.ContainingNamespace.IsGlobalNamespace == false)
         {
-            _usingNamespaces.Add(GetNamespace(typeSymbol));
+            _usingNamespaces.Add(typeSymbol.GetNamespace());
         }
 
         _mocks.Add(new Mock(typeSymbol, parameterName));
@@ -58,32 +58,31 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
         _valueForParameters.Add(new ValueForParameter(name, parameterName));
     }
 
-    private static string GetNamespace(ITypeSymbol symbol)
+
+    public IReadOnlyList<FileResult> Build()
     {
-        List<string> namespaces = new();
+        List<FileResult> results = new();
 
-        INamespaceSymbol @namespace = symbol.ContainingNamespace;
-        while (@namespace.IsGlobalNamespace == false)
-        {
-            namespaces.Add(@namespace.Name);
-            @namespace = @namespace.ContainingNamespace;
-        }
-
-        namespaces.Reverse();
-        return string.Join(".", namespaces);
-    }
-
-    public SourceText Build()
-    {
-        //TODO: check that namespace not null
-        //TODO: check that classname not null
         WorkingClassInfo classInfo = _workingClassInfo!.Value;
 
         GeneratedMock[] mockFields = _mocks.Select(_mockGenerator.Generate).ToArray();
+
+        List<TypeMockResult> typeMockResults = mockFields
+            .Select(mock => _typeMockWrapperCreator.Create(mock, _generateMockWrappers))
+            .ToList();
+
+        IEnumerable<FieldDeclarationSyntax> classFields = typeMockResults.Select(result =>
+            IdentifierName(result.Name)
+                .DeclareField($"_{result.ParameterName}")
+                .AddModifier(SyntaxKind.PrivateKeyword)
+        );
         ClassDeclarationSyntax classDeclarationSyntax = ClassDeclaration(Identifier(classInfo.Name))
             .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword)))
-            .AddMembers(mockFields.Select(mock => (MemberDeclarationSyntax) mock.FieldDeclarationSyntax).ToArray())
-            .AddMembers(_buildMethodCreator.Create(classInfo, mockFields, _valueForParameters));
+            .AddMembers(classFields
+                .Cast<MemberDeclarationSyntax>()
+                .ToArray()
+            )
+            .AddMembers(_buildMethodCreator.Create(classInfo, typeMockResults, _valueForParameters));
 
         // Remove Usings to current namespace
         if (classInfo.Namespace != string.Empty)
@@ -91,17 +90,13 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             _usingNamespaces.Remove(classInfo.Namespace);
         }
 
-
-        if (_generateMockWrappers)
+        foreach (TypeMockResult typeMockResult in typeMockResults)
         {
-            WrapMockMethodResult wrapMockMethodResult = _wrappingMockMethodCreator.Create(mockFields);
-            foreach (string cyberUsing in wrapMockMethodResult.Usings)
-            {
-                _usingNamespaces.Add(cyberUsing);
-            }
-
-            // Add all members from wrapping method result
-            classDeclarationSyntax = classDeclarationSyntax.AddMembers(wrapMockMethodResult.MemberDeclarations.ToArray());
+            _usingNamespaces.Add(typeMockResult.Namespace);
+            results.Add(new FileResult(
+                $"Wrapper.{typeMockResult.WrappedType.Name}.generated.cs",
+                SourceText.From(typeMockResult.CompilationUnitSyntax.ToFullString(), Encoding.UTF8)
+            ));
         }
 
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
@@ -109,6 +104,10 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             .AddMembers(NamespaceDeclaration(ParseName(classInfo.Namespace)).AddMembers(classDeclarationSyntax))
             .NormalizeWhitespace(eol: Environment.NewLine);
 
-        return SourceText.From(compilationUnitSyntax.ToFullString(), Encoding.UTF8);
+        results.Add(new FileResult(
+            $"{classInfo.Name}.FilledMock.generated.cs",
+            SourceText.From(compilationUnitSyntax.ToFullString(), Encoding.UTF8)
+        ));
+        return results;
     }
 }

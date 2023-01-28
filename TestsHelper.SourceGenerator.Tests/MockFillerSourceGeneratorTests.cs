@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,7 +20,7 @@ public class MockFillerSourceGeneratorTests
 {
     private ImmutableArray<string> _referencedAssemblies;
     private ImmutableArray<PackageIdentity> _referencedPackages;
-    private DirectoryInfo _currentDirectoryInfo;
+    private DirectoryInfo _currentDirectoryInfo = null!;
 #if DEBUG
     private const string Configuration = "Debug";
 #else
@@ -41,7 +39,8 @@ public class MockFillerSourceGeneratorTests
 
         _currentDirectoryInfo = directoryInfo.Parent!;
         _referencedAssemblies = ImmutableArray.Create<string>(
-            $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.Attributes/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.Attributes"
+            $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.Attributes/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.Attributes",
+            $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping"
         );
         string referencedAssemblyPath = _referencedAssemblies[0] + ".dll";
         if (!File.Exists(referencedAssemblyPath))
@@ -72,6 +71,7 @@ public class MockFillerSourceGeneratorTests
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs"),
                     CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs")
                 }
             }
@@ -99,9 +99,10 @@ public class MockFillerSourceGeneratorTests
                 },
                 GeneratedSources = {
                     CreateExpectedSource<MockFillerSourceGenerator>(
-                        "Sources/ATestFixture.FilledMock.Wrappers.generated.cs",
-                        overrideFileName: "ATestFixture.FilledMock.generated.cs"
-                    )
+                        path: "Sources/Wrapper.IDependency.WithWrappers.generated.cs",
+                        overrideFileName: "Wrapper.IDependency.generated.cs"
+                    ),
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs")
                 }
             }
         };
