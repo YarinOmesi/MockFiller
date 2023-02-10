@@ -31,15 +31,12 @@ _loggerFactory.Mock // Mock<ILoggerFactory>
 
 #### Default Value
 
-To declare a default value instead of creating a mock, create a field with name as following:
+To declare a default value instead of creating a mock, mark a field with `[DefaultValue("FieldName")]` attribute.
 
-defaultValue[Constructor Parameter Name]
-
-> :exclamation: Be aware that default value is case insensitive
-
-To set a default value for parameter named `factory`
+Example For setting a default value for parameter named `factory`:
 ```csharp
-private ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
+[DefaultValue("factory")]
+private ILoggerFactory _nullLoggerFactory = NullLoggerFactory.Instance;
 ```
 
 #### Generate Mock Wrappers :crystal_ball:
