@@ -22,4 +22,5 @@ jobs:
         with:
           files:  |
             ${{ github.workspace }}/nupkgs/*.nupkg
+            ${{ github.workspace }}/packages
           tag_name: ${{ steps.tagName.outputs.tag }}
