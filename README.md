@@ -14,9 +14,9 @@ Create field of the desired tested class and mark it with attribute `[FillMocks]
 
 The Source Generator will Create **a field for each mocked parameters with the same name**, and create a `Build()` method to create the instance. 
 
-### Features
+## Features
 
-#### FillMocks
+### FillMocks
 
 To Fill Mocks for given tested class, create a field for that class and mark it with `[FillMocks]`
 ```csharp
@@ -29,7 +29,7 @@ To access a mock of parameter named `loggerFactory`
 _loggerFactory.Mock // Mock<ILoggerFactory>
 ```
 
-#### Default Value
+### Default Value
 
 To declare a default value instead of creating a mock, mark a field with `[DefaultValue("FieldName")]` attribute.
 
@@ -39,82 +39,43 @@ Example For setting a default value for parameter named `factory`:
 private ILoggerFactory _nullLoggerFactory = NullLoggerFactory.Instance;
 ```
 
-#### Generate Mock Wrappers :crystal_ball:
+### Generate Mock Wrappers :crystal_ball:
 
-Generate Mock Wrappers By marking the class with `[TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappers]` attribute.
+Generate mock wrappers by marking the test class filed with `[FillMocksWithWrappers]` attribute instead of `[FillMocks]`.
 
 The mocked parameter **field will have a property for each public method** in the mocked type. 
 
 A `Setup` and `Verify` methods will be generated for each public method of the mocked type.
 
-##### Demonstration
+#### Demonstration
 
-instead of doing this
-
+##### Using Setup
+original
 ```csharp
-// Setup
-_dependencyMock.Setup(dependency => dependency.MakeString(It.IsAny<int>(), "Yarin"))
+_dependencyMock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
     .Returns<int>((number) => number.ToString());
-
-// Verify
-_dependencyMock.Verify(dependency => dependency.MakeString(It.IsAny<int>(), "Yarin"), Times.Once)
 ```
-
-you can do this
-
+With MockFiller
 ```csharp
-/* -- Setup -- */ 
-// Default parameter is Any
-_dependency.MakeString.Setup(name:"Yarin")
+_dependency.MakeString.Setup()
     .Returns<int>(n=> n.ToString());
-
-// Any Not Implicitly assumed
-_dependency.MakeString.Setup(Value<int>.Any, "Yarin")
-    .Returns<int>(n=> n.ToString());
-
-/* -- Verify -- */
-_dependency.MakeString.Verify(Value<int>.Any, "Yarin", Times.Once())
 ```
 
-### Example
-
-For This Code
-
+##### Using Verify
+original
 ```csharp
-public class TestedClass
-{
-    private IDependency _dependency;
-    private ILogger _logger;
-
-    public TestedClass(IDependency dependency, ILoggerFactory factory) // c'tor
-}
+_dependencyMock.Verify(dependency => dependency.MakeString(It.IsAny<int>()), Times.Once)
 ```
+With MockFiller
 ```csharp
-public partial class Test
-{
-    [FillMocks]
-    private TestedClass _testedClass;
-
-    /* Rest Of Implementation... */
-}
+_dependency.MakeString.Verify(Times.Once())
 ```
 
-The Generated Code Will Be
+## Examples
+Examples Of Mocked Type [IDependency](./TestsHelper.SourceGenerator.Tests/Sources/IDependency.cs)
+When Generating Wrappers And When Don't.
 
-```csharp
-public partial class Test
-    {
-        private Wrapper_IDependency _dependency;
-        private Wrapper_ILoggerFactory _factory;
-
-        private TestedClass Build()
-        {
-            _dependency = new Wrapper_IDependency(new Mock<IDependency>());
-            _factory = new Wrapper_ILoggerFactory(new Mock<ILoggerFactory>());
-            return new TestedClass(_dependency.Mock.Object, _factory.Mock.Object);
-        }
-    }
-```
-Example of Wrapper class with `[GenerateMockWrappers]` attribute [IDependency with wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs)
-
-Example of Wrapper class without mocked wrappers  [IDependency without wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.generated.cs)
+| Attribute                 | Example Link                                                                                                           |
+|---------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `[FillMocks]`             | [IDependency without wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.generated.cs)           |
+| `[FillMocksWithWrappers]` | [IDependency with wrappers](./TestsHelper.SourceGenerator.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs) |
