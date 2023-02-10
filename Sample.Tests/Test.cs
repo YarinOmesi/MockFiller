@@ -7,11 +7,10 @@ using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace Sample.Tests;
 
-[GenerateMockWrappers]
 [TestFixture]
 public partial class Test
 {
-    [FillMocks] 
+    [FillMocksWithWrappers] 
     private TestedClass _testedClass = null!;
 
     [DefaultValue("factory")]
