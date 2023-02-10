@@ -37,6 +37,11 @@ public class MockFillerSourceGenerator : ISourceGenerator
             reporter.Report(e.Diagnostic);
             return;
         }
+        catch (MultipleDiagnosticsException e)
+        {
+            reporter.ReportMultiple(e.Diagnostics);
+            return;
+        }
 
         foreach (ClassToFillMockIn classToFillMockIn in classesToFillMockIn)
         {
@@ -50,6 +55,10 @@ public class MockFillerSourceGenerator : ISourceGenerator
             catch (DiagnosticException e)
             {
                 reporter.Report(e.Diagnostic);
+            }
+            catch (MultipleDiagnosticsException e)
+            {
+                reporter.ReportMultiple(e.Diagnostics);
             }
         }
     }
