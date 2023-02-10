@@ -11,5 +11,7 @@ public partial class ATestFixture
 {
     [FillMocks]
     private TestedClass _testedClass;
-    private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
+
+    [DefaultValue("factory")]
+    private readonly ILoggerFactory _nullFactory = NullLoggerFactory.Instance;
 }

@@ -5,11 +5,11 @@ using TestsHelper.SourceGenerator.Attributes;
 
 namespace MyNamespace;
 
-public class ATestFixture
+public partial class ATestFixture
 {
     [FillMocks]
     private TestedClass _testedClass;
     
-    [DefaultValue("factory")]
+    [DefaultValue("NonExistingParameterName")]
     private readonly ILoggerFactory _nullFactory = NullLoggerFactory.Instance;
 }

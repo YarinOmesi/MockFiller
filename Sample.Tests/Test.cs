@@ -14,7 +14,8 @@ public partial class Test
     [FillMocks] 
     private TestedClass _testedClass = null!;
 
-    private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
+    [DefaultValue("factory")]
+    private readonly ILoggerFactory _nullFactory = NullLoggerFactory.Instance;
 
     [SetUp]
     public void Setup()

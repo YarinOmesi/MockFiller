@@ -9,7 +9,7 @@ namespace MyNamespace
         private TestedClass Build()
         {
             _dependency = new Wrapper_IDependency(new Mock<IDependency>());
-            return new TestedClass(_dependency.Mock.Object, _defaultValueFactory);
+            return new TestedClass(_dependency.Mock.Object, _nullFactory);
         }
     }
 }

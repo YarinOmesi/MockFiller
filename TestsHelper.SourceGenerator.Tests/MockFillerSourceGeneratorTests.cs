@@ -162,6 +162,59 @@ public class MockFillerSourceGeneratorTests
         await test.RunAsync();
     }
 
+
+    [Test]
+    public async Task DefaultValue_GivenNonExistingParameterName_ReportError()
+    {
+        // Arrange
+        var test = new VerifyCS.Test {
+            LanguageVersion = LanguageVersion.CSharp10,
+            TestState = {
+                ReferenceAssemblies = ReferenceAssemblies.Default
+                    .AddAssemblies(_referencedAssemblies)
+                    .AddPackages(_referencedPackages),
+                Sources = {
+                    CreateSource("Sources/IDependency.cs"),
+                    CreateSource("Sources/ATestFixture__DefaultValue_NonExistingParameter.cs", overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/TestedClass.cs"),
+                },
+                GeneratedSources = { },
+                ExpectedDiagnostics = {
+                    (DiagnosticResult.CompilerError(DiagnosticRegistry.DefaultValueToUnknownParameter.Id)
+                        .WithArguments("NonExistingParameterName"))
+                }
+            }
+        };
+        // Act + Assert
+        await test.RunAsync();
+    }
+
+    [Test]
+    public async Task DefaultValue_GivenWrongTypeExistingParameter_ReportError()
+    {
+        // Arrange
+        var test = new VerifyCS.Test {
+            LanguageVersion = LanguageVersion.CSharp10,
+            TestState = {
+                ReferenceAssemblies = ReferenceAssemblies.Default
+                    .AddAssemblies(_referencedAssemblies)
+                    .AddPackages(_referencedPackages),
+                Sources = {
+                    CreateSource("Sources/IDependency.cs"),
+                    CreateSource("Sources/ATestFixture_DefaultValue_WrongType.cs", overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/TestedClass.cs"),
+                },
+                GeneratedSources = { },
+                ExpectedDiagnostics = {
+                    (DiagnosticResult.CompilerError(DiagnosticRegistry.DefaultValueWithWrongType.Id)
+                        .WithArguments("Int32", "factory", "ILoggerFactory"))
+                }
+            }
+        };
+        // Act + Assert
+        await test.RunAsync();
+    }
+
     private static (string Filename, SourceText content) CreateSource(string path, string? overrideFileName = null)
     {
         SourceText sourceText = SourceText.From(File.ReadAllText(path), Encoding.UTF8);
