@@ -23,4 +23,22 @@ public static class DiagnosticRegistry
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true
     );
+
+    public static readonly DiagnosticDescriptor DefaultValueToUnknownParameter = new(
+        id: "TH0003",
+        title: "Default Value For Unknown Parameter",
+        messageFormat: "Parameter Named '{0}' not exists.",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
+    public static readonly DiagnosticDescriptor DefaultValueWithWrongType = new(
+        id: "TH0004",
+        title: "Default Value With Wrong Parameter Type",
+        messageFormat: "Cant Use Type '{0}' For Default Value To Parameter Named '{1}' Of Type '{2}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
 }
