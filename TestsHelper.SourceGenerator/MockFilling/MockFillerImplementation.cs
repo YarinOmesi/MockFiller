@@ -59,6 +59,7 @@ public class MockFillerImplementation
 
         Dictionary<string, IFieldSymbol> defaultValuesFields = new();
 
+        List<Diagnostic> diagnostics = new();
         foreach (IFieldSymbol fieldSymbol in declaration.GetMembers().OfType<IFieldSymbol>())
         {
             AttributeData? attributeData = fieldSymbol.GetAttributes().FirstOrDefault(SameAttribute<DefaultValueAttribute>);
@@ -73,23 +74,28 @@ public class MockFillerImplementation
             //TODO: Provide Location
             if (!parameters.ContainsKey(fieldName))
             {
-                GlobalDiagnosticReporter.Report(DiagnosticRegistry.DefaultValueToUnknownParameter, Location.None, fieldName);
+                diagnostics.Add(Diagnostic.Create(DiagnosticRegistry.DefaultValueToUnknownParameter, Location.None, fieldName));
                 continue;
             }
 
             if (!AreSymbolsEquals(parameters[fieldName], fieldSymbol.Type))
             {
-                GlobalDiagnosticReporter.Report(
+                diagnostics.Add(Diagnostic.Create(
                     DiagnosticRegistry.DefaultValueWithWrongType,
                     Location.None,
                     fieldSymbol.Type.Name,
                     fieldName,
                     parameters[fieldName].Name
-                );
+                ));
                 continue;
             }
 
             defaultValuesFields[fieldName] = fieldSymbol;
+        }
+
+        if (diagnostics.Count > 0)
+        {
+            throw new MultipleDiagnosticsException(diagnostics);
         }
 
         return defaultValuesFields.ToImmutableDictionary();
