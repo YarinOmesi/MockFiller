@@ -53,18 +53,25 @@ public class TypeMockWrapperCreator
         if (createMockWrapperMethod)
         {
             ITypeSymbol mockedClassType = generatedMock.Mock.Type;
-            List<IMethodSymbol> publicMethods = mockedClassType.GetMembers()
+#pragma warning disable RS1024
+            Dictionary<string, IReadOnlyList<IMethodSymbol>> publicMethodsByName = mockedClassType.GetMembers()
                 .OfType<IMethodSymbol>()
                 .Where(method => method.DeclaredAccessibility == Accessibility.Public)
-                .ToList();
+                .GroupBy<IMethodSymbol, string>(symbol => symbol.Name)
+                .ToDictionary(grouping => grouping.Key, grouping => (IReadOnlyList<IMethodSymbol>) grouping.ToList());
+#pragma warning restore RS1024
 
-            foreach (IMethodSymbol method in publicMethods)
+
+            foreach ((string name, IReadOnlyList<IMethodSymbol> methods) in publicMethodsByName.Select(pair => (pair.Key, pair.Value)))
             {
+                // Use The Longest Parameters Method
+                IMethodSymbol method = methods.OrderByDescending(symbol => symbol.Parameters.Length).First();
+                
                 // Method_type
                 ClassDeclarationSyntax methodWrapper = CreateMethodWrapperClass(generatedMock, method);
 
                 // public Method_type name { get; }
-                PropertyDeclarationSyntax methodProperty = PropertyDeclaration(methodWrapper.Identifier.Name(), method.Name)
+                PropertyDeclarationSyntax methodProperty = PropertyDeclaration(methodWrapper.Identifier.Name(), name)
                     .AddModifiers(Token(SyntaxKind.PublicKeyword))
                     .WithAccessorList(AccessorList(List(new[] {
                         AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SemicolonToken)
@@ -140,7 +147,8 @@ public class TypeMockWrapperCreator
             .ToList();
 
         // Setup
-        methodWrapper = methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
+        methodWrapper =
+            methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
         // Verify
         methodWrapper = methodWrapper.AddMembers(CreateVerifyMethod(expressionFieldName, mockVariableName, method, parameters));
 
@@ -211,7 +219,7 @@ public class TypeMockWrapperCreator
         GenericNameSyntax moqCallbackType = CalculateMoqCallbackType(method, generatedMock.Mock.Type.Name);
 
         GenericNameSyntax type = "Expression".Generic(moqCallbackType);
-        
+
         // private readonly Expression<callback> name = x => x.method();
         return type.DeclareField(expressionVariableName, CreateMoqExpressionLambda(expressionVariableName, method))
             .AddModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.ReadOnlyKeyword)
