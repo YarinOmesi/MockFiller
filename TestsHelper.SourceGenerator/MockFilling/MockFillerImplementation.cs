@@ -66,7 +66,7 @@ public class MockFillerImplementation
             if (attributeData == null) continue;
 
             TypedConstant fieldNameArgument = attributeData.ConstructorArguments[0];
-            if (fieldNameArgument is not {Kind: TypedConstantKind.Primitive, IsNull: false, Value: not null})
+            if (fieldNameArgument is not {IsNull: false, Value: not null})
                 continue;
 
             string fieldName = (string) fieldNameArgument.Value;
