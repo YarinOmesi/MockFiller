@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using TestsHelper.SourceGenerator.Attributes;
+using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
@@ -21,7 +22,7 @@ public class MockFillerImplementation
             .OfType<IMethodSymbol>()
             .Where(methodSymbol => methodSymbol.MethodKind == MethodKind.Constructor)
             .ToImmutableList();
-        
+
         partialImplementation.SetGenerateMockWrapper(classToFillMockIn.GenerateMockWrappers);
 
         // TODO: make this smarter
@@ -53,31 +54,51 @@ public class MockFillerImplementation
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)
     {
-        List<IFieldSymbol> fields = declaration.GetMembers().OfType<IFieldSymbol>().ToList();
-        List<(string Name, ITypeSymbol Type)> parameters = constructor.Parameters
-            .Select(parameter => (parameter.Name, parameter.Type))
-            .ToList();
+        Dictionary<string, ITypeSymbol> parameters = constructor.Parameters
+            .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
 
         Dictionary<string, IFieldSymbol> defaultValuesFields = new();
-        
-        foreach ((string Name, ITypeSymbol Type) parameter in parameters)
-        {
-            string defaultValueFieldName = $"DefaultValue{parameter.Name}";
 
-            foreach (IFieldSymbol field in fields.Where(field => AreSymbolsEquals(field.Type, parameter.Type)))
+        foreach (IFieldSymbol fieldSymbol in declaration.GetMembers().OfType<IFieldSymbol>())
+        {
+            AttributeData? attributeData = fieldSymbol.GetAttributes().FirstOrDefault(SameAttribute<DefaultValueAttribute>);
+            if (attributeData == null) continue;
+
+            TypedConstant fieldNameArgument = attributeData.ConstructorArguments[0];
+            if (fieldNameArgument is not {Kind: TypedConstantKind.Primitive, IsNull: false, Value: not null})
+                continue;
+
+            string fieldName = (string) fieldNameArgument.Value;
+
+            //TODO: Provide Location
+            if (!parameters.ContainsKey(fieldName))
             {
-                string cleanedName = CleanVariableName(field.Name);
-                if (cleanedName.Equals(defaultValueFieldName, StringComparison.OrdinalIgnoreCase))
-                {
-                    defaultValuesFields[parameter.Name] = field;
-                }
+                GlobalDiagnosticReporter.Report(DiagnosticRegistry.DefaultValueToUnknownParameter, Location.None, fieldName);
+                continue;
             }
+
+            if (!AreSymbolsEquals(parameters[fieldName], fieldSymbol.Type))
+            {
+                GlobalDiagnosticReporter.Report(
+                    DiagnosticRegistry.DefaultValueWithWrongType,
+                    Location.None,
+                    fieldSymbol.Type.Name,
+                    fieldName,
+                    parameters[fieldName].Name
+                );
+                continue;
+            }
+
+            defaultValuesFields[fieldName] = fieldSymbol;
         }
 
         return defaultValuesFields.ToImmutableDictionary();
     }
 
-    private static string CleanVariableName(string name) => Regex.Replace(name, "[_-]", string.Empty);
+    private static bool SameAttribute<TAttribute>(AttributeData attributeData) where TAttribute : Attribute
+    {
+        return attributeData.AttributeClass!.ToDisplayString() == typeof(TAttribute).FullName;
+    }
 
     private static bool AreSymbolsEquals(ISymbol first, ISymbol second)
     {
