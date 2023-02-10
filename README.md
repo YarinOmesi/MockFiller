@@ -10,7 +10,7 @@ Or the tests [Source Generator Tests](./TestsHelper.SourceGenerator.Tests/MockFi
 
 All you need to do is to mark your test fixture class as `partial`.
 
-Create field of the desired tested class and mark it with attribute `[FillMocks]`.
+Create field of the desired tested class and mark it with attribute `[FillMocks]` or `[FillMocksWithWrappers]`.
 
 The Source Generator will Create **a field for each mocked parameters with the same name**, and create a `Build()` method to create the instance. 
 
@@ -41,7 +41,7 @@ private ILoggerFactory _nullLoggerFactory = NullLoggerFactory.Instance;
 
 ### Generate Mock Wrappers :crystal_ball:
 
-Generate mock wrappers by marking the test class filed with `[FillMocksWithWrappers]` attribute instead of `[FillMocks]`.
+Generate mock wrappers by marking the test class field with `[FillMocksWithWrappers]` attribute instead of `[FillMocks]`.
 
 The mocked parameter **field will have a property for each public method** in the mocked type. 
 
