@@ -6,10 +6,9 @@ using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace MyNamespace;
 
-[GenerateMockWrappers]
 public partial class ATestFixture
 {
-    [FillMocks]
+    [FillMocksWithWrappers]
     private TestedClass _testedClass;
 
     [DefaultValue("factory")]
