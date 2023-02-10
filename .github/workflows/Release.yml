@@ -19,11 +19,11 @@ jobs:
           key: ${{ github.sha }}
       - name: Install Zip
         run: sudo apt-get install zip
-      - run: zip -r -j packages.zip packages/**/*/*.nupkg
+      - run: zip -r -j dependencies.zip packages/**/*/*.nupkg
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         with:
           files:  |
             ${{ github.workspace }}/nupkgs/*.nupkg
-            ${{ github.workspace }}/packages.zip
+            ${{ github.workspace }}/dependencies.zip
           tag_name: ${{ steps.tagName.outputs.tag }}
