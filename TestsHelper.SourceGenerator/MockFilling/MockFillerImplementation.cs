@@ -54,7 +54,7 @@ public class MockFillerImplementation
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)
     {
-        Dictionary<string, ITypeSymbol> parameters = constructor.Parameters
+        Dictionary<string, ITypeSymbol> parametersNameToType = constructor.Parameters
             .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
 
         Dictionary<string, IFieldSymbol> defaultValuesFields = new();
@@ -72,20 +72,20 @@ public class MockFillerImplementation
             string fieldName = (string) fieldNameArgument.Value;
 
             //TODO: Provide Location
-            if (!parameters.ContainsKey(fieldName))
+            if (!parametersNameToType.ContainsKey(fieldName))
             {
                 diagnostics.Add(Diagnostic.Create(DiagnosticRegistry.DefaultValueToUnknownParameter, Location.None, fieldName));
                 continue;
             }
 
-            if (!AreSymbolsEquals(parameters[fieldName], fieldSymbol.Type))
+            if (!AreSymbolsEquals(parametersNameToType[fieldName], fieldSymbol.Type))
             {
                 diagnostics.Add(Diagnostic.Create(
                     DiagnosticRegistry.DefaultValueWithWrongType,
                     Location.None,
                     fieldSymbol.Type.Name,
                     fieldName,
-                    parameters[fieldName].Name
+                    parametersNameToType[fieldName].Name
                 ));
                 continue;
             }
