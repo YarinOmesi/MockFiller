@@ -17,12 +17,6 @@ public static class AttributeHelpers
         return attributeListSyntax.Any(list => list.Attributes.Any(syntax => IsAttributeSame(syntax, semanticModel, fullName)));
     }
 
-    public static bool ContainsAttribute<T>(this SyntaxList<AttributeListSyntax> attributeListSyntax, SemanticModel semanticModel)
-        where T : Attribute
-    {
-        return attributeListSyntax.ContainsAttribute(semanticModel, typeof(T).FullName);
-    }
-
     private static bool IsAttributeSame(AttributeSyntax attributeSyntax, SemanticModel semanticModel, string attributeFullName)
     {
         TypeInfo typeInfo = semanticModel.GetTypeInfo(attributeSyntax);
@@ -35,12 +29,19 @@ public static class AttributeHelpers
         return attributeFullName == fullName;
     }
 
-    public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute<T>(this TypeDeclarationSyntax classDeclarationSyntax,
-        SemanticModel semanticModel)
-        where T : Attribute
+    public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute<T>(
+        this TypeDeclarationSyntax classDeclarationSyntax,
+        SemanticModel semanticModel
+    ) where T : Attribute
+    {
+        return classDeclarationSyntax.GetMembersWithAttribute(semanticModel, typeof(T).FullName);
+    }
+
+    public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute(this TypeDeclarationSyntax classDeclarationSyntax,
+        SemanticModel semanticModel, string attributeFullName)
     {
         return classDeclarationSyntax.Members
-            .Where(member => member.AttributeLists.ContainsAttribute<T>(semanticModel))
+            .Where(member => member.AttributeLists.ContainsAttribute(semanticModel, attributeFullName))
             .ToImmutableList();
     }
 }
