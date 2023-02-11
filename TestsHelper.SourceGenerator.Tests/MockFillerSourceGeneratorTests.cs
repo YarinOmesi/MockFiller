@@ -56,7 +56,7 @@ public class MockFillerSourceGeneratorTests
     }
 
     [Test]
-    public async Task TestHappyFlow_OnValidCass_GenerateImplementation()
+    public async Task TestHappyFlow_OnValidClass_GenerateImplementation()
     {
         // Arrange
         var test = new VerifyCS.Test {
@@ -81,7 +81,7 @@ public class MockFillerSourceGeneratorTests
     }
 
     [Test]
-    public async Task TestHappyFlow_OnValidCassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
+    public async Task TestHappyFlow_OnValidClassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
     {
         // Arrange
         var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping";
