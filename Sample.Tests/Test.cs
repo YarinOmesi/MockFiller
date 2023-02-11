@@ -26,13 +26,13 @@ public partial class Test
     public void Setup_WithoutWrapper()
     {
         // Arrange
-        int numbrer = 1;
+        int number = 1;
 
         _dependency.Mock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
-            .Returns<int>((number) => number.ToString());
+            .Returns<int>(n => n.ToString());
 
         // Act
-        string result = _testedClass.VeryComplicatedLogic(numbrer);
+        string result = _testedClass.VeryComplicatedLogic(number);
 
         // Assert
         _dependency.Mock.Verify(dependency => dependency.MakeString(2), Times.Once);
