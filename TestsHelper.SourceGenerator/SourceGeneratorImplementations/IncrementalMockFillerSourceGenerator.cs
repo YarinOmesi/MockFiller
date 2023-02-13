@@ -47,6 +47,11 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
             reporter.Report(e.Diagnostic);
             return new ResultClass(reporter.Diagnostics);
         }
+        catch (MultipleDiagnosticsException e)
+        {
+            reporter.ReportMultiple(e.Diagnostics);
+            return new ResultClass(reporter.Diagnostics);
+        }
 
         return new ResultClass(reporter.Diagnostics);
     }
@@ -79,6 +84,10 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
             catch (DiagnosticException e)
             {
                 reporter.Report(e.Diagnostic);
+            }
+            catch (MultipleDiagnosticsException e)
+            {
+                reporter.ReportMultiple(e.Diagnostics);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,22 +11,32 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class ClassToFillMockInFactory
 {
-    private const string MockWrappersAttributeFullName = "TestsHelper.SourceGenerator.MockWrapping.GenerateMockWrappersAttribute";
+    private const string MockWrappersAttributeFullName = "TestsHelper.SourceGenerator.MockWrapping.FillMocksWithWrappersAttribute";
 
     public bool TryCreate(ClassDeclarationSyntax declarationSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
     {
-        ImmutableList<MemberDeclarationSyntax> membersWithAttribute =
-            declarationSyntax.GetMembersWithAttribute<FillMocksAttribute>(model);
+        Dictionary<MemberDeclarationSyntax, bool> membersToGenerateWrappers = new();
+        
+        AddMembers(
+            membersToGenerateWrappers,
+            declarationSyntax.GetMembersWithAttribute<FillMocksAttribute>(model),
+            generateWrappers: false
+        );
+        
+        AddMembers(
+            membersToGenerateWrappers,
+            declarationSyntax.GetMembersWithAttribute(model, MockWrappersAttributeFullName),
+            generateWrappers: true
+        );
 
-        if (membersWithAttribute.Count == 0)
+        // Check That Only One Member Have The Attribute
+        switch (membersToGenerateWrappers.Count)
         {
-            classToFillMockIn = default;
-            return false;
-        }
-
-        if (membersWithAttribute.Count > 1)
-        {
-            throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, declarationSyntax.Identifier.GetLocation());
+            case 0:
+                classToFillMockIn = default;
+                return false;
+            case > 1:
+                throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, declarationSyntax.Identifier.GetLocation());
         }
 
         // Error If Class Is Not Partial
@@ -39,12 +49,14 @@ public class ClassToFillMockInFactory
             );
         }
 
-        MemberDeclarationSyntax testedClassMember = membersWithAttribute.First();
+        var pair = membersToGenerateWrappers.First();
+        MemberDeclarationSyntax testedClassMember = pair.Key;
+        bool generateMockWrappers = pair.Value;
+        
         TypeSyntax type = GetTypeFromFieldOrProperty(testedClassMember)!;
 
         ITypeSymbol testedClassTypeSymbol = model.GetTypeInfo(type).Type!;
         INamedTypeSymbol declarationSymbol = model.GetDeclaredSymbol(declarationSyntax)!;
-        bool generateMockWrappers = declarationSyntax.AttributeLists.ContainsAttribute(model, MockWrappersAttributeFullName);
         // TODO: diagnostic if there are null
 
         classToFillMockIn = new ClassToFillMockIn(declarationSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
@@ -58,5 +70,16 @@ public class ClassToFillMockInFactory
             (int) SyntaxKind.FieldDeclaration => ((BaseFieldDeclarationSyntax) member).Declaration.Type,
             _ => default
         };
+    }
+
+    private static void AddMembers(
+        Dictionary<MemberDeclarationSyntax, bool> dictionary, 
+        IEnumerable<MemberDeclarationSyntax> members,
+        bool generateWrappers)
+    {
+        foreach (MemberDeclarationSyntax member in members)
+        {
+            dictionary[member] = generateWrappers;
+        }
     }
 }
