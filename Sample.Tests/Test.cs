@@ -7,14 +7,14 @@ using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace Sample.Tests;
 
-[GenerateMockWrappers]
 [TestFixture]
 public partial class Test
 {
-    [FillMocks] 
+    [FillMocksWithWrappers] 
     private TestedClass _testedClass = null!;
 
-    private readonly ILoggerFactory _defaultValueFactory = NullLoggerFactory.Instance;
+    [DefaultValue("factory")]
+    private readonly ILoggerFactory _nullFactory = NullLoggerFactory.Instance;
 
     [SetUp]
     public void Setup()
@@ -26,13 +26,13 @@ public partial class Test
     public void Setup_WithoutWrapper()
     {
         // Arrange
-        int numbrer = 1;
+        int number = 1;
 
         _dependency.Mock.Setup(dependency => dependency.MakeString(It.IsAny<int>()))
-            .Returns<int>((number) => number.ToString());
+            .Returns<int>(n => n.ToString());
 
         // Act
-        string result = _testedClass.VeryComplicatedLogic(numbrer);
+        string result = _testedClass.VeryComplicatedLogic(number);
 
         // Assert
         _dependency.Mock.Verify(dependency => dependency.MakeString(2), Times.Once);

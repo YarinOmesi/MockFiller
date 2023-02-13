@@ -2,15 +2,14 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using TestsHelper.SourceGenerator.Attributes;
-using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace MyNamespace;
 
 public partial class ATestFixture
 {
-    [FillMocksWithWrappers]
+    [FillMocks]
     private TestedClass _testedClass;
-
+    
     [DefaultValue("factory")]
-    private readonly ILoggerFactory _nullFactory = NullLoggerFactory.Instance;
+    private readonly int _nullFactory = 6;
 }

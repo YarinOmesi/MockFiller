@@ -56,7 +56,7 @@ public class MockFillerSourceGeneratorTests
     }
 
     [Test]
-    public async Task TestHappyFlow_OnValidCass_GenerateImplementation()
+    public async Task TestHappyFlow_OnValidClass_GenerateImplementation()
     {
         // Arrange
         var test = new VerifyCS.Test {
@@ -81,7 +81,7 @@ public class MockFillerSourceGeneratorTests
     }
 
     [Test]
-    public async Task TestHappyFlow_OnValidCassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
+    public async Task TestHappyFlow_OnValidClassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
     {
         // Arrange
         var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping";
@@ -155,6 +155,59 @@ public class MockFillerSourceGeneratorTests
                 ExpectedDiagnostics = {
                     (DiagnosticResult.CompilerError(DiagnosticRegistry.MoreThanOneFillMockUsage.Id)
                         .WithLocation("ATestFixture.cs", 8, 22))
+                }
+            }
+        };
+        // Act + Assert
+        await test.RunAsync();
+    }
+
+
+    [Test]
+    public async Task DefaultValue_GivenNonExistingParameterName_ReportError()
+    {
+        // Arrange
+        var test = new VerifyCS.Test {
+            LanguageVersion = LanguageVersion.CSharp10,
+            TestState = {
+                ReferenceAssemblies = ReferenceAssemblies.Default
+                    .AddAssemblies(_referencedAssemblies)
+                    .AddPackages(_referencedPackages),
+                Sources = {
+                    CreateSource("Sources/IDependency.cs"),
+                    CreateSource("Sources/ATestFixture__DefaultValue_NonExistingParameter.cs", overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/TestedClass.cs"),
+                },
+                GeneratedSources = { },
+                ExpectedDiagnostics = {
+                    (DiagnosticResult.CompilerError(DiagnosticRegistry.DefaultValueToUnknownParameter.Id)
+                        .WithArguments("NonExistingParameterName"))
+                }
+            }
+        };
+        // Act + Assert
+        await test.RunAsync();
+    }
+
+    [Test]
+    public async Task DefaultValue_GivenWrongTypeExistingParameter_ReportError()
+    {
+        // Arrange
+        var test = new VerifyCS.Test {
+            LanguageVersion = LanguageVersion.CSharp10,
+            TestState = {
+                ReferenceAssemblies = ReferenceAssemblies.Default
+                    .AddAssemblies(_referencedAssemblies)
+                    .AddPackages(_referencedPackages),
+                Sources = {
+                    CreateSource("Sources/IDependency.cs"),
+                    CreateSource("Sources/ATestFixture_DefaultValue_WrongType.cs", overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/TestedClass.cs"),
+                },
+                GeneratedSources = { },
+                ExpectedDiagnostics = {
+                    (DiagnosticResult.CompilerError(DiagnosticRegistry.DefaultValueWithWrongType.Id)
+                        .WithArguments("Int32", "factory", "ILoggerFactory"))
                 }
             }
         };
