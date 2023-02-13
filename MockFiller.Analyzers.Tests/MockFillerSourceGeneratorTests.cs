@@ -8,10 +8,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using NUnit.Framework;
 using MockFiller.Analyzers.Diagnostics;
-using MockFiller.Analyzers.SourceGenerators.Implementations;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Generators;
 using VerifyCS =
     MockFiller.Analyzers.Tests.CSharpSourceGeneratorVerifier<
-        MockFiller.Analyzers.SourceGenerators.Implementations.MockFillerSourceGenerator>;
+        MockFiller.Analyzers.SourceGenerators.MockFilling.Generators.MockFillerSourceGenerator>;
 
 namespace MockFiller.Analyzers.Tests;
 

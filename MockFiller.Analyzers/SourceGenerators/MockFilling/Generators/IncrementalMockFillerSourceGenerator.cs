@@ -6,10 +6,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MockFiller.Analyzers.Diagnostics;
 using MockFiller.Analyzers.Diagnostics.Reporters;
-using MockFiller.Analyzers.MockFilling;
-using MockFiller.Analyzers.MockFilling.Models;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
 
-namespace MockFiller.Analyzers.SourceGenerators.Implementations;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.Generators;
 
 public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace MockFiller.Analyzers.MockFilling.Models;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
 
 public readonly record struct ClassToFillMockIn(
     ClassDeclarationSyntax DeclarationSyntax,

@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace MockFiller.Analyzers.MockFilling.PartialImplementation.Models;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Models;
 
 public readonly record struct WorkingClassInfo(string Namespace, string Name,IMethodSymbol SelectedConstructor)
 {

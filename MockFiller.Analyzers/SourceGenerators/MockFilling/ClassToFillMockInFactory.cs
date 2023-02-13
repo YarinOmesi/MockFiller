@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MockFiller.Analyzers.Diagnostics;
-using MockFiller.Analyzers.MockFilling.Models;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
 using MockFiller.Attributes;
 
-namespace MockFiller.Analyzers.MockFilling;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling;
 
 public class ClassToFillMockInFactory
 {

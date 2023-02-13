@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace MockFiller.Analyzers.MockFilling.PartialImplementation.Models;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Models;
 
 public readonly record struct TypeMockResult(
     string Name, 

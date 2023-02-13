@@ -4,11 +4,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using MockFiller.Analyzers.Diagnostics;
-using MockFiller.Analyzers.MockFilling.Models;
-using MockFiller.Analyzers.MockFilling.PartialImplementation;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation;
 using MockFiller.Attributes;
 
-namespace MockFiller.Analyzers.MockFilling;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling;
 
 public class MockFillerImplementation
 {

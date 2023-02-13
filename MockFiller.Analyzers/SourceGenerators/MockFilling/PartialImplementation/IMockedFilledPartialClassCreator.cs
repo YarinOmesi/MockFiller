@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MockFiller.Analyzers.MockFilling.Models;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
 
-namespace MockFiller.Analyzers.MockFilling.PartialImplementation;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation;
 
 public interface IMockedFilledPartialClassCreator
 {

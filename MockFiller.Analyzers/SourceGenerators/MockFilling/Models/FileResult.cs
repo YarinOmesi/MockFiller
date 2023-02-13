@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.Text;
 
-namespace MockFiller.Analyzers.MockFilling.Models;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
 
 public readonly record struct FileResult(string FileName, SourceText SourceCode)
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MockFiller.Analyzers.MockFilling.PartialImplementation.Models;
 using MockFiller.Analyzers.FluentSyntaxCreation;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Models;
 
-namespace MockFiller.Analyzers.MockFilling.PartialImplementation.Logics;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Logics;
 
 public class MockGenerator
 {

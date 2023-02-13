@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using MockFiller.Analyzers.MockFilling.Models;
-using MockFiller.Analyzers.MockFilling.PartialImplementation.Logics;
-using MockFiller.Analyzers.MockFilling.PartialImplementation.Models;
 using MockFiller.Analyzers.FluentSyntaxCreation;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.Models;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Logics;
+using MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace MockFiller.Analyzers.MockFilling.PartialImplementation;
+namespace MockFiller.Analyzers.SourceGenerators.MockFilling.PartialImplementation;
 
 public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialClassCreator
 {
