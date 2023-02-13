@@ -9,7 +9,7 @@ using MockFiller.Analyzers.Diagnostics.Reporters;
 using MockFiller.Analyzers.MockFilling;
 using MockFiller.Analyzers.MockFilling.Models;
 
-namespace MockFiller.Analyzers.SourceGeneratorImplementations;
+namespace MockFiller.Analyzers.SourceGenerators.Implementations;
 
 [Generator]
 public class MockFillerSourceGenerator : ISourceGenerator
