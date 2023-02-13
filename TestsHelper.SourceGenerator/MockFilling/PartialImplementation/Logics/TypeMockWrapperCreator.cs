@@ -147,8 +147,7 @@ public class TypeMockWrapperCreator
             .ToList();
 
         // Setup
-        methodWrapper =
-            methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
+        methodWrapper = methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
         // Verify
         methodWrapper = methodWrapper.AddMembers(CreateVerifyMethod(expressionFieldName, mockVariableName, method, parameters));
 
