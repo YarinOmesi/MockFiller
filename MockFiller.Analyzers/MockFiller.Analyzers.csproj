@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MockFiller.SourceGenerator.Attributes\MockFiller.SourceGenerator.Attributes.csproj" GeneratePathProperty="true" PrivateAssets="all" />
+        <ProjectReference Include="..\MockFiller.Attributes\MockFiller.Attributes.csproj" GeneratePathProperty="true" PrivateAssets="all" />
     </ItemGroup>
 
 
@@ -37,7 +37,7 @@
 
     <Target Name="GetDependencyTargetPaths">
         <ItemGroup>
-            <TargetPathWithTargetPlatformMoniker Include="../MockFiller.SourceGenerator.Attributes/bin/$(Configuration)/$(TargetFramework)/MockFiller.SourceGenerator.Attributes.dll" IncludeRuntimeDependency="false" />
+            <TargetPathWithTargetPlatformMoniker Include="../MockFiller.Attributes/bin/$(Configuration)/$(TargetFramework)/MockFiller.Attributes.dll" IncludeRuntimeDependency="false" />
         </ItemGroup>
     </Target>
 

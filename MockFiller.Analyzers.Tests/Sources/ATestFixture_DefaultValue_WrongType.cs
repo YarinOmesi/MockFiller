@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using MockFiller.SourceGenerator.Attributes;
+using MockFillerMockFiller.Attributes;
 
 namespace MyNamespace;
 

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MockFiller.Analyzers.Diagnostics;
 using MockFiller.Analyzers.MockFilling.Models;
-using MockFiller.SourceGenerator.Attributes;
+using MockFiller.Attributes;
 
 namespace MockFiller.Analyzers.MockFilling;
 

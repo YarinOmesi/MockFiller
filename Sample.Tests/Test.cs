@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
-using MockFiller.SourceGenerator.Attributes;
+using MockFiller.Attributes;
 using MockFiller.SourceGenerator.MockWrapping;
 
 namespace Sample.Tests;

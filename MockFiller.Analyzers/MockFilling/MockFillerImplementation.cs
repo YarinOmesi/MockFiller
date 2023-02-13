@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using MockFiller.Analyzers.Diagnostics;
 using MockFiller.Analyzers.MockFilling.Models;
 using MockFiller.Analyzers.MockFilling.PartialImplementation;
-using MockFiller.SourceGenerator.Attributes;
+using MockFiller.Attributes;
 
 namespace MockFiller.Analyzers.MockFilling;
 

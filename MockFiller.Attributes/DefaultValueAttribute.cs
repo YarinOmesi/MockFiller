@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MockFiller.SourceGenerator.Attributes
+namespace MockFiller.Attributes
 {
     [AttributeUsage(AttributeTargets.Field)]
     public class DefaultValueAttribute : Attribute

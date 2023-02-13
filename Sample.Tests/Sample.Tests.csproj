@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MockFiller.SourceGenerator.Attributes\MockFiller.SourceGenerator.Attributes.csproj" />
+        <ProjectReference Include="..\MockFiller.Attributes\MockFiller.Attributes.csproj" />
         <ProjectReference Include="..\MockFiller.SourceGenerator.MockWrapping\MockFiller.SourceGenerator.MockWrapping.csproj" />
         <ProjectReference Include="..\MockFiller.Analyzers\MockFiller.Analyzers.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     </ItemGroup>

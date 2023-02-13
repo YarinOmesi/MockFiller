@@ -39,7 +39,7 @@ public class MockFillerSourceGeneratorTests
 
         _currentDirectoryInfo = directoryInfo.Parent!;
         _referencedAssemblies = ImmutableArray.Create<string>(
-            $"{_currentDirectoryInfo.FullName}/MockFiller.SourceGenerator.Attributes/bin/{Configuration}/netstandard2.0/MockFiller.SourceGenerator.Attributes",
+            $"{_currentDirectoryInfo.FullName}/MockFiller.Attributes/bin/{Configuration}/netstandard2.0/MockFiller.Attributes",
             $"{_currentDirectoryInfo.FullName}/MockFiller.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/MockFiller.SourceGenerator.MockWrapping"
         );
         string referencedAssemblyPath = _referencedAssemblies[0] + ".dll";

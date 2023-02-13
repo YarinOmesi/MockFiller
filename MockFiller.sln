@@ -8,7 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{4736ED08-4
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockFiller.SourceGenerator.Attributes", "MockFiller.SourceGenerator.Attributes\MockFiller.SourceGenerator.Attributes.csproj", "{9659583C-E43B-4699-858D-E82BB81EA13A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MockFiller.Attributes", "MockFiller.Attributes\MockFiller.Attributes.csproj", "{9659583C-E43B-4699-858D-E82BB81EA13A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Tests", "Sample.Tests\Sample.Tests.csproj", "{4DE675B6-12A0-4AE3-B0DF-3237D3A2516C}"
 EndProject
