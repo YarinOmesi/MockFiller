@@ -1,0 +1,18 @@
+﻿using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+
+namespace MockFiller.Analyzers.Diagnostics.Reporters;
+
+public class MemoryDiagnosticReporter : IDiagnosticReporter
+{
+    public IReadOnlyList<Diagnostic> Diagnostics => _diagnostics;
+
+    private readonly List<Diagnostic> _diagnostics;
+
+    public MemoryDiagnosticReporter()
+    {
+        _diagnostics = new List<Diagnostic>();
+    }
+
+    public void Report(Diagnostic diagnostic) => _diagnostics.Add(diagnostic);
+}
