@@ -11,7 +11,7 @@ namespace MockFiller.Analyzers.MockFilling;
 
 public class ClassToFillMockInFactory
 {
-    private const string MockWrappersAttributeFullName = "MockFiller.SourceGenerator.MockWrapping.FillMocksWithWrappersAttribute";
+    private const string MockWrappersAttributeFullName = "MockFiller.MockWrapping.FillMocksWithWrappersAttribute";
 
     public bool TryCreate(ClassDeclarationSyntax declarationSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
     {

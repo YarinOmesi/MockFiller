@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
-using MockFillerMockFiller.Attributes;
-using MockFiller.SourceGenerator.MockWrapping;
+using MockFiller.Attributes;
+using MockFiller.MockWrapping;
 
 namespace MyNamespace;
 

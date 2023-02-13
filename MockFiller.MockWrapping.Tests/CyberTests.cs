@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using MockFiller.SourceGenerator.MockWrapping.Tests.Expressions;
+using MockFiller.MockWrapping;
+using MockFiller.MockWrapping.Tests.Expressions;
 using Moq;
 using NUnit.Framework;
-using MockFiller.SourceGenerator.MockWrapping;
 
-namespace MockFiller.SourceGenerator.MockWrapping.Tests;
+namespace MockFiller.MockWrapping.Tests;
 
 [TestFixture]
 public class CyberTests

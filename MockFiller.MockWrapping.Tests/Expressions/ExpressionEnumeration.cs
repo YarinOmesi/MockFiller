@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace MockFiller.SourceGenerator.MockWrapping.Tests.Expressions
+namespace MockFiller.MockWrapping.Tests.Expressions
 {
     internal class ExpressionEnumeration : ExpressionVisitor, IEnumerable<Expression>
     {

@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MockFiller.SourceGenerator.MockWrapping\MockFiller.SourceGenerator.MockWrapping.csproj" />
+      <ProjectReference Include="..\MockFiller.MockWrapping\MockFiller.MockWrapping.csproj" />
     </ItemGroup>
 
 </Project>

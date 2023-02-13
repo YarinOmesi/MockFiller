@@ -1,4 +1,4 @@
-﻿namespace MockFiller.SourceGenerator.MockWrapping;
+﻿namespace MockFiller.MockWrapping;
 
 public readonly struct Value<T>
 {

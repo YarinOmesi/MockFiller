@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-namespace MockFiller.SourceGenerator.MockWrapping.Tests.Expressions
+namespace MockFiller.MockWrapping.Tests.Expressions
 {
     internal class ExpressionComparison : ExpressionVisitor
     {

@@ -1,4 +1,4 @@
-﻿using MockFiller.SourceGenerator.MockWrapping;
+﻿using MockFiller.MockWrapping;
 using Moq;
 
 namespace MyNamespace

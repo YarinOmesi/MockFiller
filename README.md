@@ -4,7 +4,7 @@
 Creating tested class instance with mocks!
 
 Refer to [Test File Example](./Sample.Tests/Test.cs) to see an example,
-Or the tests [Source Generator Tests](./MockFiller.SourceGenerator.Tests/MockFillerSourceGeneratorTests.cs).
+Or the tests [Source Generator Tests](./MockFiller.Analyzers.Tests/MockFillerSourceGeneratorTests.cs).
 
 ## How To Use
 
@@ -74,10 +74,10 @@ _dependency.MakeString.Verify(Times.Once())
 ```
 
 ## Examples
-Examples Of Mocked Type [IDependency](./MockFiller.SourceGenerator.Tests/Sources/IDependency.cs)
+Examples Of Mocked Type [IDependency](./MockFiller.Tests/Sources/IDependency.cs)
 When Generating Wrappers And When Don't.
 
-| Attribute                 | Example Link                                                                                                           |
-|---------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `[FillMocks]`             | [IDependency without wrappers](./MockFiller.SourceGenerator.Tests/Sources/Wrapper.IDependency.generated.cs)           |
-| `[FillMocksWithWrappers]` | [IDependency with wrappers](./MockFiller.SourceGenerator.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs) |
+| Attribute                 | Example Link                                                                                                         |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `[FillMocks]`             | [IDependency without wrappers](./MockFiller.Tests/Sources/Wrapper.IDependency.generated.cs)           |
+| `[FillMocksWithWrappers]` | [IDependency with wrappers](./MockFiller.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs) |

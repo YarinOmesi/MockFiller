@@ -40,7 +40,7 @@ public class MockFillerSourceGeneratorTests
         _currentDirectoryInfo = directoryInfo.Parent!;
         _referencedAssemblies = ImmutableArray.Create<string>(
             $"{_currentDirectoryInfo.FullName}/MockFiller.Attributes/bin/{Configuration}/netstandard2.0/MockFiller.Attributes",
-            $"{_currentDirectoryInfo.FullName}/MockFiller.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/MockFiller.SourceGenerator.MockWrapping"
+            $"{_currentDirectoryInfo.FullName}/MockFiller.MockWrapping/bin/{Configuration}/netstandard2.0/MockFiller.MockWrapping"
         );
         string referencedAssemblyPath = _referencedAssemblies[0] + ".dll";
         if (!File.Exists(referencedAssemblyPath))
@@ -84,7 +84,7 @@ public class MockFillerSourceGeneratorTests
     public async Task TestHappyFlow_OnValidClassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
     {
         // Arrange
-        var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/MockFiller.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/MockFiller.SourceGenerator.MockWrapping";
+        var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/MockFiller.MockWrapping/bin/{Configuration}/netstandard2.0/MockFiller.MockWrapping";
         var test = new VerifyCS.Test {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {

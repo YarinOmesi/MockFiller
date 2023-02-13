@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MockFiller.SourceGenerator.MockWrapping;
+namespace MockFiller.MockWrapping;
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 public class FillMocksWithWrappersAttribute : Attribute

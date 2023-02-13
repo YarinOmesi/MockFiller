@@ -18,7 +18,7 @@ public class TypeMockWrapperCreator
     private static readonly LiteralExpressionSyntax NullValueSyntax = LiteralExpression(SyntaxKind.NullLiteralExpression);
 
     private static readonly string[] CyberUsings = new[] {
-        "MockFiller.SourceGenerator.MockWrapping",
+        "MockFiller.MockWrapping",
         "Moq",
         "Moq.Language.Flow",
         "System.Linq.Expressions",
@@ -99,7 +99,7 @@ public class TypeMockWrapperCreator
 
         wrapperClass = wrapperClass.AddMembers(methodWrapperClasses.Cast<MemberDeclarationSyntax>().ToArray());
 
-        string classNamespace = "MockFiller.SourceGenerator.MockWrapping";
+        string classNamespace = "MockFiller.MockWrapping";
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
             .AddUsings(CyberUsings.Select(name => UsingDirective(ParseName(name))).ToArray())
             .AddUsings(UsingDirective(ParseName(generatedMock.TypeNamespace)))

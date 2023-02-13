@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Moq;
 
-namespace MockFiller.SourceGenerator.MockWrapping;
+namespace MockFiller.MockWrapping;
 
 public static class Cyber
 {

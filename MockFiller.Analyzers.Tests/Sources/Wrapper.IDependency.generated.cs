@@ -1,4 +1,4 @@
-﻿using MockFiller.SourceGenerator.MockWrapping;
+﻿using MockFiller.MockWrapping;
 using Moq;
 using Moq.Language.Flow;
 using System.Linq.Expressions;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using MyNamespace;
 
-namespace MockFiller.SourceGenerator.MockWrapping
+namespace MockFiller.MockWrapping
 {
     public class Wrapper_IDependency
     {

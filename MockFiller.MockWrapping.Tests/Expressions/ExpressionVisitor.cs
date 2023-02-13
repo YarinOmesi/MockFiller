@@ -7,7 +7,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 
-namespace MockFiller.SourceGenerator.MockWrapping.Tests.Expressions
+namespace MockFiller.MockWrapping.Tests.Expressions
 {
     internal abstract class ExpressionVisitor
     {
