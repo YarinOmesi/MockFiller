@@ -74,10 +74,10 @@ _dependency.MakeString.Verify(Times.Once())
 ```
 
 ## Examples
-Examples Of Mocked Type [IDependency](./MockFiller.Tests/Sources/IDependency.cs)
+Examples Of Mocked Type [IDependency](./MockFiller.Analyzers.Tests/Sources/IDependency.cs)
 When Generating Wrappers And When Don't.
 
-| Attribute                 | Example Link                                                                                                         |
-|---------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `[FillMocks]`             | [IDependency without wrappers](./MockFiller.Tests/Sources/Wrapper.IDependency.generated.cs)           |
-| `[FillMocksWithWrappers]` | [IDependency with wrappers](./MockFiller.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs) |
+| Attribute                 | Example Link                                                                                                    |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `[FillMocks]`             | [IDependency without wrappers](./MockFiller.Analyzers.Tests/Sources/Wrapper.IDependency.generated.cs)           |
+| `[FillMocksWithWrappers]` | [IDependency with wrappers](./MockFiller.Analyzers.Tests/Sources/Wrapper.IDependency.WithWrappers.generated.cs) |
