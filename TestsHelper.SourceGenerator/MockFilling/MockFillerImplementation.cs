@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.Attributes;
 using TestsHelper.SourceGenerator.Diagnostics;
+using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 

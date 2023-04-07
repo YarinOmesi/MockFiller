@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.CodeAnalysis;
 
-namespace TestsHelper.SourceGenerator.Diagnostics;
+namespace TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 
 public class DiagnosticException : Exception
 {

@@ -5,6 +5,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.Diagnostics;
+using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 using TestsHelper.SourceGenerator.Diagnostics.Reporters;
 using TestsHelper.SourceGenerator.MockFilling;
 using TestsHelper.SourceGenerator.MockFilling.Models;
