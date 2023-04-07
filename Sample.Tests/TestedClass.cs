@@ -17,4 +17,6 @@ public class TestedClass
     {
         return _dependency.MakeString(number + 1);
     }
+
+    public Response ExecuteRequest(Request request) => _dependency.ExecuteRequest(request);
 }

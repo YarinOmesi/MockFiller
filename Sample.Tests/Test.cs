@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DeepEqual.Syntax;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
@@ -54,5 +55,29 @@ public partial class Test
         // Assert
         _dependency.MakeString.Verify(2, Times.Once());
         Assert.That(result, Is.EqualTo("2"));
+    }
+    
+    [Test]
+    public void ExecuteRequest_Setup_WithWrapper()
+    {
+        // Arrange
+        Request request = new Request() {
+            Url = "http://example.com",
+            Body = "This is body"
+        };
+        Response expectedResponse = new Response() {
+            Url = request.Url,
+            Body = $"Response-{request.Body}"
+        };
+
+        _dependency.ExecuteRequest.Setup(Value<Request>.DeepEqual(request))
+            .Returns(expectedResponse);
+        
+        // Act
+        Response actualResponse = _testedClass.ExecuteRequest(request);
+
+        // Assert
+        _dependency.ExecuteRequest.Verify(Value<Request>.DeepEqual(request), Times.Once());
+        actualResponse.ShouldDeepEqual(expectedResponse);
     }
 }
