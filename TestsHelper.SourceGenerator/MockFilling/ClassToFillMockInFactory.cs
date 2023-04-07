@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.Attributes;
 using TestsHelper.SourceGenerator.Diagnostics;
+using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.MockFilling;

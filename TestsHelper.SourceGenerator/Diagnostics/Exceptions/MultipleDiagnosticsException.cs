@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace TestsHelper.SourceGenerator.Diagnostics;
+namespace TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 
 public class MultipleDiagnosticsException : Exception
 {
