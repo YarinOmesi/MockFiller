@@ -8,11 +8,4 @@ public readonly record struct ClassToFillMockIn(
     INamedTypeSymbol DeclarationSymbol,
     ITypeSymbol TestedClassMember,
     bool GenerateMockWrappers
-)
-{
-    public ClassDeclarationSyntax DeclarationSyntax { get; } = DeclarationSyntax;
-    public ITypeSymbol TestedClassMember { get; } = TestedClassMember;
-    public INamedTypeSymbol DeclarationSymbol { get; } = DeclarationSymbol;
-
-    public bool GenerateMockWrappers { get; } = GenerateMockWrappers;
-}
+);
