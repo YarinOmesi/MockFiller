@@ -1,21 +1,27 @@
-﻿namespace TestsHelper.SourceGenerator.MockWrapping;
+﻿using System;
+using System.Linq.Expressions;
+using DeepEqual.Syntax;
 
-public readonly struct Value<T>
+namespace TestsHelper.SourceGenerator.MockWrapping;
+
+public abstract record Value<T>
 {
-    public static readonly Value<T> Any = new(default, isAny: true);
-    public static readonly Value<T> Default = new(default, isDefault: true);
-    
-    public T ActualValue { get; }
-    public bool IsAny { get; }
-    public bool IsDefault { get; }
+    public static readonly Value<T> Any = new AnyValue<T>();
 
+    public static Value<T> Is(Expression<Func<T, bool>> predicate) => new PredicateValue<T>(predicate);
+    public static Value<T> DeepEqual(T value) => new PredicateValue<T>(arg => arg.IsDeepEqual(value));
 
-    private Value(T actualValue, bool isDefault = false, bool isAny = false)
-    {
-        ActualValue = actualValue;
-        IsDefault = isDefault;
-        IsAny = isAny;
-    }
+    public static implicit operator Value<T>(T value) => new ExactValue<T>(value);
+}
 
-    public static implicit operator Value<T>(T value) => new(value);
+public record AnyValue<T> : Value<T>;
+
+public record ExactValue<T>(T Value) : Value<T>
+{
+    public T Value { get; } = Value;
+}
+
+public record PredicateValue<T>(Expression<Func<T, bool>> Predicate) : Value<T>
+{
+    public Expression<Func<T, bool>> Predicate { get; } = Predicate;
 }
