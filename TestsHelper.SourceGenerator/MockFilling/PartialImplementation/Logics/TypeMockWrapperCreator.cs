@@ -16,6 +16,7 @@ public class TypeMockWrapperCreator
     private static readonly SyntaxToken VarIdentifier = Identifier(TriviaList(), SyntaxKind.VarKeyword, "var", "var", TriviaList());
     private static readonly PredefinedTypeSyntax VoidTypeSyntax = PredefinedType(Token(SyntaxKind.VoidKeyword));
     private static readonly LiteralExpressionSyntax NullValueSyntax = LiteralExpression(SyntaxKind.NullLiteralExpression);
+    private static readonly LiteralExpressionSyntax DefaultValueSyntax = LiteralExpression(SyntaxKind.DefaultLiteralExpression);
 
     private static readonly string[] CyberUsings = new[] {
         "TestsHelper.SourceGenerator.MockWrapping",
@@ -141,8 +142,8 @@ public class TypeMockWrapperCreator
 
         List<ParameterSyntax> parameters = method.Parameters
             .Select(parameter => parameter.Name
-                    .Parameter(NullableType("Value".Generic(parameter.Type.Name))) // Value<>?
-                    .WithDefault(EqualsValueClause(NullValueSyntax)) // = null
+                    .Parameter("Value".Generic(parameter.Type.Name)) // Value<>
+                    .WithDefault(EqualsValueClause(DefaultValueSyntax)) // = default
             )
             .ToList();
 

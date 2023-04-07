@@ -33,13 +33,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
                 _mock = mock;
             }
 
-            public ISetup<IDependency, String> Setup(Value<Int32>? number = null)
+            public ISetup<IDependency, String> Setup(Value<Int32> number = default)
             {
                 var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(number ?? Value<Int32>.Any)});
                 return _mock.Setup(expression);
             }
 
-            public void Verify(Value<Int32>? number = null, Times? times = null)
+            public void Verify(Value<Int32> number = default, Times? times = null)
             {
                 var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(number ?? Value<Int32>.Any)});
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
@@ -55,13 +55,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
                 _mock = mock;
             }
 
-            public ISetup<IDependency> Setup(Value<String>? name = null)
+            public ISetup<IDependency> Setup(Value<String> name = default)
             {
                 var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
                 return _mock.Setup(expression);
             }
 
-            public void Verify(Value<String>? name = null, Times? times = null)
+            public void Verify(Value<String> name = default, Times? times = null)
             {
                 var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
