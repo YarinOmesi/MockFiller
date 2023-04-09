@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using DeepEqual.Syntax;
-using Moq;
+using TestsHelper.SourceGenerator.MockWrapping.Values;
 
 namespace TestsHelper.SourceGenerator.MockWrapping;
 
@@ -20,36 +20,6 @@ public abstract record Value<T>
     public static Expression ConvertValueOrAny(Value<T> value) => (value ?? Any).Convert();
 
     public static implicit operator Value<T>(T value) => new ExactValue<T>(value);
-}
-
-public record AnyValue<T> : Value<T>
-{
-    private static readonly Expression<Func<T>> IsAnyExpression = () => It.IsAny<T>();
-
-    public override Expression Convert() => IsAnyExpression.Body;
-}
-
-public record ExactValue<T>(T Value) : Value<T>
-{
-    private static readonly Expression<Func<T>> ItIsExpression = () => It.Is<T>(Cyber.FillValue<T>(), EqualityComparer<T>.Default);
-    public T Value { get; } = Value;
-
-    public override Expression Convert()
-    {
-        return ExpressionUtils.UpdateFirstArgument(ItIsExpression, Expression.Constant(Value));
-    }
-}
-
-public record PredicateValue<T>(Expression<Func<T, bool>> Predicate) : Value<T>
-{
-    private static readonly Expression<Func<T>> ItIsExpression = () => It.Is<T>(Cyber.FillPredicate<T>());
-
-    public Expression<Func<T, bool>> Predicate { get; } = Predicate;
-
-    public override Expression Convert()
-    {
-        return ExpressionUtils.UpdateFirstArgument(ItIsExpression, Predicate);
-    }
 }
 
 internal static class ExpressionUtils
