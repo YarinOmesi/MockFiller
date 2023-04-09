@@ -252,7 +252,7 @@ public class TypeMockWrapperCreator
 
     private static InvocationExpressionSyntax Cyber_CreateExpressionFor_AnyIfNull(string name, string type)
     {
-        return "Cyber".AccessMember("CreateExpressionFor").Invoke(IdentifierName(name).Coalesce(ValueAny(type)));
+        return "Value".Generic(type).AccessMember("ConvertValueOrAny").Invoke(IdentifierName(name));
     }
 
     private static GenericNameSyntax CalculateMoqCallbackType(IMethodSymbol method, string mockedClassName)

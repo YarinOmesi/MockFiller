@@ -35,13 +35,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
             public ISetup<IDependency, String> Setup(Value<Int32> number = default)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(number ?? Value<Int32>.Any)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Value<Int32>.ConvertValueOrAny(number)});
                 return _mock.Setup(expression);
             }
 
             public void Verify(Value<Int32> number = default, Times? times = null)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(number ?? Value<Int32>.Any)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Value<Int32>.ConvertValueOrAny(number)});
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
             }
         }
@@ -57,13 +57,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
             public ISetup<IDependency> Setup(Value<String> name = default)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Value<String>.ConvertValueOrAny(name)});
                 return _mock.Setup(expression);
             }
 
             public void Verify(Value<String> name = default, Times? times = null)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Cyber.CreateExpressionFor(name ?? Value<String>.Any)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{Value<String>.ConvertValueOrAny(name)});
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
             }
         }

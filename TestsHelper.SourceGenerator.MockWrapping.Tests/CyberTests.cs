@@ -26,7 +26,7 @@ public class CyberTests
         var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.IsAny<int>());
 
         // Act
-        Expression actualExpression = Cyber.CreateExpressionFor(anyValue);
+        Expression actualExpression = anyValue.Convert();
 
         // Assert
         _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
@@ -40,7 +40,7 @@ public class CyberTests
         var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.Is(5, EqualityComparer<int>.Default));
 
         // Act
-        Expression actualExpression = Cyber.CreateExpressionFor(value);
+        Expression actualExpression = value.Convert();
 
         // Assert
         _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
@@ -51,8 +51,8 @@ public class CyberTests
     {
         // Arrange
         var arguments = new List<Expression> {
-            Cyber.CreateExpressionFor(Value<int>.Any),
-            Cyber.CreateExpressionFor(Value<string>.Any),
+            Value<int>.Any.Convert(),
+            Value<string>.Any.Convert(),
         };
         
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
@@ -70,8 +70,8 @@ public class CyberTests
     {
         // Arrange
         var arguments = new List<Expression> {
-            Cyber.CreateExpressionFor<int>(10),
-            Cyber.CreateExpressionFor(Value<string>.Any),
+            Value<int>.Is(10).Convert(),
+            Value<string>.Any.Convert(),
         };
         
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
