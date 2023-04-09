@@ -4,7 +4,7 @@ using Moq;
 
 namespace TestsHelper.SourceGenerator.MockWrapping.Values;
 
-public record AnyValue<T> : Value<T>
+internal sealed record AnyValue<T> : Value<T>
 {
     private static readonly Expression<Func<T>> IsAnyExpression = () => It.IsAny<T>();
 

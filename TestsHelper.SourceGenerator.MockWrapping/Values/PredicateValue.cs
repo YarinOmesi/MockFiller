@@ -4,7 +4,7 @@ using Moq;
 
 namespace TestsHelper.SourceGenerator.MockWrapping.Values;
 
-public record PredicateValue<T>(Expression<Func<T, bool>> Predicate) : Value<T>
+internal sealed record PredicateValue<T>(Expression<Func<T, bool>> Predicate) : Value<T>
 {
     private static readonly Expression<Func<T>> ItIsExpression = () => It.Is<T>(Cyber.FillPredicate<T>());
 
