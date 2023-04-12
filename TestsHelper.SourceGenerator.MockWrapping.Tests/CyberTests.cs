@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using Moq;
 using NUnit.Framework;
+using TestsHelper.SourceGenerator.MockWrapping.Converters;
 using TestsHelper.SourceGenerator.MockWrapping.Tests.Expressions;
 
 namespace TestsHelper.SourceGenerator.MockWrapping.Tests;
@@ -10,11 +11,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests;
 [TestFixture]
 public class CyberTests
 {
+    private IValueConverter _valueConverter;
     private ExpressionComparison _expressionComparison = null!;
 
     [OneTimeSetUp]
     public void Setup()
     {
+        _valueConverter = MoqValueConverter.Instance;
         _expressionComparison = new ExpressionComparison();
     }
 
@@ -26,7 +29,7 @@ public class CyberTests
         var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.IsAny<int>());
 
         // Act
-        Expression actualExpression = anyValue.Convert();
+        Expression actualExpression = _valueConverter.Convert(anyValue);
 
         // Assert
         _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
@@ -40,7 +43,7 @@ public class CyberTests
         var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.Is(5, EqualityComparer<int>.Default));
 
         // Act
-        Expression actualExpression = value.Convert();
+        Expression actualExpression = _valueConverter.Convert(value);
 
         // Assert
         _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
@@ -51,8 +54,8 @@ public class CyberTests
     {
         // Arrange
         var arguments = new List<Expression> {
-            Value<int>.Any.Convert(),
-            Value<string>.Any.Convert(),
+            _valueConverter.Convert(Value<int>.Any),
+            _valueConverter.Convert(Value<string>.Any),
         };
         
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
@@ -70,8 +73,8 @@ public class CyberTests
     {
         // Arrange
         var arguments = new List<Expression> {
-            Value<int>.Is(10).Convert(),
-            Value<string>.Any.Convert(),
+            _valueConverter.Convert(Value<int>.Is(10)),
+            _valueConverter.Convert(Value<string>.Any),
         };
         
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
