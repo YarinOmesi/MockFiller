@@ -11,6 +11,7 @@ namespace TestsHelper.SourceGenerator.FluentSyntaxCreation;
 public static class Extensions
 {
     private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
+    private static readonly SyntaxToken VarIdentifier = Identifier(TriviaList(), SyntaxKind.VarKeyword, "var", "var", TriviaList());
 
     public static GenericNameSyntax Generic(this SyntaxToken type, params TypeSyntax[] arguments) =>
         GenericName(type, TypeArgumentList(SeparatedList(arguments)));
@@ -85,6 +86,9 @@ public static class Extensions
 
         return type.DeclareVariable(VariableDeclarator(name).WithInitializer(EqualsValueClause(initializer)));
     }
+
+    public static VariableDeclarationSyntax DeclareVariable(this string name, ExpressionSyntax initializer) =>
+        IdentifierName(VarIdentifier).DeclareVariable(name, initializer);
 
     public static AssignmentExpressionSyntax Assign(this ExpressionSyntax container, ExpressionSyntax value)
     {
