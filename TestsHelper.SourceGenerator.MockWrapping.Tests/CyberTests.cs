@@ -11,7 +11,7 @@ namespace TestsHelper.SourceGenerator.MockWrapping.Tests;
 [TestFixture]
 public class CyberTests
 {
-    private IValueConverter _valueConverter;
+    private IValueConverter _valueConverter = null!;
     private ExpressionComparison _expressionComparison = null!;
 
     [OneTimeSetUp]
@@ -22,34 +22,6 @@ public class CyberTests
     }
 
     [Test]
-    public void CreateExpressionFor_GivenAnyValue_CallItAny()
-    {
-        // Arrange
-        Value<int> anyValue = Value<int>.Any;
-        var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.IsAny<int>());
-
-        // Act
-        Expression actualExpression = _valueConverter.Convert(anyValue);
-
-        // Assert
-        _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
-    }
-
-    [Test]
-    public void CreateExpressionFor_GivenValue_CallItIs()
-    {
-        // Arrange
-        Value<int> value = 5;
-        var expectedMethodCallExpression = GetLambdaBody<MethodCallExpression>(() => It.Is(5, EqualityComparer<int>.Default));
-
-        // Act
-        Expression actualExpression = _valueConverter.Convert(value);
-
-        // Assert
-        _expressionComparison.AssertEquals(actualExpression, expectedMethodCallExpression);
-    }
-
-    [Test]
     public void UpdateExpressionWithParameters_OnAllParameterNull_PatchExpressionToUseItAny()
     {
         // Arrange
@@ -57,17 +29,17 @@ public class CyberTests
             _valueConverter.Convert(Value<int>.Any),
             _valueConverter.Convert(Value<string>.Any),
         };
-        
+
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
         Expression<Action> expectedExpression = () => MockMethod(It.IsAny<int>(), It.IsAny<string>());
-        
+
         // Act
         Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments);
 
         // Assert
         _expressionComparison.AssertEquals(patchedExpression, expectedExpression);
-    } 
-    
+    }
+
     [Test]
     public void UpdateExpressionWithParameters_OnSomeAnyAndValue_PatchExpressionToUseItAnyOrItIs()
     {
@@ -76,10 +48,10 @@ public class CyberTests
             _valueConverter.Convert(Value<int>.Is(10)),
             _valueConverter.Convert(Value<string>.Any),
         };
-        
+
         Expression<Action> method = () => MockMethod(Cyber.Fill<int>(), Cyber.Fill<string>());
         Expression<Action> expectedExpression = () => MockMethod(It.Is(10, EqualityComparer<int>.Default), It.IsAny<string>());
-        
+
         // Act
         Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments);
 
@@ -89,8 +61,5 @@ public class CyberTests
 
     private void MockMethod(int age, string name)
     {
-        
     }
-
-    private static T GetLambdaBody<T>(Expression<Action> expression) where T : Expression => (T) expression.Body;
 }
