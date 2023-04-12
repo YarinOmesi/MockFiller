@@ -43,35 +43,28 @@ public class BuildMethodCreator
         // new TestedClass(arguments)
         ObjectCreationExpressionSyntax testedClassCreating = objectToBuild.New(arguments: arguments.ToArray());
 
-        var converterVariableName = "converter";
-
         List<StatementSyntax> body = new();
-        
+
         if (generateWrappers)
         {
+            var converterVariableName = "converter";
+            
             // var converter = MoqValueConverter.Instance;
             body.Add(LocalDeclarationStatement(
                 converterVariableName.DeclareVariable("MoqValueConverter".AccessMember("Instance"))
             ));
-        }
-        foreach (TypeMockResult result in typeMockResults)
-        {
-            List<ExpressionSyntax> wrapperArguments = new() {
-                // new Mock<>()
-                result.GeneratedMock.MockVariableType.New()
-            };
-            if (generateWrappers)
-            {
-                // converter
-                wrapperArguments.Add(IdentifierName(converterVariableName));
-            }
 
-            // _parameterName = new Wrapper_Type(arguments);
-            StatementSyntax init = IdentifierName($"_{result.ParameterName}")
-                .Assign(IdentifierName(result.Name).New(wrapperArguments.ToArray()))
-                .ToStatement();
-            
-            body.Add(init);
+            // _parameterName = new Wrapper_Type(new Mock<>, converter);
+            // ....
+            body.AddRange(typeMockResults.Select(result => 
+                CreateMockWrapperInitialization(result, IdentifierName(converterVariableName)))
+            );
+        }
+        else
+        {
+            // _parameterName = new Wrapper_Type(new Mock<>);
+            // ....
+            body.AddRange(typeMockResults.Select(result => CreateMockWrapperInitialization(result)));
         }
 
         // return <testedClassCreating>;
@@ -79,5 +72,18 @@ public class BuildMethodCreator
         method = method.WithBody(Block(body));
 
         return method;
+    }
+
+    private static ExpressionStatementSyntax CreateMockWrapperInitialization(TypeMockResult result, params ExpressionSyntax[] moreWrapperArgs)
+    {
+        List<ExpressionSyntax> wrapperArguments = new() {
+            // new Mock<>()
+            result.GeneratedMock.MockVariableType.New()
+        };
+        wrapperArguments.AddRange(moreWrapperArgs);
+
+        return IdentifierName($"_{result.ParameterName}")
+            .Assign(IdentifierName(result.Name).New(wrapperArguments.ToArray()))
+            .ToStatement();
     }
 }
