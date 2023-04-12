@@ -42,13 +42,20 @@ public class BuildMethodCreator
         // new TestedClass(arguments)
         ObjectCreationExpressionSyntax testedClassCreating = objectToBuild.New(arguments: arguments.ToArray());
 
-        List<StatementSyntax> body = new();
+        var converterVariableName = "converter";
+
+        List<StatementSyntax> body = new() {
+            // var converter = MoqValueConverter.Instance;
+            LocalDeclarationStatement(
+                converterVariableName.DeclareVariable("MoqValueConverter".AccessMember("Instance"))
+            )
+        };
 
         foreach (TypeMockResult result in typeMockResults)
         {
             // _parameterName = new Wrapper_Type(new Mock<>());
             StatementSyntax init = IdentifierName($"_{result.ParameterName}")
-                .Assign(IdentifierName(result.Name).New(result.GeneratedMock.MockVariableType.New()))
+                .Assign(IdentifierName(result.Name).New(result.GeneratedMock.MockVariableType.New(), IdentifierName(converterVariableName)))
                 .ToStatement();
             
             body.Add(init);
