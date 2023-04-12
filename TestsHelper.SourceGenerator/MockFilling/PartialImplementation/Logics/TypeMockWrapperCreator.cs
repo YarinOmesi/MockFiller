@@ -120,7 +120,7 @@ public class TypeMockWrapperCreator
             Namespace: classNamespace,
             GeneratedMock: generatedMock,
             MockPropertyName: mockField.Identifier.Text,
-            CompilationUnitSyntax: compilationUnitSyntax
+            Code: compilationUnitSyntax.ToFullString()
         );
     }
 

@@ -8,7 +8,7 @@ public readonly record struct TypeMockResult(
     string Namespace,
     GeneratedMock GeneratedMock,
     string MockPropertyName,
-    CompilationUnitSyntax CompilationUnitSyntax)
+    string Code)
 {
     public ITypeSymbol WrappedType => GeneratedMock.Mock.Type;
 

@@ -94,7 +94,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             _usingNamespaces.Add(typeMockResult.Namespace);
             results.Add(new FileResult(
                 $"Wrapper.{typeMockResult.WrappedType.Name}.generated.cs",
-                SourceText.From(typeMockResult.CompilationUnitSyntax.ToFullString(), Encoding.UTF8)
+                SourceText.From(typeMockResult.Code, Encoding.UTF8)
             ));
         }
 
