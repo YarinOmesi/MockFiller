@@ -50,7 +50,7 @@ public class MoqValueConverter : IValueConverter
             ExactValue<T> exactValue = (ExactValue<T>) value;
             Expression<Func<T>> itIsExpression = () => It.Is<T>(Cyber.FillValue<T>(), EqualityComparer<T>.Default);
             
-            return ExpressionUtils.UpdateFirstArgument(itIsExpression, Expression.Constant(exactValue.Value));
+            return ExpressionUtils.GetBodyWithUpdatedFirstArgument(itIsExpression, Expression.Constant(exactValue.Value));
         }
     }
     
@@ -61,7 +61,7 @@ public class MoqValueConverter : IValueConverter
             PredicateValue<T> predicateValue = (PredicateValue<T>) value;
             Expression<Func<T>> itIsExpression = () => It.Is<T>(Cyber.FillPredicate<T>());
             
-            return ExpressionUtils.UpdateFirstArgument(itIsExpression, predicateValue.Predicate);
+            return ExpressionUtils.GetBodyWithUpdatedFirstArgument(itIsExpression, predicateValue.Predicate);
         }
     }
 }
