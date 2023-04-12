@@ -19,7 +19,7 @@ public class BuildMethodCreator
         IdentifierNameSyntax objectToBuild = IdentifierName(classInfo.SelectedConstructor.ContainingType.Name);
         // private <TestedClass> Build()
         MethodDeclarationSyntax method = MethodDeclaration(objectToBuild, "Build")
-            .WithModifiers(TokenList(Token(SyntaxKind.PrivateKeyword)));
+            .AddModifiers(SyntaxKind.PrivateKeyword);
 
 
         Dictionary<string, ExpressionSyntax> argumentsByName = new();
@@ -82,8 +82,8 @@ public class BuildMethodCreator
         };
         wrapperArguments.AddRange(moreWrapperArgs);
 
-        return IdentifierName($"_{result.ParameterName}")
-            .Assign(IdentifierName(result.Name).New(wrapperArguments.ToArray()))
+        return $"_{result.ParameterName}"
+            .Assign(result.Name.New(wrapperArguments.ToArray()))
             .ToStatement();
     }
 }

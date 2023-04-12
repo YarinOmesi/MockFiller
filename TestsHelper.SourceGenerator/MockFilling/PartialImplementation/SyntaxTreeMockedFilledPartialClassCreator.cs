@@ -72,12 +72,11 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             .ToList();
 
         IEnumerable<FieldDeclarationSyntax> classFields = typeMockResults.Select(result =>
-            IdentifierName(result.Name)
-                .DeclareField($"_{result.ParameterName}")
-                .AddModifier(SyntaxKind.PrivateKeyword)
+            result.Name.DeclareField($"_{result.ParameterName}")
+                .AddModifiers(SyntaxKind.PrivateKeyword)
         );
         ClassDeclarationSyntax classDeclarationSyntax = ClassDeclaration(Identifier(classInfo.Name))
-            .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword)))
+            .AddModifiers(SyntaxKind.PublicKeyword, SyntaxKind.PartialKeyword)
             .AddMembers(classFields
                 .Cast<MemberDeclarationSyntax>()
                 .ToArray()

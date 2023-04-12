@@ -1,60 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using OneOf;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 
 namespace TestsHelper.SourceGenerator.FluentSyntaxCreation;
 
-public static class Extensions
+public static partial class Extensions
 {
     private static readonly SyntaxToken SemicolonToken = Token(SyntaxKind.SemicolonToken);
     private static readonly SyntaxToken VarIdentifier = Identifier(TriviaList(), SyntaxKind.VarKeyword, "var", "var", TriviaList());
 
-    public static GenericNameSyntax Generic(this SyntaxToken type, params TypeSyntax[] arguments) =>
-        GenericName(type, TypeArgumentList(SeparatedList(arguments)));
-
-    public static GenericNameSyntax Generic(this SyntaxToken type, IEnumerable<TypeSyntax> arguments) =>
-        GenericName(type, TypeArgumentList(SeparatedList(arguments)));
-
-    public static GenericNameSyntax Generic(this string type, IEnumerable<TypeSyntax> arguments) => Identifier(type).Generic(arguments);
-
-    public static GenericNameSyntax Generic(this string type, params string[] arguments) =>
-        type.Generic(arguments.Select(IdentifierName));
-
-    public static GenericNameSyntax Generic(this string type, TypeSyntax argument) =>
-        GenericName(Identifier(type), TypeArgumentList(SingletonSeparatedList(argument)));
-
-    public static GenericNameSyntax Generic(this string type, string typedName) =>
-        GenericName(Identifier(type), TypeArgumentList(SingletonSeparatedList<TypeSyntax>(IdentifierName(typedName))));
-
-    public static MemberAccessExpressionSyntax AccessMember(this string instance, string member) =>
-        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName(instance), IdentifierName(member));
-
-    public static MemberAccessExpressionSyntax AccessMember(this string instance, SimpleNameSyntax member) =>
-        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, IdentifierName(instance), member);
-
-    public static MemberAccessExpressionSyntax AccessMember(this ExpressionSyntax instance, string member) =>
-        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, instance, IdentifierName(member));
-
-    public static InvocationExpressionSyntax Invoke(this ExpressionSyntax instance) => InvocationExpression(instance);
-
-    public static InvocationExpressionSyntax Invoke(this ExpressionSyntax instance, IEnumerable<ExpressionSyntax> arguments)
-    {
-        return instance.Invoke(arguments.ToArray());
-    }
-
-    public static InvocationExpressionSyntax Invoke(this ExpressionSyntax instance, params ExpressionSyntax[] arguments)
-    {
-        return InvocationExpression(instance, ArgumentList(SeparatedList(arguments.Select(Argument))));
-    }
-
-    public static InvocationExpressionSyntax Invoke(this ExpressionSyntax instance, ExpressionSyntax argument)
-    {
-        return InvocationExpression(instance, ArgumentList(SingletonSeparatedList(Argument(argument))));
-    }
+    private static T ReturnInput<T>(T arg) => arg;
 
     public static BinaryExpressionSyntax Coalesce(this ExpressionSyntax left, ExpressionSyntax right)
     {
@@ -69,42 +30,22 @@ public static class Extensions
         return InitializerExpression(SyntaxKind.ArrayInitializerExpression, SeparatedList(values));
     }
 
-    public static ImplicitArrayCreationExpressionSyntax ImplicitCreation(this InitializerExpressionSyntax initializerExpressionSyntax)
-    {
-        return ImplicitArrayCreationExpression(initializerExpressionSyntax);
-    }
+    public static ImplicitArrayCreationExpressionSyntax ImplicitCreation(this InitializerExpressionSyntax initializerExpressionSyntax) => 
+        ImplicitArrayCreationExpression(initializerExpressionSyntax);
 
-    public static VariableDeclarationSyntax DeclareVariable(this TypeSyntax type, VariableDeclaratorSyntax variable)
-    {
-        return VariableDeclaration(type, SingletonSeparatedList(variable));
-    }
+    public static AssignmentExpressionSyntax Assign(this ExpressionSyntax container, ExpressionSyntax value) => 
+        AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, container, value);
 
-    public static VariableDeclarationSyntax DeclareVariable(this TypeSyntax type, string name, ExpressionSyntax? initializer = null)
-    {
-        if (initializer == null)
-            return type.DeclareVariable(VariableDeclarator(name));
-
-        return type.DeclareVariable(VariableDeclarator(name).WithInitializer(EqualsValueClause(initializer)));
-    }
-
-    public static VariableDeclarationSyntax DeclareVariable(this string name, ExpressionSyntax initializer) =>
-        IdentifierName(VarIdentifier).DeclareVariable(name, initializer);
-
-    public static AssignmentExpressionSyntax Assign(this ExpressionSyntax container, ExpressionSyntax value)
-    {
-        return AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, container, value);
-    }
-
-    public static AssignmentExpressionSyntax Assign(this string container, string value) => IdentifierName(container).Assign(IdentifierName(value));
+    public static AssignmentExpressionSyntax Assign(this string container, OneOf<string, ExpressionSyntax> value) => 
+        IdentifierName(container).Assign(value.Match(IdentifierName, ReturnInput));
 
     public static ExpressionStatementSyntax ToStatement(this ExpressionSyntax expressionSyntax) => ExpressionStatement(expressionSyntax);
 
-    public static FieldDeclarationSyntax AddModifier(this FieldDeclarationSyntax field, SyntaxKind kind) => field.AddModifiers(Token(kind));
-
-    public static FieldDeclarationSyntax AddModifiers(this FieldDeclarationSyntax field, params SyntaxKind[] kinds)
-    {
-        return kinds.Aggregate(field, (current, syntaxKind) => current.AddModifier(syntaxKind));
-    }
+    public static FieldDeclarationSyntax AddModifiers(this FieldDeclarationSyntax field, params SyntaxKind[] kinds) => field.AddModifiers(kinds.Select(Token).ToArray());
+    public static ClassDeclarationSyntax AddModifiers(this ClassDeclarationSyntax field, params SyntaxKind[] kinds) => field.AddModifiers(kinds.Select(Token).ToArray());
+    public static MethodDeclarationSyntax AddModifiers(this MethodDeclarationSyntax field, params SyntaxKind[] kinds) => field.AddModifiers(kinds.Select(Token).ToArray());
+    public static PropertyDeclarationSyntax AddModifiers(this PropertyDeclarationSyntax field, params SyntaxKind[] kinds) => field.AddModifiers(kinds.Select(Token).ToArray());
+    public static ConstructorDeclarationSyntax AddModifiers(this ConstructorDeclarationSyntax field, params SyntaxKind[] kinds) => field.AddModifiers(kinds.Select(Token).ToArray());
 
     public static ObjectCreationExpressionSyntax New(this TypeSyntax typeSyntax, params ExpressionSyntax[] arguments)
     {
@@ -116,7 +57,17 @@ public static class Extensions
             .WithArgumentList(ArgumentList(argumentsList));
     }
 
-    public static ParameterSyntax Parameter(this string name, TypeSyntax type) => SyntaxFactory.Parameter(Identifier(name)).WithType(type);
+    public static ObjectCreationExpressionSyntax New(this string type, params ExpressionSyntax[] arguments) => IdentifierName(type).New(arguments);
+
+    public static ParameterSyntax Parameter(this string name, TypeSyntax type, ExpressionSyntax? defaultValue = null)
+    {
+        ParameterSyntax parameterSyntax = SyntaxFactory.Parameter(Identifier(name)).WithType(type);
+        
+        return defaultValue != null ? parameterSyntax.WithDefault(EqualsValueClause(defaultValue)) : parameterSyntax;
+    }
+
+    public static MethodDeclarationSyntax AddParameters(this MethodDeclarationSyntax method, params ParameterSyntax[] parameters) => 
+        method.AddParameterListParameters(parameters);
 
     public static FieldDeclarationSyntax DeclareField(this string type, string name, ExpressionSyntax? initializer = null) =>
         IdentifierName(type).DeclareField(name, initializer);
@@ -124,5 +75,6 @@ public static class Extensions
     public static FieldDeclarationSyntax DeclareField(this TypeSyntax type, string name, ExpressionSyntax? initializer = null) =>
         FieldDeclaration(type.DeclareVariable(name, initializer));
 
-    public static ReturnStatementSyntax Return(this ExpressionSyntax expression) => ReturnStatement(expression).WithSemicolonToken(SemicolonToken);
+    public static ReturnStatementSyntax Return(this ExpressionSyntax expression) =>
+        ReturnStatement(expression).WithSemicolonToken(SemicolonToken);
 }
