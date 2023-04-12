@@ -20,7 +20,6 @@ public class TypeMockWrapperCreator
 
     private static readonly string[] CyberUsings = new[] {
         "TestsHelper.SourceGenerator.MockWrapping",
-        "TestsHelper.SourceGenerator.MockWrapping.Converters",
         "Moq",
         "Moq.Language.Flow",
         "System.Linq.Expressions",
@@ -95,18 +94,27 @@ public class TypeMockWrapperCreator
         }
 
         // Add ctor
-        wrapperClass = wrapperClass.AddMembers(
-            ConstructorDeclaration(wrapperClass.Identifier)
-                .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddParameterListParameters(mockParameter, valueConverterParameter)
-                .WithBody(Block(constructorStatements))
-        );
+        ConstructorDeclarationSyntax constructor = ConstructorDeclaration(wrapperClass.Identifier)
+            .AddModifiers(Token(SyntaxKind.PublicKeyword))
+            .AddParameterListParameters(mockParameter)
+            .WithBody(Block(constructorStatements));
+        if (createMockWrapperMethod)
+        {
+            constructor = constructor.AddParameterListParameters(valueConverterParameter);
+        }
+        wrapperClass = wrapperClass.AddMembers(constructor);
 
         wrapperClass = wrapperClass.AddMembers(methodWrapperClasses.Cast<MemberDeclarationSyntax>().ToArray());
 
         string classNamespace = "TestsHelper.SourceGenerator.MockWrapping";
+        List<UsingDirectiveSyntax> usings = CyberUsings.Select(name => UsingDirective(ParseName(name))).ToList();
+        if (createMockWrapperMethod)
+        {
+            usings.Add(UsingDirective(ParseName("TestsHelper.SourceGenerator.MockWrapping.Converters")));
+        }
+
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
-            .AddUsings(CyberUsings.Select(name => UsingDirective(ParseName(name))).ToArray())
+            .AddUsings(usings.ToArray())
             .AddUsings(UsingDirective(ParseName(generatedMock.TypeNamespace)))
             .AddMembers(NamespaceDeclaration(ParseName(classNamespace)).AddMembers(wrapperClass))
             .NormalizeWhitespace(eol: Environment.NewLine);

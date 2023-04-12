@@ -13,7 +13,8 @@ public class BuildMethodCreator
     public MethodDeclarationSyntax Create(
         WorkingClassInfo classInfo,
         IReadOnlyList<TypeMockResult> typeMockResults,
-        List<ValueForParameter> valueForParameters)
+        List<ValueForParameter> valueForParameters,
+        bool generateWrappers)
     {
         IdentifierNameSyntax objectToBuild = IdentifierName(classInfo.SelectedConstructor.ContainingType.Name);
         // private <TestedClass> Build()
@@ -44,18 +45,30 @@ public class BuildMethodCreator
 
         var converterVariableName = "converter";
 
-        List<StatementSyntax> body = new() {
+        List<StatementSyntax> body = new();
+        
+        if (generateWrappers)
+        {
             // var converter = MoqValueConverter.Instance;
-            LocalDeclarationStatement(
+            body.Add(LocalDeclarationStatement(
                 converterVariableName.DeclareVariable("MoqValueConverter".AccessMember("Instance"))
-            )
-        };
-
+            ));
+        }
         foreach (TypeMockResult result in typeMockResults)
         {
-            // _parameterName = new Wrapper_Type(new Mock<>());
+            List<ExpressionSyntax> wrapperArguments = new() {
+                // new Mock<>()
+                result.GeneratedMock.MockVariableType.New()
+            };
+            if (generateWrappers)
+            {
+                // converter
+                wrapperArguments.Add(IdentifierName(converterVariableName));
+            }
+
+            // _parameterName = new Wrapper_Type(arguments);
             StatementSyntax init = IdentifierName($"_{result.ParameterName}")
-                .Assign(IdentifierName(result.Name).New(result.GeneratedMock.MockVariableType.New(), IdentifierName(converterVariableName)))
+                .Assign(IdentifierName(result.Name).New(wrapperArguments.ToArray()))
                 .ToStatement();
             
             body.Add(init);
