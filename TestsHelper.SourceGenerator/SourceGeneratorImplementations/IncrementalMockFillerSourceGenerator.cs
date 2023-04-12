@@ -93,11 +93,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, ClassToFillMockIn? ClassToFillMockIn = null)
-    {
-        public IReadOnlyList<Diagnostic> Diagnostics { get; } = Diagnostics;
-        public ClassToFillMockIn? ClassToFillMockIn { get; } = ClassToFillMockIn;
-    }
+    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, ClassToFillMockIn? ClassToFillMockIn = null);
 
     private class DiagnosticReporter : IDiagnosticReporter
     {
