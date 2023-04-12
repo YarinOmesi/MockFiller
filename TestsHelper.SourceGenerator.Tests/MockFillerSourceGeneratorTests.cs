@@ -102,7 +102,9 @@ public class MockFillerSourceGeneratorTests
                         path: "Sources/Wrapper.IDependency.WithWrappers.generated.cs",
                         overrideFileName: "Wrapper.IDependency.generated.cs"
                     ),
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs")
+                    CreateExpectedSource<MockFillerSourceGenerator>(
+                        path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
+                        overrideFileName: "ATestFixture.FilledMock.generated.cs")
                 }
             }
         };
