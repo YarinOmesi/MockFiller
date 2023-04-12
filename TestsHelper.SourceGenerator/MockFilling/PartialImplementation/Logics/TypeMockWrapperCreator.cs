@@ -20,6 +20,7 @@ public class TypeMockWrapperCreator
 
     private static readonly string[] CyberUsings = new[] {
         "TestsHelper.SourceGenerator.MockWrapping",
+        "TestsHelper.SourceGenerator.MockWrapping.Converters",
         "Moq",
         "Moq.Language.Flow",
         "System.Linq.Expressions",
@@ -34,6 +35,7 @@ public class TypeMockWrapperCreator
             .AddModifiers(Token(SyntaxKind.PublicKeyword));
 
         ParameterSyntax mockParameter = $"{generatedMock.ParameterName}Mock".Parameter(generatedMock.MockVariableType);
+        ParameterSyntax valueConverterParameter = "converter".Parameter(IdentifierName("IValueConverter"));
 
         // public Mock<> Mock { get; }
         PropertyDeclarationSyntax mockField = PropertyDeclaration(generatedMock.MockVariableType, "Mock")
@@ -81,9 +83,11 @@ public class TypeMockWrapperCreator
                 wrapperClass = wrapperClass.AddMembers(methodProperty);
 
                 constructorStatements.Add(
-                    // new Wrapper_type(new Mock<>)
+                    // new Wrapper_type(new Mock<>, _converter)
                     methodProperty.Identifier.Name()
-                        .Assign(methodWrapper.Identifier.Name().New(arguments: mockParameter.Identifier.Name()))
+                        .Assign(methodWrapper.Identifier.Name()
+                            .New(mockParameter.Identifier.Name(), valueConverterParameter.Identifier.Name())
+                        )
                         .ToStatement()
                 );
                 methodWrapperClasses.Add(methodWrapper);
@@ -94,7 +98,7 @@ public class TypeMockWrapperCreator
         wrapperClass = wrapperClass.AddMembers(
             ConstructorDeclaration(wrapperClass.Identifier)
                 .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                .AddParameterListParameters(mockParameter)
+                .AddParameterListParameters(mockParameter, valueConverterParameter)
                 .WithBody(Block(constructorStatements))
         );
 
@@ -130,12 +134,24 @@ public class TypeMockWrapperCreator
             .AddModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.ReadOnlyKeyword)
             .WithSemicolonToken(SemicolonToken);
 
-        methodWrapper = methodWrapper.AddMembers(mockField);
+        // private readonly IValueConverter _converter;
+        string converterFieldName = "_converter";
+        FieldDeclarationSyntax valueConvertor = "IValueConverter".DeclareField(converterFieldName)
+            .AddModifiers(SyntaxKind.PrivateKeyword, SyntaxKind.ReadOnlyKeyword)
+            .WithSemicolonToken(SemicolonToken);
+
+        methodWrapper = methodWrapper.AddMembers(mockField, valueConvertor);
 
         ConstructorDeclarationSyntax constructorDeclarationSyntax = ConstructorDeclaration(methodWrapper.Identifier)
             .AddModifiers(Token(SyntaxKind.PublicKeyword))
-            .AddParameterListParameters("mock".Parameter(generatedMock.MockVariableType))
-            .AddBodyStatements(mockVariableName.Assign("mock").ToStatement());
+            .AddParameterListParameters(
+                "mock".Parameter(generatedMock.MockVariableType),
+                "converter".Parameter(IdentifierName("IValueConverter"))
+            )
+            .AddBodyStatements(
+                mockVariableName.Assign("mock").ToStatement(), 
+                converterFieldName.Assign("converter").ToStatement()
+            );
 
         methodWrapper = methodWrapper.AddMembers(constructorDeclarationSyntax);
 
@@ -147,16 +163,20 @@ public class TypeMockWrapperCreator
             )
             .ToList();
 
-        // Setup
-        methodWrapper = methodWrapper.AddMembers(CreateSetupMethod(expressionFieldName, generatedMock.Mock.Type, mockVariableName, method, parameters));
-        // Verify
-        methodWrapper = methodWrapper.AddMembers(CreateVerifyMethod(expressionFieldName, mockVariableName, method, parameters));
+        
+        ExpressionSyntax patchedExpression = Cyber_CretePatchedExpression(method, IdentifierName(expressionFieldName), converterFieldName);
+        methodWrapper = methodWrapper.AddMembers(
+            // Setup
+            CreateSetupMethod(patchedExpression, generatedMock.Mock.Type, mockVariableName, method, parameters),
+            // Verify
+            CreateVerifyMethod(patchedExpression, mockVariableName, parameters)
+        );
 
         return methodWrapper;
     }
 
     private MethodDeclarationSyntax CreateSetupMethod(
-        string expressionFieldName,
+        ExpressionSyntax patchedExpression,
         ITypeSymbol mockedClassType,
         string mockName,
         IMethodSymbol method,
@@ -165,8 +185,6 @@ public class TypeMockWrapperCreator
         GenericNameSyntax setupReturnType = method.ReturnType.SpecialType == SpecialType.System_Void
             ? "ISetup".Generic(mockedClassType.Name)
             : "ISetup".Generic(mockedClassType.Name, method.ReturnType.Name);
-
-        ExpressionSyntax patchedExpression = Cyber_CretePatchedExpression(method, IdentifierName(expressionFieldName));
 
         string expressionVariableName = "expression";
 
@@ -182,9 +200,8 @@ public class TypeMockWrapperCreator
     }
 
     private MethodDeclarationSyntax CreateVerifyMethod(
-        string expressionFieldName,
+        ExpressionSyntax patchedExpression,
         string mockName,
-        IMethodSymbol method,
         List<ParameterSyntax> parametersWrappedWithValue)
     {
         ParameterSyntax timesParameter = "times".Parameter(NullableType(IdentifierName("Times")))
@@ -206,7 +223,7 @@ public class TypeMockWrapperCreator
             .AddParameterListParameters(timesParameter)
             .AddBodyStatements(
                 LocalDeclarationStatement(IdentifierName(VarIdentifier)
-                    .DeclareVariable("expression", initializer: Cyber_CretePatchedExpression(method, IdentifierName(expressionFieldName))))
+                    .DeclareVariable("expression", initializer: patchedExpression))
             )
             .AddBodyStatements(verifyReturnValue.ToStatement());
     }
@@ -238,22 +255,19 @@ public class TypeMockWrapperCreator
         );
     }
 
-    private static ExpressionSyntax Cyber_CretePatchedExpression(IMethodSymbol method, ExpressionSyntax variableName)
+    private static ExpressionSyntax Cyber_CretePatchedExpression(IMethodSymbol method, ExpressionSyntax variableName, string converterFieldName)
     {
         // Cyber.UpdateExpressionWithParameters<T>(expression, <arguments>);
         return "Cyber".AccessMember("UpdateExpressionWithParameters").Invoke(
             variableName,
             method.Parameters
-                .Select(parameter => Cyber_CreateExpressionFor_AnyIfNull(parameter.Name, parameter.Type.Name))
+                .Select(parameter => 
+                    // _converter.Convert(parameter)
+                    converterFieldName.AccessMember("Convert").Invoke(IdentifierName(parameter.Name))
+                )
                 .ArrayInitializer()
                 .ImplicitCreation()
         );
-    }
-
-    private static InvocationExpressionSyntax Cyber_CreateExpressionFor_AnyIfNull(string name, string type)
-    {
-        //TODO: make this configurable
-        return "Converters.MoqValueConverter".AccessMember("Instance").AccessMember("Convert").Invoke(IdentifierName(name));
     }
 
     private static GenericNameSyntax CalculateMoqCallbackType(IMethodSymbol method, string mockedClassName)
