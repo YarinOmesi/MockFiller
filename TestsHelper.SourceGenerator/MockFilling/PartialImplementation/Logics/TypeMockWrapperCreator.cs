@@ -257,17 +257,18 @@ public class TypeMockWrapperCreator
 
     private static ExpressionSyntax Cyber_CretePatchedExpression(IMethodSymbol method, ExpressionSyntax variableName, string converterFieldName)
     {
-        // new[]{ _converter.Convert(parameter), ... }
-        ImplicitArrayCreationExpressionSyntax parameter = method.Parameters
-            .Select(parameter => 
+        List<ExpressionSyntax> parameters = new();
+
+        parameters.Add(variableName);
+        parameters.AddRange(
+            method.Parameters.Select<IParameterSymbol, ExpressionSyntax>(parameter =>
                 // _converter.Convert(parameter)
                 converterFieldName.AccessMember("Convert").Invoke(IdentifierName(parameter.Name))
             )
-            .ArrayInitializer()
-            .ImplicitCreation();
+        );
 
         // Cyber.UpdateExpressionWithParameters<T>(expression, <argument>);
-        return "Cyber".AccessMember("UpdateExpressionWithParameters").Invoke(variableName, parameter);
+        return "Cyber".AccessMember("UpdateExpressionWithParameters").Invoke(parameters.ToArray());
     }
 
     private static GenericNameSyntax CalculateMoqCallbackType(IMethodSymbol method, string mockedClassName)

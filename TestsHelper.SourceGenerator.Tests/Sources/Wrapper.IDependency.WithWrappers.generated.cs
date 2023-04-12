@@ -38,13 +38,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
             public ISetup<IDependency, String> Setup(Value<Int32> number = default)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{_converter.Convert(number)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, _converter.Convert(number));
                 return _mock.Setup(expression);
             }
 
             public void Verify(Value<Int32> number = default, Times? times = null)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{_converter.Convert(number)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, _converter.Convert(number));
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
             }
         }
@@ -62,13 +62,13 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
             public ISetup<IDependency> Setup(Value<String> name = default)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{_converter.Convert(name)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, _converter.Convert(name));
                 return _mock.Setup(expression);
             }
 
             public void Verify(Value<String> name = default, Times? times = null)
             {
-                var expression = Cyber.UpdateExpressionWithParameters(_expression, new[]{_converter.Convert(name)});
+                var expression = Cyber.UpdateExpressionWithParameters(_expression, _converter.Convert(name));
                 _mock.Verify(expression, times ?? Times.AtLeastOnce());
             }
         }
