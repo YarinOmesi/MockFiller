@@ -82,7 +82,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
                 .Cast<MemberDeclarationSyntax>()
                 .ToArray()
             )
-            .AddMembers(_buildMethodCreator.Create(classInfo, typeMockResults, _valueForParameters));
+            .AddMembers(_buildMethodCreator.Create(classInfo, typeMockResults, _valueForParameters, _generateMockWrappers));
 
         // Remove Usings to current namespace
         if (classInfo.Namespace != string.Empty)
@@ -99,6 +99,10 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             ));
         }
 
+        if (_generateMockWrappers)
+        {
+            _usingNamespaces.Add("TestsHelper.SourceGenerator.MockWrapping.Converters");
+        }
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
             .AddUsings(_usingNamespaces.Select(@namespace => UsingDirective(ParseName(@namespace))).ToArray())
             .AddMembers(NamespaceDeclaration(ParseName(classInfo.Namespace)).AddMembers(classDeclarationSyntax))
