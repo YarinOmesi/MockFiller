@@ -99,6 +99,7 @@ public class SyntaxTreeMockedFilledPartialClassCreator : IMockedFilledPartialCla
             ));
         }
 
+        _usingNamespaces.Add("TestsHelper.SourceGenerator.MockWrapping.Converters");
         CompilationUnitSyntax compilationUnitSyntax = CompilationUnit()
             .AddUsings(_usingNamespaces.Select(@namespace => UsingDirective(ParseName(@namespace))).ToArray())
             .AddMembers(NamespaceDeclaration(ParseName(classInfo.Namespace)).AddMembers(classDeclarationSyntax))
