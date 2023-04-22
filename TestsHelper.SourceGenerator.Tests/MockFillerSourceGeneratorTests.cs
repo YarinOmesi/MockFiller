@@ -71,8 +71,8 @@ public class MockFillerSourceGeneratorTests
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs"),
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs")
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs"),
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs")
                 }
             }
         };
@@ -99,12 +99,13 @@ public class MockFillerSourceGeneratorTests
                 },
                 GeneratedSources = {
                     CreateExpectedSource<MockFillerSourceGenerator>(
+                        path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
+                        overrideFileName: "ATestFixture.FilledMock.generated.cs"
+                    ),
+                    CreateExpectedSource<MockFillerSourceGenerator>(
                         path: "Sources/Wrapper.IDependency.WithWrappers.generated.cs",
                         overrideFileName: "Wrapper.IDependency.generated.cs"
                     ),
-                    CreateExpectedSource<MockFillerSourceGenerator>(
-                        path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
-                        overrideFileName: "ATestFixture.FilledMock.generated.cs")
                 }
             }
         };

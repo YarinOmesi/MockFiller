@@ -4,6 +4,8 @@ using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.Attributes;
+using TestsHelper.SourceGenerator.CodeBuilding;
+using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 using TestsHelper.SourceGenerator.MockFilling.Models;
@@ -15,8 +17,6 @@ public class MockFillerImplementation
 {
     public IReadOnlyList<FileResult> Generate(ClassToFillMockIn classToFillMockIn)
     {
-        IMockedFilledPartialClassCreator partialImplementation = new SyntaxTreeMockedFilledPartialClassCreator();
-
         ImmutableList<IMethodSymbol> constructors = classToFillMockIn.TestedClassMember
             .GetMembers()
             .Where(symbol => symbol.Kind == SymbolKind.Method)
@@ -24,21 +24,21 @@ public class MockFillerImplementation
             .Where(methodSymbol => methodSymbol.MethodKind == MethodKind.Constructor)
             .ToImmutableList();
 
-        partialImplementation.SetGenerateMockWrapper(classToFillMockIn.GenerateMockWrappers);
 
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
-        partialImplementation.SetClassInfo(classToFillMockIn.DeclarationSyntax, selectedConstructor);
 
         ImmutableDictionary<string, IFieldSymbol> defaultValueFields =
             FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor);
 
+        Dictionary<string, IDependencyBehavior> dependencyBehaviors = new();
 
         foreach (KeyValuePair<string, IFieldSymbol> defaultValueField in defaultValueFields)
         {
             string parameterName = defaultValueField.Key;
             IFieldSymbol field = defaultValueField.Value;
-            partialImplementation.AddValueForParameter(field.Name, parameterName);
+
+            dependencyBehaviors[parameterName] = new PredefinedValueDependencyBehavior(field.Name);
         }
 
         // Add Mocks For Parameters With No Default Value
@@ -46,11 +46,22 @@ public class MockFillerImplementation
         {
             if (!defaultValueFields.ContainsKey(parameterSymbol.Name))
             {
-                partialImplementation.AddMockForType(parameterSymbol.Type, parameterSymbol.Name);
+                dependencyBehaviors[parameterSymbol.Name] = new MockDependencyBehavior(parameterSymbol.Type);
             }
         }
 
-        return partialImplementation.Build();
+        StringPartialCreator partialImplementation = new StringPartialCreator(
+            dependencyBehaviors,
+            classToFillMockIn.DeclarationSyntax,
+            WrapperGenerationMode.MethodsWrap,
+            selectedConstructor,
+            selectedConstructor.ContainingType.Type()
+        );
+
+        var generatedResultBuilder = new GeneratedResultBuilder();
+        partialImplementation.Build(generatedResultBuilder);
+
+        return generatedResultBuilder.GetFileResults();
     }
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)
