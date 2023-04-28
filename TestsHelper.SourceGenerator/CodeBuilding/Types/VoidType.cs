@@ -6,10 +6,8 @@ namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 public sealed class VoidType : IType
 {
     public static readonly VoidType Instance = new();
-    private VoidType()
-    {
-        
-    }
+    private VoidType() { }
+
     public string Namespace => string.Empty;
 
     public string Name => "void";

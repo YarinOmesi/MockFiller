@@ -84,63 +84,57 @@ public class StringPartialCreator
             }
         }
 
-        string arguments = CreateTestedClassArguments(_selectedTestedClassConstructor, parameterNameToFieldInitializer);
+        string arguments = _selectedTestedClassConstructor.Parameters
+            .Select(parameter => parameterNameToFieldInitializer[parameter.Name])
+            .JoinToString(", ");
+
         buildMethodBuilder.AddBodyStatements($"return new {_testedClassType.Name}({arguments});");
 
         partialClassFile.AddUsings(FindAllUsings(partialClassFile));
     }
 
-    private string CreateTestedClassArguments(IMethodSymbol selectedConstructor, Dictionary<string, string> argumentsByName)
-    {
-        List<string> arguments = selectedConstructor.Parameters
-            .Select(parameter => argumentsByName[parameter.Name])
-            .ToList();
-
-        return string.Join(", ", arguments);
-    }
-
     private string[] FindAllUsings(IFileBuilder builder)
     {
-        IReadOnlyList<IType> FindAllTypesFromType(IType type)
-        {
-            List<IType> types = new();
-            if (type is not VoidType) types.Add(type);
-            if (type is GenericType genericType)
-                types.AddRange(genericType.TypedArguments.SelectMany(FindAllTypesFromType));
-            return types;
-        }
-
-        IEnumerable<IType> FindAllFromMember(IMemberBuilder memberBuilder)
-        {
-            switch (memberBuilder)
-            {
-                case IPropertyBuilder propertyBuilder:
-                    yield return propertyBuilder.Type;
-                    break;
-                case IFieldBuilder fieldBuilder:
-                    yield return fieldBuilder.Type;
-                    break;
-                case IMethodLikeBuilder methodLikeBuilder:
-                    foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters) yield return parameterBuilder.Type;
-                    if (methodLikeBuilder is IMethodBuilder  methodBuilder) yield return methodBuilder.ReturnType;
-                    break;
-                case ITypeBuilder typeBuilder:
-                    foreach (IType type in FindAllTypes(typeBuilder)) yield return type;
-                    break;
-            }
-        }
-
-        IReadOnlyList<IType> FindAllTypes(ITypeBuilder typeBuilder) => typeBuilder.Members
-            .SelectMany(FindAllFromMember)
-            .SelectMany(FindAllTypesFromType)
-            .ToList();
-
-        IEnumerable<IType> types = builder.Types.SelectMany(FindAllTypes);
-        IEnumerable<string> namespaces = types
+        IEnumerable<string> namespaces = TypesFinder.FindAllTypes(builder)
             .Select(type => type.Namespace)
             .Distinct();
 
         return namespaces.Select(type => $"using {type};").ToArray();
+    }
+    
+    private class TypesFinder
+    {
+        private static IEnumerable<IType> FindAllTypesFromType(IType type)
+        {
+            if (type is not VoidType)
+                yield return type;
+            if (type is GenericType genericType) 
+                foreach (IType t in genericType.TypedArguments.SelectMany(FindAllTypesFromType)) yield return t;
+        }
+
+        private static IEnumerable<IType> FindAllFromMember(IMemberBuilder memberBuilder)
+        {
+            if (memberBuilder is IPropertyBuilder propertyBuilder) 
+                yield return propertyBuilder.Type;
+            else if (memberBuilder is IFieldBuilder fieldBuilder) 
+                yield return fieldBuilder.Type;
+            else if (memberBuilder is ITypeBuilder typeBuilder) 
+                foreach (IType type in FindAllTypes(typeBuilder)) yield return type;
+            else if (memberBuilder is IMethodLikeBuilder methodLikeBuilder) 
+                foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters) yield return parameterBuilder.Type;
+            if (memberBuilder is IMethodBuilder methodBuilder) 
+                yield return methodBuilder.ReturnType;
+        }
+
+        public static IEnumerable<IType> FindAllTypes(ITypeBuilder typeBuilder)
+        {
+            return typeBuilder.Members
+                .SelectMany(FindAllFromMember)
+                .SelectMany(FindAllTypesFromType)
+                .ToList();
+        }
+
+        public static IEnumerable<IType> FindAllTypes(IFileBuilder builder) => builder.Types.SelectMany(FindAllTypes).ToList();
     }
 }
 

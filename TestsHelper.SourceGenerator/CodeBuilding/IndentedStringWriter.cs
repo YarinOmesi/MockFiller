@@ -23,7 +23,7 @@ public class IndentedStringWriter : IIndentedStringWriter
 
     public void WriteSpaceSeperated(params string[] strs)
     {
-        _stringWriter.Write(string.Join(" ", strs.Where(s => !string.IsNullOrEmpty(s))));
+        _stringWriter.Write(strs.Where(s => !string.IsNullOrEmpty(s)).JoinToString(" "));
     }
 
     public void WriteLine(string str)

@@ -88,7 +88,7 @@ public class DependencyMethodWrapperClassGenerator
             .Select(parameter => Cyber_Fill(parameter.Type.Name))
             .ToList();
 
-        return $"{parameterName} => {parameterName}.{method.Name}({string.Join(", ", allParameterTypesFilled)})";
+        return $"{parameterName} => {parameterName}.{method.Name}({allParameterTypesFilled.JoinToString(", ")})";
     }
 
     private static string Cyber_CretePatchedExpression(IMethodSymbol method, string variableName, string converterFieldName)
@@ -97,7 +97,7 @@ public class DependencyMethodWrapperClassGenerator
         parameters.Add(variableName);
         parameters.AddRange(method.Parameters.Select(parameter => $"{converterFieldName}.Convert({parameter.Name})"));
 
-        return $"Cyber.UpdateExpressionWithParameters({string.Join(", ", parameters)})";
+        return $"Cyber.UpdateExpressionWithParameters({parameters.JoinToString(", ")})";
     }
 
     private static string Cyber_Fill(string type) => $"Cyber.Fill<{type}>()";
