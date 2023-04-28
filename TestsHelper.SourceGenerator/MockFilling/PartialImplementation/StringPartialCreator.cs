@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -6,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
-using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 

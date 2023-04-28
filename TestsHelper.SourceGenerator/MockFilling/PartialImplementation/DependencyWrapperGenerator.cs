@@ -56,10 +56,8 @@ public class DependencyWrapperGenerator
             IMethodSymbol method = methods.OrderByDescending(symbol => symbol.Parameters.Length).First();
 
             // Method_type
-            ITypeBuilder methodWrapperClass = builder.AddClass(typeBuilder =>
-            {
-                _dependencyMethodWrapperClassGenerator.CreateMethodWrapperClass(typeBuilder, dependencyType.Type(), method);
-            });
+            ITypeBuilder methodWrapperClass = builder.AddClass();
+            _dependencyMethodWrapperClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
 
             IPropertyBuilder methodProperty = builder.AddProperty(methodWrapperClass.Type(), name);
             methodProperty.AddModifiers("public");

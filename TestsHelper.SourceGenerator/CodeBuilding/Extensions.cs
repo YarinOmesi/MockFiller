@@ -6,51 +6,41 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public static class Extensions
 {
-    public static ITypeBuilder AddClass(this IFileBuilder builder)
+    public static ITypeBuilder AddClass(this IFileBuilder builder, string? name = null)
     {
         var classBuilder = TypeBuilder.ClassBuilder(builder);
         builder.AddTypes(classBuilder);
+        if (name != null) classBuilder.Name = name;
         return classBuilder;
     }
 
-    public static ITypeBuilder AddClass(this IFileBuilder builder, string name)
+    public static ITypeBuilder AddClass(this ITypeBuilder type)
     {
-        ITypeBuilder typeBuilder = builder.AddClass();
-        typeBuilder.Name = name;
-        return typeBuilder;
+        var classBuilder = TypeBuilder.ClassBuilder(type.ParentFileBuilder);
+        type.AddMembers(classBuilder);
+        return classBuilder;
     }
 
-    public static IFieldBuilder AddField(this ITypeBuilder type, Action<IFieldBuilder> builder)
+    public static IFieldBuilder AddField(this ITypeBuilder typeBuilder, IType type, string name, string? initializer = null)
     {
-        var fieldBuilder = new FieldBuilder();
-        type.AddMembers(fieldBuilder);
-        builder(fieldBuilder);
+        var fieldBuilder = new FieldBuilder {
+            Type = type,
+            Name = name,
+            Initializer = initializer
+        };
+        typeBuilder.AddMembers(fieldBuilder);
         return fieldBuilder;
-    }
-
-    public static IPropertyBuilder AddProperty(this ITypeBuilder type, Action<IPropertyBuilder> builder)
-    {
-        var propertyBuilder = new PropertyBuilder();
-        type.AddMembers(propertyBuilder);
-        builder(propertyBuilder);
-        return propertyBuilder;
     }
 
     public static IPropertyBuilder AddProperty(this ITypeBuilder builder, IType type, string name)
     {
-        return builder.AddProperty(propertyBuilder =>
-        {
-            propertyBuilder.Type = type;
-            propertyBuilder.Name = name;
-        });
-    }
+        var propertyBuilder = new PropertyBuilder {
+            Type = type,
+            Name = name
+        };
+        builder.AddMembers(propertyBuilder);
 
-    public static ITypeBuilder AddClass(this ITypeBuilder type, Action<ITypeBuilder> builder)
-    {
-        var classBuilder = TypeBuilder.ClassBuilder(type.ParentFileBuilder);
-        type.AddMembers(classBuilder);
-        builder(classBuilder);
-        return classBuilder;
+        return propertyBuilder;
     }
 
     public static IMethodBuilder AddMethod(this ITypeBuilder type, Action<IMethodBuilder> builder)
@@ -61,66 +51,34 @@ public static class Extensions
         return methodBuilder;
     }
 
-    public static IFieldBuilder AddField(this ITypeBuilder typeBuilder, IType type, string name) =>
-        typeBuilder.AddField(builder =>
-        {
-            builder.Type = type;
-            builder.Name = name;
-        });
-
-    public static IConstructorBuilder AddConstructor(this ITypeBuilder type, Action<IConstructorBuilder> builder)
+    public static IConstructorBuilder AddConstructor(this ITypeBuilder type, params (IFieldBuilder, string)[] fieldsToInitialize)
     {
         var constructorBuilder = new ConstructorBuilder(type);
-        type.AddMembers(constructorBuilder);
-        builder(constructorBuilder);
+
+        foreach ((IFieldBuilder fieldBuilder, string parameterName) in fieldsToInitialize)
+        {
+            constructorBuilder.InitializeFieldWithParameter(fieldBuilder, parameterName);
+        }
+
         return constructorBuilder;
     }
 
-    public static IConstructorBuilder AddConstructor(this ITypeBuilder type, params (IFieldBuilder, string)[] fieldsToInitialize)
+    public static IParameterBuilder InitializeFieldWithParameter(this IConstructorBuilder builder, IFieldBuilder field, string parameterName)
     {
-        return type.AddConstructor(builder =>
-        {
-            foreach ((IFieldBuilder fieldBuilder, string parameterName) in fieldsToInitialize)
-            {
-                builder.InitializeFieldWithParameter(fieldBuilder, parameterName);
-            }
-        });
-    }
-
-    public static IParameterBuilder InitializeFieldWithParameter(
-        this IConstructorBuilder constructorBuilder,
-        IFieldBuilder field,
-        string parameterName
-    )
-    {
-        IParameterBuilder parameterBuilder = constructorBuilder.AddParameter(builder =>
-        {
-            builder.Name = parameterName;
-            builder.Type = field.Type;
-        });
-
-        constructorBuilder.AddBodyStatements($"{field.Name} = {parameterName};");
+        IParameterBuilder parameterBuilder = new ParameterBuilder() {Name = parameterName, Type = field.Type};
+        builder.AddParameters(parameterBuilder);
+        builder.AddBodyStatements($"{field.Name} = {parameterName};");
         return parameterBuilder;
     }
 
-
-    public static IParameterBuilder AddParameter(this IMethodLikeBuilder methodBuilder, IType type, string name,
-        string? initializer = null)
+    public static IParameterBuilder AddParameter(this IMethodLikeBuilder builder, IType type, string name, string? initializer = null)
     {
         var parameterBuilder = new ParameterBuilder() {
             Type = type,
             Name = name,
             Initializer = initializer
         };
-        methodBuilder.AddParameters(parameterBuilder);
-        return parameterBuilder;
-    }
-
-    public static IParameterBuilder AddParameter(this IMethodLikeBuilder constructorBuilder, Action<IParameterBuilder> builder)
-    {
-        var parameterBuilder = new ParameterBuilder();
-        constructorBuilder.AddParameters(parameterBuilder);
-        builder(parameterBuilder);
+        builder.AddParameters(parameterBuilder);
         return parameterBuilder;
     }
 }

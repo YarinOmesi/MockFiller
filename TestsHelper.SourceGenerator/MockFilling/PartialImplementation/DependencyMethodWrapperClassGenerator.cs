@@ -14,17 +14,16 @@ public class DependencyMethodWrapperClassGenerator
         builder.Name = $"Method_{method.Name}";
         builder.AddModifiers("public");
 
+        IType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
+            ? "System".Type("Action").Generic(dependencyTypeName)
+            : "System".Type("Func").Generic(dependencyTypeName, method.ReturnType.Type());
 
-        IFieldBuilder expressionField = builder.AddField(builder =>
-        {
-            builder.Name = "_expression";
-            IType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
-                ? "System".Type("Action").Generic(dependencyTypeName)
-                : "System".Type("Func").Generic(dependencyTypeName, method.ReturnType.Type());
+        IFieldBuilder expressionField = builder.AddField(
+            CommonTypes.LinqExpression.Generic(moqCallbackType),
+            "_expression",
+            CreateMoqExpressionLambda(builder.Name, method)
+        );
 
-            builder.Type = CommonTypes.SystemLinqExpressions.Type("Expression").Generic(moqCallbackType);
-            builder.Initializer = CreateMoqExpressionLambda(builder.Name, method);
-        });
         expressionField.AddModifiers("private", "readonly");
 
         IFieldBuilder mockField = builder.AddField(Moq.Mock.Generic(dependencyTypeName), "_mock");

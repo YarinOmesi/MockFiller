@@ -3,7 +3,6 @@ using System.Diagnostics;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 
-
 [DebuggerDisplay("{Namespace}.{Name}<>")]
 public record GenericType(string Namespace, string Name, IReadOnlyList<IType> TypedArguments) : NamespacedType(Namespace, Name)
 {
