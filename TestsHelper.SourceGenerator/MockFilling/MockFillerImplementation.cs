@@ -32,27 +32,21 @@ public class MockFillerImplementation
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
 
-        ImmutableDictionary<string, IFieldSymbol> defaultValueFields =
-            FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor);
-
         Dictionary<string, IDependencyBehavior> dependencyBehaviors = new();
 
-        foreach (KeyValuePair<string, IFieldSymbol> defaultValueField in defaultValueFields)
-        {
-            string parameterName = defaultValueField.Key;
-            IFieldSymbol field = defaultValueField.Value;
-
-            dependencyBehaviors[parameterName] = new PredefinedValueDependencyBehavior(field.Name);
-        }
+        // Default Values
+        dependencyBehaviors.AddKeysIfNotExists(
+            FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor),
+            pair => pair.Key,
+            pair => new PredefinedValueDependencyBehavior(pair.Value.Name)
+        );
 
         // Add Mocks For Parameters With No Default Value
-        foreach (IParameterSymbol parameterSymbol in selectedConstructor.Parameters)
-        {
-            if (!defaultValueFields.ContainsKey(parameterSymbol.Name))
-            {
-                dependencyBehaviors[parameterSymbol.Name] = new MockDependencyBehavior(parameterSymbol.Type);
-            }
-        }
+        dependencyBehaviors.AddKeysIfNotExists(
+            selectedConstructor.Parameters,
+            symbol => symbol.Name,
+            symbol => new MockDependencyBehavior(symbol.Type)
+        );
 
         List<FileBuilder> fileBuilders = StringPartialCreator.Create(
             dependencyBehaviors,
@@ -64,13 +58,13 @@ public class MockFillerImplementation
 
         return GetFilesResults(fileBuilders);
     }
-    
+
     [Pure]
     private static IReadOnlyList<FileResult> GetFilesResults(IEnumerable<FileBuilder> fileBuilders)
     {
         List<FileResult> results = new List<FileResult>();
-        
-        foreach (FileBuilder fileBuilder in fileBuilders.OrderBy( builder => builder.Name))
+
+        foreach (FileBuilder fileBuilder in fileBuilders.OrderBy(builder => builder.Name))
         {
             var stringWriter = new StringWriter();
             var indentedStringWriter = new IndentedStringWriter(stringWriter, "    ");
