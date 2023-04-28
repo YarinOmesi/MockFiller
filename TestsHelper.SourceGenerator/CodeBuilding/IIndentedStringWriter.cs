@@ -8,7 +8,5 @@ public interface IIndentedStringWriter
     public void WriteLine();
     public void OpenBlock();
     public void CloseBlock();
-    public void Indent();
-    public void DeIndent();
     public void WriteIndent();
 }

@@ -38,12 +38,12 @@ public class IndentedStringWriter : IIndentedStringWriter
     public void OpenBlock()
     {
         WriteLine("{");
-        Indent();
+        _indentLevel++;
     }
 
     public void CloseBlock()
     {
-        DeIndent();
+        _indentLevel--;
         WriteLine("}");
     }
 
@@ -53,15 +53,5 @@ public class IndentedStringWriter : IIndentedStringWriter
         {
             _stringWriter.Write(_indent);
         }
-    }
-
-    public void Indent()
-    {
-        _indentLevel++;
-    }
-
-    public void DeIndent()
-    {
-        _indentLevel--;
     }
 }
