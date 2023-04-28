@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.CodeBuilding;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 

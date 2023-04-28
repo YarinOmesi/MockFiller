@@ -1,6 +1,6 @@
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
-namespace TestsHelper.SourceGenerator.MockFilling;
+namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
 public static class CommonTypes
 {
