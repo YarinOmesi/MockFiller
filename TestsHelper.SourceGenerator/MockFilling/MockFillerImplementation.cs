@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using TestsHelper.SourceGenerator.Attributes;
 using TestsHelper.SourceGenerator.CodeBuilding;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
@@ -50,7 +54,7 @@ public class MockFillerImplementation
             }
         }
 
-        StringPartialCreator partialImplementation = new StringPartialCreator(
+        List<FileBuilder> fileBuilders = StringPartialCreator.Create(
             dependencyBehaviors,
             classToFillMockIn.DeclarationSyntax,
             WrapperGenerationMode.MethodsWrap,
@@ -58,10 +62,25 @@ public class MockFillerImplementation
             selectedConstructor.ContainingType.Type()
         );
 
-        var generatedResultBuilder = new GeneratedResultBuilder();
-        partialImplementation.Build(generatedResultBuilder);
+        return GetFilesResults(fileBuilders);
+    }
+    
+    [Pure]
+    private static IReadOnlyList<FileResult> GetFilesResults(IEnumerable<FileBuilder> fileBuilders)
+    {
+        List<FileResult> results = new List<FileResult>();
+        
+        foreach (FileBuilder fileBuilder in fileBuilders.OrderBy( builder => builder.Name))
+        {
+            var stringWriter = new StringWriter();
+            var indentedStringWriter = new IndentedStringWriter(stringWriter, "    ");
 
-        return generatedResultBuilder.GetFileResults();
+            fileBuilder.Write(indentedStringWriter);
+
+            results.Add(new FileResult(fileBuilder.Name, SourceText.From(stringWriter.ToString(), Encoding.UTF8)));
+        }
+
+        return results;
     }
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)

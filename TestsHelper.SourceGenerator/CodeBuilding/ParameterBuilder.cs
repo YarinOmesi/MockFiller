@@ -9,6 +9,8 @@ public class ParameterBuilder : IParameterBuilder
     public IType Type { get; set; } = null!;
     public string? Initializer { get; set; } = null;
 
+    private ParameterBuilder(){}
+
     public void Write(IIndentedStringWriter writer)
     {
         Type.Write(writer);
@@ -22,4 +24,7 @@ public class ParameterBuilder : IParameterBuilder
             writer.Write(Initializer);
         }
     }
+    
+    public static ParameterBuilder Create(IType type, string name, string? initializer = null) => 
+        new() {Type = type, Name = name, Initializer = initializer};
 }

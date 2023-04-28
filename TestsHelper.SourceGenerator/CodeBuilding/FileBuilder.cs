@@ -8,10 +8,15 @@ public class FileBuilder : IFileBuilder
     public string Namespace { get; set; } = null!;
     public List<string> Usings { get; } = new List<string>();
     public IReadOnlyList<ITypeBuilder> Types => _types;
-    public string Name { get; set; } = null!;
+    public string Name { get; set; }
     
     private readonly List<ITypeBuilder> _types = new ();
-    
+
+    private FileBuilder(string name)
+    {
+        Name = name;
+    }
+
     public void AddUsings(params string[] usings) => Usings.AddRange(usings);
 
     public void AddTypes(params ITypeBuilder[] typeBuilders) => _types.AddRange(typeBuilders);
@@ -28,4 +33,5 @@ public class FileBuilder : IFileBuilder
         
         Writer.Block.Write(writer, Types);
     }
+    public static FileBuilder Create(string name) => new (name);
 }

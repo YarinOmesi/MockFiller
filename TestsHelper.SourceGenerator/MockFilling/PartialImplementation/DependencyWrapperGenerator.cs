@@ -23,15 +23,15 @@ public class DependencyWrapperGenerator
         builder.AddModifiers("public");
 
         //TODO: make this not coupled to moq
-        IPropertyBuilder mockField = builder.AddProperty(Moq.Mock.Generic(dependencyType.Type()), "Mock");
+        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType.Type()), "Mock", autoGetter:true)
+            .Add(builder);
         mockField.AddModifiers("public");
-        mockField.AutoSetter = false;
 
-        IConstructorBuilder constructorBuilder = builder.AddConstructor();
+        ConstructorBuilder constructorBuilder = ConstructorBuilder.CreateAndAdd(builder);
         constructorBuilder.AddModifiers("public");
 
         IParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
-        IParameterBuilder converterParameter = constructorBuilder.AddParameter(CommonTypes.ConverterType, "converter");
+        IParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.ConverterType, "converter").Add(constructorBuilder);
 
         // Create Method Wrappers
 #pragma warning disable RS1024
@@ -51,9 +51,8 @@ public class DependencyWrapperGenerator
             ITypeBuilder methodWrapperClass = builder.AddClass();
             _dependencyMethodWrapperClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
 
-            IPropertyBuilder methodProperty = builder.AddProperty(methodWrapperClass.Type(), name);
+            PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter:true).Add(builder);
             methodProperty.AddModifiers("public");
-            methodProperty.AutoSetter = false;
 
             constructorBuilder.AddBodyStatements(
                 $"{methodProperty.Name} = new {methodWrapperClass.Name}({mockParameter.Name}, {converterParameter.Name});"

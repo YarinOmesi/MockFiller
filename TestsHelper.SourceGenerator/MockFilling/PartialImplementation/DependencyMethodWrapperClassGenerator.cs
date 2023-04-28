@@ -18,67 +18,56 @@ public class DependencyMethodWrapperClassGenerator
             ? "System".Type("Action").Generic(dependencyTypeName)
             : "System".Type("Func").Generic(dependencyTypeName, method.ReturnType.Type());
 
-        IFieldBuilder expressionField = builder.AddField(
+        FieldBuilder expressionField = FieldBuilder.Create(
             CommonTypes.LinqExpression.Generic(moqCallbackType),
             "_expression",
             CreateMoqExpressionLambda(builder.Name, method)
-        );
+        ).Add(builder);
 
         expressionField.AddModifiers("private", "readonly");
 
-        IFieldBuilder mockField = builder.AddField(Moq.Mock.Generic(dependencyTypeName), "_mock");
+        FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
         mockField.AddModifiers("private", "readonly");
 
-        IFieldBuilder converterField = builder.AddField(CommonTypes.ConverterType, "_converter");
+        FieldBuilder converterField = FieldBuilder.Create(CommonTypes.ConverterType, "_converter").Add(builder);
         converterField.AddModifiers("private", "readonly");
 
-        builder.AddConstructor((mockField, "mock"), (converterField, "converter"))
+        ConstructorBuilder.CreateAndAdd(builder)
+            .InitializeFieldWithParameters((mockField, "mock"), (converterField, "converter"))
             .AddModifiers("public");
 
-
         IParameterBuilder[] parameters = method.Parameters
-            .Select(parameter => (IParameterBuilder) new ParameterBuilder() {
-                Type = CommonTypes.ValueType.Generic(parameter.Type.Type()),
-                Name = $"{parameter.Name}",
-                Initializer = $"default"
-            })
+            .Select(parameter => (IParameterBuilder) ParameterBuilder.Create(
+                type: CommonTypes.ValueType.Generic(parameter.Type.Type()),
+                name: $"{parameter.Name}",
+                initializer: $"default"
+            ))
             .ToArray();
 
         string patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
 
         // Setup()
-        builder.AddMethod(setupBuilder =>
-        {
-            setupBuilder.Name = "Setup";
-            setupBuilder.ReturnType = method.ReturnType.SpecialType == SpecialType.System_Void
-                ? Moq.ISetup.Generic(dependencyTypeName)
-                : Moq.ISetup.Generic(dependencyTypeName, method.ReturnType.Type());
+        var setupReturnType = method.ReturnType.SpecialType == SpecialType.System_Void
+            ? Moq.ISetup.Generic(dependencyTypeName)
+            : Moq.ISetup.Generic(dependencyTypeName, method.ReturnType.Type());
 
-            string expressionVariableName = "expression";
-
-            setupBuilder.AddParameters(parameters);
-            setupBuilder.AddModifiers("public");
-            setupBuilder.AddBodyStatements(
-                $"var {expressionVariableName} = {patchedExpression};",
-                $"return {mockField.Name}.Setup({expressionVariableName});"
-            );
-        });
+        var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder);
+        setupBuilder.AddModifiers("public");
+        setupBuilder.AddBodyStatements(
+            $"var expression = {patchedExpression};",
+            $"return {mockField.Name}.Setup(expression);"
+        );
 
         // Verify()
-        builder.AddMethod(verifyBuilder =>
-        {
-            verifyBuilder.AddModifiers("public");
-            verifyBuilder.ReturnType = VoidType.Instance;
-            verifyBuilder.Name = "Verify";
-            verifyBuilder.AddParameters(parameters);
-            IParameterBuilder timesParameter = verifyBuilder.AddParameter(Moq.Times.Nullable(), "times", "null");
-            string expressionVariableName = "expression";
+        var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder);
+        verifyBuilder.AddModifiers("public");
+        IParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null")
+            .Add(verifyBuilder);
 
-            verifyBuilder.AddBodyStatements(
-                $"var {expressionVariableName} = {patchedExpression};",
-                $"{mockField.Name}.Verify({expressionVariableName}, {timesParameter.Name} ?? Times.AtLeastOnce());"
-            );
-        });
+        verifyBuilder.AddBodyStatements(
+            $"var expression = {patchedExpression};",
+            $"{mockField.Name}.Verify(expression, {timesParameter.Name} ?? Times.AtLeastOnce());"
+        );
     }
 
     private static string CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
