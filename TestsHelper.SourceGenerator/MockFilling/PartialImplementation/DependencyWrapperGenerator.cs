@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.CodeBuilding;
@@ -32,16 +33,7 @@ public class DependencyWrapperGenerator
         IParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
         IParameterBuilder converterParameter = constructorBuilder.AddParameter(CommonTypes.ConverterType, "converter");
 
-        CreateMethodWrappers(builder, constructorBuilder, mockParameter, converterParameter, dependencyType);
-    }
-
-    private void CreateMethodWrappers(
-        ITypeBuilder builder,
-        IConstructorBuilder constructorBuilder,
-        IParameterBuilder mockParameter,
-        IParameterBuilder converterParameter,
-        ITypeSymbol dependencyType)
-    {
+        // Create Method Wrappers
 #pragma warning disable RS1024
         Dictionary<string, IReadOnlyList<IMethodSymbol>> publicMethodsByName = dependencyType.GetMembers()
             .OfType<IMethodSymbol>()
