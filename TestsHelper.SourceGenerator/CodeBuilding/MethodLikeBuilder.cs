@@ -6,7 +6,7 @@ using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
-public abstract class MethodLikeBuilder : MemberBuilder, IMethodLikeBuilder
+public abstract class MethodLikeBuilder : MemberBuilder
 {
     public IReadOnlyList<IParameterBuilder> Parameters => _parameters;
     private List<string> Body { get; } = new List<string>();

@@ -63,7 +63,7 @@ public static class Extensions
         return builder;
     }
 
-    public static IParameterBuilder Add(this IParameterBuilder builder, IMethodLikeBuilder methodLikeBuilder)
+    public static IParameterBuilder Add(this IParameterBuilder builder, MethodLikeBuilder methodLikeBuilder)
     {
         methodLikeBuilder.AddParameters(builder);
         return builder;

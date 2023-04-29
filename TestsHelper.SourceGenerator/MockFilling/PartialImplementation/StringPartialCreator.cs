@@ -121,7 +121,7 @@ public static class StringPartialCreator
             else if (memberBuilder is ITypeBuilder typeBuilder)
                 foreach (IType type in FindAllTypes(typeBuilder))
                     yield return type;
-            else if (memberBuilder is IMethodLikeBuilder methodLikeBuilder)
+            else if (memberBuilder is MethodLikeBuilder methodLikeBuilder)
                 foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters)
                     yield return parameterBuilder.Type;
             if (memberBuilder is MethodBuilder methodBuilder)
