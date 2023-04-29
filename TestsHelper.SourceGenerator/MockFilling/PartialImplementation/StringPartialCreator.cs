@@ -39,7 +39,7 @@ public static class StringPartialCreator
             ? parentNamespace.Name.ToString()
             : string.Empty;
 
-        ITypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
+        TypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
             .Public().Partial();
 
         Dictionary<string, string> parameterNameToFieldInitializer = new Dictionary<string, string>();
@@ -63,7 +63,7 @@ public static class StringPartialCreator
 
                 wrapperFile.Namespace = "TestsHelper.SourceGenerator.MockWrapping";
 
-                ITypeBuilder dependencyWrapperType = wrapperFile.AddClass();
+                TypeBuilder dependencyWrapperType = wrapperFile.AddClass();
                 dependencyWrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
 
                 FieldBuilder dependencyWrapperField = FieldBuilder.Create(dependencyWrapperType.Type(), $"_{parameterName}")
@@ -96,7 +96,7 @@ public static class StringPartialCreator
         return fileBuilders;
     }
 
-    private static string[] FindAllUsingsNamespaces(IFileBuilder builder)
+    private static string[] FindAllUsingsNamespaces(FileBuilder builder)
     {
         return TypesFinder.FindAllTypes(builder).Select(type => type.Namespace).Distinct().ToArray();
     }
@@ -112,13 +112,13 @@ public static class StringPartialCreator
                     yield return t;
         }
 
-        private static IEnumerable<IType> FindAllFromMember(IMemberBuilder memberBuilder)
+        private static IEnumerable<IType> FindAllFromMember(MemberBuilder memberBuilder)
         {
             if (memberBuilder is PropertyBuilder propertyBuilder)
                 yield return propertyBuilder.Type;
             else if (memberBuilder is FieldBuilder fieldBuilder)
                 yield return fieldBuilder.Type;
-            else if (memberBuilder is ITypeBuilder typeBuilder)
+            else if (memberBuilder is TypeBuilder typeBuilder)
                 foreach (IType type in FindAllTypes(typeBuilder))
                     yield return type;
             else if (memberBuilder is MethodLikeBuilder methodLikeBuilder)
@@ -128,7 +128,7 @@ public static class StringPartialCreator
                 yield return methodBuilder.ReturnType;
         }
 
-        public static IEnumerable<IType> FindAllTypes(ITypeBuilder typeBuilder)
+        public static IEnumerable<IType> FindAllTypes(TypeBuilder typeBuilder)
         {
             return typeBuilder.Members
                 .SelectMany(FindAllFromMember)
@@ -136,7 +136,7 @@ public static class StringPartialCreator
                 .ToList();
         }
 
-        public static IEnumerable<IType> FindAllTypes(IFileBuilder builder) => builder.Types.SelectMany(FindAllTypes).ToList();
+        public static IEnumerable<IType> FindAllTypes(FileBuilder builder) => builder.Types.SelectMany(FindAllTypes).ToList();
     }
 }
 

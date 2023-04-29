@@ -8,7 +8,7 @@ namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Dependen
 
 public class NoWrappingDependencyMethodGenerator : IDependencyMethodClassGenerator
 {
-    public void CreateMethodWrapperClass(ITypeBuilder builder, IType dependencyTypeName, IMethodSymbol method)
+    public void CreateMethodWrapperClass(TypeBuilder builder, IType dependencyTypeName, IMethodSymbol method)
     {
         builder.Name = $"Method_{method.Name}";
         builder.Public();

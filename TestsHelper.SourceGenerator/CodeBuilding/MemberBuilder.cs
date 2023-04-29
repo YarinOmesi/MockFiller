@@ -4,11 +4,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
-public abstract class MemberBuilder : IMemberBuilder
+public abstract class MemberBuilder
 {
     private List<SyntaxToken> SyntaxKindModifiers { get; } = new List<SyntaxToken>();
 

@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
-public class TypeBuilder : MemberBuilder, ITypeBuilder
+public class TypeBuilder : MemberBuilder
 {
     private static readonly IReadOnlyList<Type> MembersOrder = new[] {
         typeof(FieldBuilder),
@@ -17,25 +16,25 @@ public class TypeBuilder : MemberBuilder, ITypeBuilder
         typeof(TypeBuilder)
     };
 
-    public IFileBuilder ParentFileBuilder { get; }
+    public FileBuilder ParentFileBuilder { get; }
 
     public string Name { get; set; } = null!;
 
-    public IReadOnlyList<IMemberBuilder> Members => _members.Values.SelectMany(list => list).ToList();
+    public IReadOnlyList<MemberBuilder> Members => _members.Values.SelectMany(list => list).ToList();
 
-    private readonly Dictionary<Type, List<IMemberBuilder>> _members = new();
+    private readonly Dictionary<Type, List<MemberBuilder>> _members = new();
 
     private readonly string _kind;
 
-    private TypeBuilder(string kind, IFileBuilder builder)
+    private TypeBuilder(string kind, FileBuilder builder)
     {
         _kind = kind;
         ParentFileBuilder = builder;
     }
 
-    public void AddMembers(params IMemberBuilder[] memberBuilders)
+    public void AddMembers(params MemberBuilder[] memberBuilders)
     {
-        foreach (IMemberBuilder memberBuilder in memberBuilders)
+        foreach (MemberBuilder memberBuilder in memberBuilders)
         {
             if (_members.TryGetValue(memberBuilder.GetType(), out var list))
             {
@@ -43,7 +42,7 @@ public class TypeBuilder : MemberBuilder, ITypeBuilder
             }
             else
             {
-                _members[memberBuilder.GetType()] = new List<IMemberBuilder> {memberBuilder};
+                _members[memberBuilder.GetType()] = new List<MemberBuilder> {memberBuilder};
             }
         }
     }
@@ -52,10 +51,10 @@ public class TypeBuilder : MemberBuilder, ITypeBuilder
     {
         return SyntaxFactory.ClassDeclaration(Name)
             .WithModifiers(BuildModifiers())
-            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<IMemberBuilder>())
+            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<MemberBuilder>())
                 .Select(builder => builder.Build())
                 .ToArray());
     }
 
-    public static TypeBuilder ClassBuilder(IFileBuilder fileBuilder) => new("class", fileBuilder);
+    public static TypeBuilder ClassBuilder(FileBuilder fileBuilder) => new("class", fileBuilder);
 }

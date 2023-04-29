@@ -5,31 +5,31 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public static class Extensions
 {
-    public static T Public<T>(this T builder) where T : IMemberBuilder
+    public static T Public<T>(this T builder) where T : MemberBuilder
     {
         builder.AddModifiers(SyntaxKind.PublicKeyword);
         return builder;
     }
 
-    public static T Private<T>(this T builder) where T : IMemberBuilder
+    public static T Private<T>(this T builder) where T : MemberBuilder
     {
         builder.AddModifiers(SyntaxKind.PrivateKeyword);
         return builder;
     }
 
-    public static T Readonly<T>(this T builder) where T : IMemberBuilder
+    public static T Readonly<T>(this T builder) where T : MemberBuilder
     {
         builder.AddModifiers(SyntaxKind.ReadOnlyKeyword);
         return builder;
     }
 
-    public static T Partial<T>(this T builder) where T : IMemberBuilder
+    public static T Partial<T>(this T builder) where T : MemberBuilder
     {
         builder.AddModifiers(SyntaxKind.PartialKeyword);
         return builder;
     }
 
-    public static ITypeBuilder AddClass(this IFileBuilder builder, string? name = null)
+    public static TypeBuilder AddClass(this FileBuilder builder, string? name = null)
     {
         var classBuilder = TypeBuilder.ClassBuilder(builder);
         builder.AddTypes(classBuilder);
@@ -37,7 +37,7 @@ public static class Extensions
         return classBuilder;
     }
 
-    public static ITypeBuilder AddClass(this ITypeBuilder type)
+    public static TypeBuilder AddClass(this TypeBuilder type)
     {
         var classBuilder = TypeBuilder.ClassBuilder(type.ParentFileBuilder);
         type.AddMembers(classBuilder);
@@ -57,7 +57,7 @@ public static class Extensions
         return builder;
     }
 
-    public static T Add<T>(this T builder, ITypeBuilder type) where T : IMemberBuilder
+    public static T Add<T>(this T builder, TypeBuilder type) where T : MemberBuilder
     {
         type.AddMembers(builder);
         return builder;

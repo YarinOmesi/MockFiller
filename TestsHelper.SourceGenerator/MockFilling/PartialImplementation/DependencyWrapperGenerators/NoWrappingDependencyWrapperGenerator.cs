@@ -18,7 +18,7 @@ public class NoWrappingDependencyWrapperGenerator : IDependencyWrapperGenerator
         _dependencyMethodClassGenerator = dependencyMethodClassGenerator;
     }
 
-    public void GenerateCode(ITypeBuilder builder, ITypeSymbol dependencyType)
+    public void GenerateCode(TypeBuilder builder, ITypeSymbol dependencyType)
     {
         builder.Name = $"Wrapper_{dependencyType.Name}";
         builder.Public();
@@ -48,7 +48,7 @@ public class NoWrappingDependencyWrapperGenerator : IDependencyWrapperGenerator
             IMethodSymbol method = methods.OrderByDescending(symbol => symbol.Parameters.Length).First();
 
             // Method_type
-            ITypeBuilder methodWrapperClass = builder.AddClass();
+            TypeBuilder methodWrapperClass = builder.AddClass();
             _dependencyMethodClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
 
             PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter: true).Add(builder)

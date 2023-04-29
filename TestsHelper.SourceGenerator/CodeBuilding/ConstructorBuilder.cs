@@ -7,9 +7,9 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public class ConstructorBuilder : MethodLikeBuilder
 {
-    private readonly ITypeBuilder _typeBuilder;
+    private readonly TypeBuilder _typeBuilder;
 
-    private ConstructorBuilder(ITypeBuilder typeBuilder)
+    private ConstructorBuilder(TypeBuilder typeBuilder)
     {
         _typeBuilder = typeBuilder;
     }
@@ -22,11 +22,11 @@ public class ConstructorBuilder : MethodLikeBuilder
             .WithBody(BuildBody());
     }
 
-    public static ConstructorBuilder CreateAndAdd(ITypeBuilder type, params IParameterBuilder[] parameters) =>
+    public static ConstructorBuilder CreateAndAdd(TypeBuilder type, params IParameterBuilder[] parameters) =>
         Create(type, parameters).Add(type);
 
     [Pure]
-    public static ConstructorBuilder Create(ITypeBuilder type, params IParameterBuilder[] parameters)
+    public static ConstructorBuilder Create(TypeBuilder type, params IParameterBuilder[] parameters)
     {
         var constructorBuilder = new ConstructorBuilder(type);
         constructorBuilder.AddParameters(parameters);

@@ -15,9 +15,9 @@ public static class Extensions
     public static QualifiedNamespacedType Qualify(this IType type) => new(type.Namespace, type.Name);
     public static GenericType Generic(this NamespacedType type, params IType[] typeArguments) => new(type, typeArguments);
     public static NullableType Nullable(this IType type) => new(type);
-    public static IType Type(this ITypeBuilder typeBuilder) => new TypeBuilderType(typeBuilder);
+    public static IType Type(this TypeBuilder typeBuilder) => new TypeBuilderType(typeBuilder);
 
-    private record TypeBuilderType(ITypeBuilder TypeBuilder) : IType
+    private record TypeBuilderType(TypeBuilder TypeBuilder) : IType
     {
         public string Namespace => TypeBuilder.ParentFileBuilder.Namespace;
         public string Name => TypeBuilder.Name;
