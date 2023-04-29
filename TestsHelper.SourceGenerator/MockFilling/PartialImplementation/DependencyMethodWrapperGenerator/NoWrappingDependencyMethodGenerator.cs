@@ -13,7 +13,6 @@ public class NoWrappingDependencyMethodGenerator : IDependencyMethodClassGenerat
         builder.Name = $"Method_{method.Name}";
         builder.Public();
 
-
         FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
         mockField.Private().Readonly();
 

@@ -9,14 +9,12 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 public abstract class MethodLikeBuilder : MemberBuilder, IMethodLikeBuilder
 {
     public IReadOnlyList<IParameterBuilder> Parameters => _parameters;
-    protected List<string> Body { get; } = new List<string>();
+    private List<string> Body { get; } = new List<string>();
 
-
-    protected readonly List<IParameterBuilder> _parameters = new();
+    private readonly List<IParameterBuilder> _parameters = new();
 
     public void AddParameters(params IParameterBuilder[] parameterBuilders) => _parameters.AddRange(parameterBuilders);
     public void AddBodyStatements(params string[] statements) => Body.AddRange(statements);
-
 
     protected BlockSyntax BuildBody() => SyntaxFactory.Block(Body.Select(s=> SyntaxFactory.ParseStatement(s)));
 

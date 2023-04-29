@@ -7,11 +7,15 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 internal class PropertyBuilder : FieldBuilder
 {
-    public bool AutoGetter { get; set; } = true;
+    public bool AutoGetter { get; init; } = true;
 
-    public bool AutoSetter { get; set; } = true;
+    public bool AutoSetter { get; init; } = true;
 
     private PropertyBuilder() { }
+
+    private static PropertyDeclarationSyntax AddAccessor(PropertyDeclarationSyntax propertySyntax, SyntaxKind kind) =>
+        propertySyntax.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(kind))
+            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
     public override MemberDeclarationSyntax Build()
     {
@@ -20,20 +24,18 @@ internal class PropertyBuilder : FieldBuilder
             .WithInitializer(BuildInitializer());
 
         if (AutoSetter)
-            syntax = syntax.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
-        if(AutoGetter)
-            syntax = syntax.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+            syntax = AddAccessor(syntax, SyntaxKind.SetAccessorDeclaration);
+        if (AutoGetter)
+            syntax = AddAccessor(syntax, SyntaxKind.GetAccessorDeclaration);
 
         return syntax;
     }
 
     [Pure]
-    public static PropertyBuilder Create(IType type, string name, string? initializer = null, bool autoGetter = false, bool autoSetter = false)
+    public static PropertyBuilder Create(IType type, string name, string? initializer = null, bool autoGetter = false,
+        bool autoSetter = false)
     {
-        return new PropertyBuilder()
-        {
+        return new PropertyBuilder() {
             Type = type, Name = name, Initializer = initializer, AutoGetter = autoGetter, AutoSetter = autoSetter
         };
     }

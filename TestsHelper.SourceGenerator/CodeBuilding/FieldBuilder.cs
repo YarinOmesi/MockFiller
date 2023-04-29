@@ -1,7 +1,6 @@
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -11,24 +10,14 @@ public class FieldBuilder : MemberBuilder
     public IType Type { get; set; } = null!;
     public string? Initializer { get; set; } = null;
 
-    protected FieldBuilder()
-    {
-    }
+    protected FieldBuilder() { }
 
-    protected EqualsValueClauseSyntax? BuildInitializer()
-    {
-        return Initializer == null ? null : SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(Initializer));
-    }
+    protected EqualsValueClauseSyntax? BuildInitializer() => Initializer == null ? null : EqualsValueClause(ParseExpression(Initializer));
 
     public override MemberDeclarationSyntax Build()
     {
-        return SyntaxFactory.FieldDeclaration(
-            SyntaxFactory.VariableDeclaration(Type.Build())
-                .AddVariables(
-                    SyntaxFactory.VariableDeclarator(Name).WithInitializer(BuildInitializer())
-                )
-        ).WithModifiers(BuildModifiers());
-        //.WithSemicolonToken();
+        return FieldDeclaration(VariableDeclaration(Type.Build())
+            .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer()))).WithModifiers(BuildModifiers());
     }
 
     public static FieldBuilder Create(IType type, string name, string? initializer = null) =>

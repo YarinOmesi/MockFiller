@@ -10,11 +10,11 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public abstract class MemberBuilder : IMemberBuilder
 {
-    public List<SyntaxKind> SyntaxKindModifiers { get; } = new List<SyntaxKind>();
+    private List<SyntaxToken> SyntaxKindModifiers { get; } = new List<SyntaxToken>();
 
-    public void AddModifiers(params SyntaxKind[] modifiers) => SyntaxKindModifiers.AddRange(modifiers);
+    public void AddModifiers(params SyntaxKind[] modifiers) => SyntaxKindModifiers.AddRange(modifiers.Select(SyntaxFactory.Token));
 
-    protected SyntaxTokenList BuildModifiers() => SyntaxFactory.TokenList(SyntaxKindModifiers.Select(SyntaxFactory.Token));
+    protected SyntaxTokenList BuildModifiers() => SyntaxFactory.TokenList(SyntaxKindModifiers);
 
     [Pure]
     public abstract MemberDeclarationSyntax Build();
