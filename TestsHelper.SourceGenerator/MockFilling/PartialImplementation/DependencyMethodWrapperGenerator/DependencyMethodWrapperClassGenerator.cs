@@ -6,14 +6,14 @@ using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
-namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
+namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 
-public class DependencyMethodWrapperClassGenerator
+public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGenerator
 {
     public void CreateMethodWrapperClass(ITypeBuilder builder, IType dependencyTypeName, IMethodSymbol method)
     {
         builder.Name = $"Method_{method.Name}";
-        builder.AddModifiers("public");
+        builder.Public();
 
         IType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
             ? "System".Type("Action").Generic(dependencyTypeName)
@@ -23,25 +23,23 @@ public class DependencyMethodWrapperClassGenerator
             CommonTypes.LinqExpression.Generic(moqCallbackType),
             "_expression",
             CreateMoqExpressionLambda(builder.Name, method)
-        ).Add(builder);
-
-        expressionField.AddModifiers("private", "readonly");
+        ).Add(builder).Public().Readonly();
 
         FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
-        mockField.AddModifiers("private", "readonly");
+        mockField.Private().Readonly();
 
         FieldBuilder converterField = FieldBuilder.Create(CommonTypes.ConverterType, "_converter").Add(builder);
-        converterField.AddModifiers("private", "readonly");
+        converterField.Private().Readonly();
 
         ConstructorBuilder.CreateAndAdd(builder)
             .InitializeFieldWithParameters((mockField, "mock"), (converterField, "converter"))
-            .AddModifiers("public");
+            .Public();
 
         IParameterBuilder[] parameters = method.Parameters
             .Select(parameter => (IParameterBuilder) ParameterBuilder.Create(
                 type: CommonTypes.ValueType.Generic(parameter.Type.Type()),
-                name: $"{parameter.Name}",
-                initializer: $"default"
+                name: parameter.Name,
+                initializer: "default"
             ))
             .ToArray();
 
@@ -52,16 +50,16 @@ public class DependencyMethodWrapperClassGenerator
             ? Moq.ISetup.Generic(dependencyTypeName)
             : Moq.ISetup.Generic(dependencyTypeName, method.ReturnType.Type());
 
-        var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder);
-        setupBuilder.AddModifiers("public");
+        var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder)
+            .Public();
         setupBuilder.AddBodyStatements(
             $"var expression = {patchedExpression};",
             $"return {mockField.Name}.Setup(expression);"
         );
 
         // Verify()
-        var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder);
-        verifyBuilder.AddModifiers("public");
+        var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder)
+            .Public();
         IParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null")
             .Add(verifyBuilder);
 

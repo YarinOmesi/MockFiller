@@ -5,14 +5,20 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyWrapperGenerators;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
 public static class StringPartialCreator
 {
-    private static readonly DependencyWrapperGenerator WrapperGenerator = new(new DependencyMethodWrapperClassGenerator());
+    private static readonly Dictionary<WrapperGenerationMode, IDependencyWrapperGenerator> DependencyWrapperGenerators = new() {
+        [WrapperGenerationMode.MethodsWrap] = new DependencyWrapperGenerator(new DependencyMethodWrapperClassGenerator()),
+        [WrapperGenerationMode.OnlyMockWrap] = new NoWrappingDependencyWrapperGenerator(new NoWrappingDependencyMethodGenerator())
+    };
 
-    public static List<FileBuilder> Create( 
+    public static List<FileBuilder> Create(
         Dictionary<string, IDependencyBehavior> dependencyBehaviors,
         ClassDeclarationSyntax containingClassSyntax,
         WrapperGenerationMode generationMode,
@@ -20,26 +26,28 @@ public static class StringPartialCreator
         IType testedClassType
     )
     {
+        IDependencyWrapperGenerator dependencyWrapperGenerator = DependencyWrapperGenerators[generationMode];
+
         List<FileBuilder> fileBuilders = new();
 
         string containingClassName = containingClassSyntax.Identifier.Text;
 
         var partialClassFile = FileBuilder.Create($"{containingClassName}.FilledMock.generated.cs");
         fileBuilders.Add(partialClassFile);
-        
+
         partialClassFile.Namespace = containingClassSyntax.Parent is BaseNamespaceDeclarationSyntax parentNamespace
             ? parentNamespace.Name.ToString()
             : string.Empty;
 
-        ITypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName);
-        partialClassBuilder.AddModifiers("public", "partial");
+        ITypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
+            .Public().Partial();
 
         Dictionary<string, string> parameterNameToFieldInitializer = new Dictionary<string, string>();
 
 
-        MethodBuilder buildMethodBuilder = MethodBuilder.Create(testedClassType, "Build").Add(partialClassBuilder);
-        buildMethodBuilder.AddModifiers("private");
-        buildMethodBuilder.AddBodyStatements("var converter = MoqValueConverter.Instance;");
+        MethodBuilder buildMethodBuilder = MethodBuilder.Create(testedClassType, "Build").Add(partialClassBuilder)
+            .Private();
+        buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.Qualify().MakeString()}.Instance;");
 
         foreach (string parameterName in dependencyBehaviors.Keys)
         {
@@ -53,17 +61,17 @@ public static class StringPartialCreator
                 wrapperFile.Namespace = "TestsHelper.SourceGenerator.MockWrapping";
 
                 ITypeBuilder dependencyWrapperType = wrapperFile.AddClass();
-                WrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
+                dependencyWrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
 
                 FieldBuilder dependencyWrapperField = FieldBuilder.Create(dependencyWrapperType.Type(), $"_{parameterName}")
-                    .Add(partialClassBuilder);
-                dependencyWrapperField.AddModifiers("private");
-
+                    .Add(partialClassBuilder)
+                    .Private();
+                
                 buildMethodBuilder.AddBodyStatements(
-                    $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new Mock<{testedClassType.Name}>(), converter);");
+                    $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}(), converter);");
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
 
-                wrapperFile.AddUsings(FindAllUsings(wrapperFile));
+                wrapperFile.AddUsings(FindAllUsingsNamespaces(wrapperFile));
             }
             else if (behavior is PredefinedValueDependencyBehavior valueDependencyBehavior)
             {
@@ -77,41 +85,40 @@ public static class StringPartialCreator
 
         buildMethodBuilder.AddBodyStatements($"return new {testedClassType.Name}({arguments});");
 
-        partialClassFile.AddUsings(FindAllUsings(partialClassFile));
+        partialClassFile.AddUsings(FindAllUsingsNamespaces(partialClassFile));
 
         return fileBuilders;
     }
 
-    private static string[] FindAllUsings(IFileBuilder builder)
+    private static string[] FindAllUsingsNamespaces(IFileBuilder builder)
     {
-        IEnumerable<string> namespaces = TypesFinder.FindAllTypes(builder)
-            .Select(type => type.Namespace)
-            .Distinct();
-
-        return namespaces.Select(type => $"using {type};").ToArray();
+        return TypesFinder.FindAllTypes(builder).Select(type => type.Namespace).Distinct().ToArray();
     }
-    
+
     private static class TypesFinder
     {
         private static IEnumerable<IType> FindAllTypesFromType(IType type)
         {
             if (type is not VoidType)
                 yield return type;
-            if (type is GenericType genericType) 
-                foreach (IType t in genericType.TypedArguments.SelectMany(FindAllTypesFromType)) yield return t;
+            if (type is GenericType genericType)
+                foreach (IType t in genericType.TypedArguments.SelectMany(FindAllTypesFromType))
+                    yield return t;
         }
 
         private static IEnumerable<IType> FindAllFromMember(IMemberBuilder memberBuilder)
         {
-            if (memberBuilder is PropertyBuilder propertyBuilder) 
+            if (memberBuilder is PropertyBuilder propertyBuilder)
                 yield return propertyBuilder.Type;
-            else if (memberBuilder is FieldBuilder fieldBuilder) 
+            else if (memberBuilder is FieldBuilder fieldBuilder)
                 yield return fieldBuilder.Type;
-            else if (memberBuilder is ITypeBuilder typeBuilder) 
-                foreach (IType type in FindAllTypes(typeBuilder)) yield return type;
-            else if (memberBuilder is IMethodLikeBuilder methodLikeBuilder) 
-                foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters) yield return parameterBuilder.Type;
-            if (memberBuilder is MethodBuilder methodBuilder) 
+            else if (memberBuilder is ITypeBuilder typeBuilder)
+                foreach (IType type in FindAllTypes(typeBuilder))
+                    yield return type;
+            else if (memberBuilder is IMethodLikeBuilder methodLikeBuilder)
+                foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters)
+                    yield return parameterBuilder.Type;
+            if (memberBuilder is MethodBuilder methodBuilder)
                 yield return methodBuilder.ReturnType;
         }
 

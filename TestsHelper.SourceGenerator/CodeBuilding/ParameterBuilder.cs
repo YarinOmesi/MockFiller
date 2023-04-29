@@ -1,3 +1,5 @@
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
@@ -11,20 +13,13 @@ public class ParameterBuilder : IParameterBuilder
 
     private ParameterBuilder(){}
 
-    public void Write(IIndentedStringWriter writer)
+    public ParameterSyntax Build()
     {
-        Type.Write(writer);
-        writer.Write(" ");
-        writer.Write(Name);
-
-        if (Initializer != null)
-        {
-            writer.Write(" ");
-            writer.Write("=");
-            writer.Write(Initializer);
-        }
+        return SyntaxFactory.Parameter(SyntaxFactory.Identifier(Name))
+            .WithType(Type.Build())
+            .WithDefault(Initializer == null ? null : SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(Initializer)));
     }
-    
+
     public static ParameterBuilder Create(IType type, string name, string? initializer = null) => 
         new() {Type = type, Name = name, Initializer = initializer};
 }

@@ -1,22 +1,21 @@
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public abstract class MemberBuilder : IMemberBuilder
 {
-    public List<string> Modifiers { get; } = new List<string>();
+    public List<SyntaxKind> SyntaxKindModifiers { get; } = new List<SyntaxKind>();
 
-    public void AddModifiers(params string[] modifiers) => Modifiers.AddRange(modifiers);
+    public void AddModifiers(params SyntaxKind[] modifiers) => SyntaxKindModifiers.AddRange(modifiers);
 
-    protected void WriteModifiers(IIndentedStringWriter writer)
-    {
-        if (Modifiers.Count != 0)
-        {
-            writer.WriteSpaceSeperated(Modifiers.ToArray());
-            writer.Write(" ");
-        }
-    }
+    protected SyntaxTokenList BuildModifiers() => SyntaxFactory.TokenList(SyntaxKindModifiers.Select(SyntaxFactory.Token));
 
-    public abstract void Write(IIndentedStringWriter writer);
+    [Pure]
+    public abstract MemberDeclarationSyntax Build();
 }

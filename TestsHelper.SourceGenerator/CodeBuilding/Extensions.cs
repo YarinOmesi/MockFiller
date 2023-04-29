@@ -1,9 +1,34 @@
+using Microsoft.CodeAnalysis.CSharp;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public static class Extensions
 {
+    public static T Public<T>(this T builder) where T : IMemberBuilder
+    {
+        builder.AddModifiers(SyntaxKind.PublicKeyword);
+        return builder;
+    }
+
+    public static T Private<T>(this T builder) where T : IMemberBuilder
+    {
+        builder.AddModifiers(SyntaxKind.PrivateKeyword);
+        return builder;
+    }
+
+    public static T Readonly<T>(this T builder) where T : IMemberBuilder
+    {
+        builder.AddModifiers(SyntaxKind.ReadOnlyKeyword);
+        return builder;
+    }
+
+    public static T Partial<T>(this T builder) where T : IMemberBuilder
+    {
+        builder.AddModifiers(SyntaxKind.PartialKeyword);
+        return builder;
+    }
+
     public static ITypeBuilder AddClass(this IFileBuilder builder, string? name = null)
     {
         var classBuilder = TypeBuilder.ClassBuilder(builder);

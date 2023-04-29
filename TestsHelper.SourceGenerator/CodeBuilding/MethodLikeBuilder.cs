@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
@@ -14,12 +17,11 @@ public abstract class MethodLikeBuilder : MemberBuilder, IMethodLikeBuilder
     public void AddParameters(params IParameterBuilder[] parameterBuilders) => _parameters.AddRange(parameterBuilders);
     public void AddBodyStatements(params string[] statements) => Body.AddRange(statements);
 
-    protected void WriteParametersAndBody(IIndentedStringWriter writer)
+
+    protected BlockSyntax BuildBody() => SyntaxFactory.Block(Body.Select(s=> SyntaxFactory.ParseStatement(s)));
+
+    protected ParameterListSyntax BuildParameters()
     {
-        writer.Write("(");
-        Writer.CommaSeperated.Write(writer, Parameters);
-        writer.Write(")");
-        writer.WriteLine();
-        Writer.Block.Write(writer, Body);
+        return SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList<ParameterSyntax>(Parameters.Select(builder => builder.Build())));
     }
 }

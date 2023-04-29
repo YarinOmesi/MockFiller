@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using TestsHelper.SourceGenerator.Attributes;
 using TestsHelper.SourceGenerator.CodeBuilding;
@@ -56,25 +57,18 @@ public class MockFillerImplementation
             selectedConstructor.ContainingType.Type()
         );
 
-        return GetFilesResults(fileBuilders);
+        return GetFilesResults(fileBuilders).ToList();
     }
 
     [Pure]
-    private static IReadOnlyList<FileResult> GetFilesResults(IEnumerable<FileBuilder> fileBuilders)
+    private static IEnumerable<FileResult> GetFilesResults(IEnumerable<FileBuilder> fileBuilders)
     {
-        List<FileResult> results = new List<FileResult>();
-
         foreach (FileBuilder fileBuilder in fileBuilders.OrderBy(builder => builder.Name))
         {
-            var stringWriter = new StringWriter();
-            var indentedStringWriter = new IndentedStringWriter(stringWriter, "    ");
+            string code = fileBuilder.Build().NormalizeWhitespace().ToFullString();
 
-            fileBuilder.Write(indentedStringWriter);
-
-            results.Add(new FileResult(fileBuilder.Name, SourceText.From(stringWriter.ToString(), Encoding.UTF8)));
+            yield return new FileResult(fileBuilder.Name, SourceText.From(code, Encoding.UTF8));
         }
-
-        return results;
     }
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)

@@ -1,4 +1,6 @@
 using System.Diagnostics.Contracts;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
@@ -12,11 +14,12 @@ public class ConstructorBuilder : MethodLikeBuilder
         _typeBuilder = typeBuilder;
     }
 
-    public override void Write(IIndentedStringWriter writer)
+    public override MemberDeclarationSyntax Build()
     {
-        WriteModifiers(writer);
-        writer.WriteSpaceSeperated(_typeBuilder.Name);
-        WriteParametersAndBody(writer);
+        return SyntaxFactory.ConstructorDeclaration(SyntaxFactory.Identifier(_typeBuilder.Name))
+            .WithModifiers(BuildModifiers())
+            .WithParameterList(BuildParameters())
+            .WithBody(BuildBody());
     }
 
     public static ConstructorBuilder CreateAndAdd(ITypeBuilder type, params IParameterBuilder[] parameters) =>

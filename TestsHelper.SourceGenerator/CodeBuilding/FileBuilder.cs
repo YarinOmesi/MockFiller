@@ -1,4 +1,8 @@
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
@@ -9,8 +13,8 @@ public class FileBuilder : IFileBuilder
     public List<string> Usings { get; } = new List<string>();
     public IReadOnlyList<ITypeBuilder> Types => _types;
     public string Name { get; set; }
-    
-    private readonly List<ITypeBuilder> _types = new ();
+
+    private readonly List<ITypeBuilder> _types = new();
 
     private FileBuilder(string name)
     {
@@ -21,17 +25,16 @@ public class FileBuilder : IFileBuilder
 
     public void AddTypes(params ITypeBuilder[] typeBuilders) => _types.AddRange(typeBuilders);
 
-    public void Write(IIndentedStringWriter writer)
+    public CompilationUnitSyntax Build()
     {
-        foreach (string @using in Usings)
-        {
-            writer.WriteLine(@using);
-        }
-        writer.WriteLine();
+        var namespaceSyntax = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Namespace))
+            .AddMembers(_types.Select(builder => builder.Build()).ToArray());
 
-        writer.WriteLine($"namespace {Namespace}");
-        
-        Writer.Block.Write(writer, Types);
+        return SyntaxFactory.CompilationUnit()
+            .AddUsings(Usings.Select(SyntaxFactory.IdentifierName).Select(SyntaxFactory.UsingDirective).ToArray())
+            .AddMembers(namespaceSyntax);
     }
-    public static FileBuilder Create(string name) => new (name);
+
+    [Pure]
+    public static FileBuilder Create(string name) => new(name);
 }

@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 
@@ -11,9 +13,6 @@ public sealed class VoidType : IType
     public string Namespace => string.Empty;
 
     public string Name => "void";
-
-    public void Write(IIndentedStringWriter writer)
-    {
-        writer.Write(Name);
-    }
+    
+    public TypeSyntax Build() => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
 }

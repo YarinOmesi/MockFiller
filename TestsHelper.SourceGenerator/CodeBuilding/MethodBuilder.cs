@@ -1,4 +1,6 @@
 using System.Diagnostics.Contracts;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
@@ -9,15 +11,16 @@ internal class MethodBuilder : MethodLikeBuilder
     public string Name { get; set; } = null!;
     public IType ReturnType { get; set; } = null!;
 
-    private MethodBuilder(){}
- 
-    public override void Write(IIndentedStringWriter writer)
+    private MethodBuilder()
     {
-        WriteModifiers(writer);
-        ReturnType.Write(writer);
-        writer.Write(" ");
-        writer.Write(Name);
-        WriteParametersAndBody(writer);
+    }
+    
+    public override MemberDeclarationSyntax Build()
+    {
+        return SyntaxFactory.MethodDeclaration(returnType: ReturnType.Build(), identifier: SyntaxFactory.Identifier(Name))
+            .WithModifiers(BuildModifiers())
+            .WithBody(BuildBody())
+            .WithParameterList(BuildParameters());
     }
 
     [Pure]

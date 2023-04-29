@@ -1,35 +1,35 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.CodeBuilding;
 using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
-namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
+namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyWrapperGenerators;
 
-public class DependencyWrapperGenerator
+public class DependencyWrapperGenerator : IDependencyWrapperGenerator
 {
-    private readonly DependencyMethodWrapperClassGenerator _dependencyMethodWrapperClassGenerator;
+    private readonly IDependencyMethodClassGenerator _dependencyMethodClassGenerator;
 
-    public DependencyWrapperGenerator(DependencyMethodWrapperClassGenerator dependencyMethodWrapperClassGenerator)
+    public DependencyWrapperGenerator(IDependencyMethodClassGenerator dependencyMethodClassGenerator)
     {
-        _dependencyMethodWrapperClassGenerator = dependencyMethodWrapperClassGenerator;
+        _dependencyMethodClassGenerator = dependencyMethodClassGenerator;
     }
 
     public void GenerateCode(ITypeBuilder builder, ITypeSymbol dependencyType)
     {
         builder.Name = $"Wrapper_{dependencyType.Name}";
-        builder.AddModifiers("public");
+        builder.Public();
 
         //TODO: make this not coupled to moq
-        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType.Type()), "Mock", autoGetter:true)
+        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType.Type()), "Mock", autoGetter: true)
             .Add(builder);
-        mockField.AddModifiers("public");
+        mockField.Public();
 
         ConstructorBuilder constructorBuilder = ConstructorBuilder.CreateAndAdd(builder);
-        constructorBuilder.AddModifiers("public");
+        constructorBuilder.Public();
 
         IParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
         IParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.ConverterType, "converter").Add(constructorBuilder);
@@ -50,10 +50,10 @@ public class DependencyWrapperGenerator
 
             // Method_type
             ITypeBuilder methodWrapperClass = builder.AddClass();
-            _dependencyMethodWrapperClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
+            _dependencyMethodClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
 
-            PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter:true).Add(builder);
-            methodProperty.AddModifiers("public");
+            PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter: true).Add(builder)
+                .Public();
 
             constructorBuilder.AddBodyStatements(
                 $"{methodProperty.Name} = new {methodWrapperClass.Name}({mockParameter.Name}, {converterParameter.Name});"
