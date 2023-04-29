@@ -36,9 +36,7 @@ public abstract class BaseDependencyWrapperGenerator
             PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter: true).Add(builder)
                 .Public();
 
-            constructorBuilder.AddBodyStatements(
-                $"{methodProperty.Name} = new {methodWrapperClass.Name}({methodWrapperClassParameters.JoinToString(", ")});"
-            );
+            constructorBuilder.AddBodyStatements(methodProperty.Assign(methodWrapperClass.Type().New(methodWrapperClassParameters)));
         }
     }
 }

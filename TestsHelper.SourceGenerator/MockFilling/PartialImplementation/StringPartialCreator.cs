@@ -69,11 +69,11 @@ public static class StringPartialCreator
                     .Add(partialClassBuilder)
                     .Private();
 
-                buildMethodBuilder.AddBodyStatements(
-                    generationMode == WrapperGenerationMode.MethodsWrap
-                        ? $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}(), converter);"
-                        : $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}());"
-                );
+                List<string> parameters = new() {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).New()};
+                if(generationMode == WrapperGenerationMode.MethodsWrap) parameters.Add("converter");
+                
+                buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(dependencyWrapperType.Type().New(parameters.ToArray())));
+
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
 
                 wrapperFile.AddUsings(FindAllUsingsNamespaces(wrapperFile));
@@ -88,7 +88,7 @@ public static class StringPartialCreator
             .Select(parameter => parameterNameToFieldInitializer[parameter.Name])
             .JoinToString(", ");
 
-        buildMethodBuilder.AddBodyStatements($"return new {testedClassType.Name}({arguments});");
+        buildMethodBuilder.AddBodyStatements($"return {testedClassType.New(arguments)});");
 
         partialClassFile.AddUsings(FindAllUsingsNamespaces(partialClassFile));
 

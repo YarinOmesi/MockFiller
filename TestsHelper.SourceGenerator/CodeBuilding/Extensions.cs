@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
+using TestsHelper.SourceGenerator.MockFilling;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -75,7 +76,7 @@ public static class Extensions
     )
     {
         ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName).Add(builder);
-        builder.AddBodyStatements($"{field.Name} = {parameterName};");
+        builder.AddBodyStatements(field.Assign(parameterName));
         return parameterBuilder;
     }
 }
