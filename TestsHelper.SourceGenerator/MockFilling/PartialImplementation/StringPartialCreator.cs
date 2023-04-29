@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.CodeBuilding;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyWrapperGenerators;
@@ -122,7 +121,7 @@ public static class StringPartialCreator
                 foreach (IType type in FindAllTypes(typeBuilder))
                     yield return type;
             else if (memberBuilder is MethodLikeBuilder methodLikeBuilder)
-                foreach (IParameterBuilder parameterBuilder in methodLikeBuilder.Parameters)
+                foreach (ParameterBuilder parameterBuilder in methodLikeBuilder.Parameters)
                     yield return parameterBuilder.Type;
             if (memberBuilder is MethodBuilder methodBuilder)
                 yield return methodBuilder.ReturnType;

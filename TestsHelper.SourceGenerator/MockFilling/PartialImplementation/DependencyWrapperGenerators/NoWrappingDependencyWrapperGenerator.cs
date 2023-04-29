@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.CodeBuilding;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
@@ -31,7 +30,7 @@ public class NoWrappingDependencyWrapperGenerator : IDependencyWrapperGenerator
         ConstructorBuilder constructorBuilder = ConstructorBuilder.CreateAndAdd(builder);
         constructorBuilder.Public();
 
-        IParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
+        ParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
 
         // Create Method Wrappers
 #pragma warning disable RS1024

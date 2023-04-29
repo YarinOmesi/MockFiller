@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.CodeBuilding;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
@@ -35,8 +34,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
             .InitializeFieldWithParameters((mockField, "mock"), (converterField, "converter"))
             .Public();
 
-        IParameterBuilder[] parameters = method.Parameters
-            .Select(parameter => (IParameterBuilder) ParameterBuilder.Create(
+        ParameterBuilder[] parameters = method.Parameters
+            .Select(parameter => (ParameterBuilder) ParameterBuilder.Create(
                 type: CommonTypes.ValueType.Generic(parameter.Type.Type()),
                 name: parameter.Name,
                 initializer: "default"
@@ -60,7 +59,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         // Verify()
         var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder)
             .Public();
-        IParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null")
+        ParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null")
             .Add(verifyBuilder);
 
         verifyBuilder.AddBodyStatements(

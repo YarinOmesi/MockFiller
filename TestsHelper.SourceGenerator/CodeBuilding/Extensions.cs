@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis.CSharp;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -63,19 +62,19 @@ public static class Extensions
         return builder;
     }
 
-    public static IParameterBuilder Add(this IParameterBuilder builder, MethodLikeBuilder methodLikeBuilder)
+    public static ParameterBuilder Add(this ParameterBuilder builder, MethodLikeBuilder methodLikeBuilder)
     {
         methodLikeBuilder.AddParameters(builder);
         return builder;
     }
 
-    public static IParameterBuilder InitializeFieldWithParameter(
+    public static ParameterBuilder InitializeFieldWithParameter(
         this ConstructorBuilder builder,
         FieldBuilder field,
         string parameterName
     )
     {
-        IParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName).Add(builder);
+        ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName).Add(builder);
         builder.AddBodyStatements($"{field.Name} = {parameterName};");
         return parameterBuilder;
     }

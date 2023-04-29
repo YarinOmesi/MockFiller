@@ -1,11 +1,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
-public class ParameterBuilder : IParameterBuilder
+public class ParameterBuilder
 {
     public string Name { get; set; } = null!;
     public IType Type { get; set; } = null!;

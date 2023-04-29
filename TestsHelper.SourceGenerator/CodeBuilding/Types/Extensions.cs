@@ -1,6 +1,5 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Abstractions;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 
