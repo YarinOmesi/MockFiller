@@ -47,7 +47,10 @@ public static class StringPartialCreator
 
         MethodBuilder buildMethodBuilder = MethodBuilder.Create(testedClassType, "Build").Add(partialClassBuilder)
             .Private();
-        buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.Qualify().MakeString()}.Instance;");
+        if (generationMode == WrapperGenerationMode.MethodsWrap)
+        {
+            buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.Qualify().MakeString()}.Instance;");
+        }
 
         foreach (string parameterName in dependencyBehaviors.Keys)
         {
@@ -66,9 +69,12 @@ public static class StringPartialCreator
                 FieldBuilder dependencyWrapperField = FieldBuilder.Create(dependencyWrapperType.Type(), $"_{parameterName}")
                     .Add(partialClassBuilder)
                     .Private();
-                
+
                 buildMethodBuilder.AddBodyStatements(
-                    $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}(), converter);");
+                    generationMode == WrapperGenerationMode.MethodsWrap
+                        ? $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}(), converter);"
+                        : $"{dependencyWrapperField.Name} = new {dependencyWrapperField.Type.Name}(new {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).MakeString()}());"
+                );
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
 
                 wrapperFile.AddUsings(FindAllUsingsNamespaces(wrapperFile));
