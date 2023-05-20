@@ -142,12 +142,6 @@ public static class StringPartialCreator
     }
 }
 
-public enum WrapperGenerationMode
-{
-    OnlyMockWrap,
-    MethodsWrap,
-}
-
 public interface IDependencyBehavior
 {
 }
