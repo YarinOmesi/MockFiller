@@ -220,7 +220,7 @@ public class MockFillerSourceGeneratorTests
 
     private static (string Filename, SourceText content) CreateSource(string path, string? overrideFileName = null)
     {
-        SourceText sourceText = SourceText.From(File.ReadAllText(path), Encoding.UTF8);
+        SourceText sourceText = SourceText.From(File.ReadAllText(path).ReplaceLineEndings(Environment.NewLine), Encoding.UTF8);
         return (overrideFileName ?? Path.GetFileName(path), sourceText);
     }
 

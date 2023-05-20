@@ -63,7 +63,7 @@ public class MockFillerImplementation
     {
         foreach (FileBuilder fileBuilder in fileBuilders.OrderBy(builder => builder.Name))
         {
-            string code = fileBuilder.Build().NormalizeWhitespace().ToFullString();
+            string code = fileBuilder.Build().NormalizeWhitespace(eol:Environment.NewLine).ToFullString();
 
             yield return new FileResult(fileBuilder.Name, SourceText.From(code, Encoding.UTF8));
         }
