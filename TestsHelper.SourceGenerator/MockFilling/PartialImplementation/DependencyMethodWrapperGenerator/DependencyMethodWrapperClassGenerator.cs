@@ -21,8 +21,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         FieldBuilder expressionField = FieldBuilder.Create(
             CommonTypes.LinqExpression.Generic(moqCallbackType),
             "_expression",
-            CreateMoqExpressionLambda(builder.Name, method)
-        ).Add(builder).Public().Readonly();
+            CreateMoqExpressionLambda("p", method)
+        ).Add(builder).Private().Readonly();
 
         FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
         mockField.Private().Readonly();

@@ -41,6 +41,8 @@ public static class StringPartialCreator
         TypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
             .Public().Partial();
 
+        partialClassFile.AddUsingFor(Moq.Mock);
+        
         Dictionary<string, string> parameterNameToFieldInitializer = new Dictionary<string, string>();
 
 
@@ -48,7 +50,8 @@ public static class StringPartialCreator
             .Private();
         if (generationMode == WrapperGenerationMode.MethodsWrap)
         {
-            buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.Qualify().MakeString()}.Instance;");
+            partialClassFile.AddUsingFor(CommonTypes.MoqValueConverter);
+            buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.MakeString()}.Instance;");
         }
 
         foreach (string parameterName in dependencyBehaviors.Keys)
@@ -57,7 +60,7 @@ public static class StringPartialCreator
 
             if (behavior is MockDependencyBehavior mockDependencyBehavior)
             {
-                var wrapperFile = FileBuilder.Create($"Wrapper.{mockDependencyBehavior.WrapperClassName}.generated.cs");
+                var wrapperFile = FileBuilder.Create($"Wrapper.{mockDependencyBehavior.Type.Name}.generated.cs");
                 fileBuilders.Add(wrapperFile);
 
                 wrapperFile.Namespace = "TestsHelper.SourceGenerator.MockWrapping";
@@ -69,7 +72,7 @@ public static class StringPartialCreator
                     .Add(partialClassBuilder)
                     .Private();
 
-                List<string> parameters = new() {Moq.Mock.Qualify().Generic(mockDependencyBehavior.Type.Type()).New()};
+                List<string> parameters = new() {Moq.Mock.Generic(mockDependencyBehavior.Type.Type()).New()};
                 if(generationMode == WrapperGenerationMode.MethodsWrap) parameters.Add("converter");
                 
                 buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(dependencyWrapperType.Type().New(parameters.ToArray())));
@@ -151,7 +154,4 @@ public interface IDependencyBehavior
 
 public record PredefinedValueDependencyBehavior(string VariableName) : IDependencyBehavior;
 
-public record MockDependencyBehavior(ITypeSymbol Type) : IDependencyBehavior
-{
-    public readonly string WrapperClassName = $"Wrapper_{Type.Name}";
-}
+public record MockDependencyBehavior(ITypeSymbol Type) : IDependencyBehavior;

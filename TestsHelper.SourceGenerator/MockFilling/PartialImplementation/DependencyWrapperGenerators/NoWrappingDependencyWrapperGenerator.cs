@@ -27,12 +27,8 @@ public class NoWrappingDependencyWrapperGenerator : BaseDependencyWrapperGenerat
             .Add(builder);
         mockField.Public();
 
-        ConstructorBuilder constructorBuilder = ConstructorBuilder.CreateAndAdd(builder);
-        constructorBuilder.Public();
-
-        ParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
-
-        // Create Method Wrappers
-        CreateMethodWrappers(builder, dependencyType, constructorBuilder, new[] {mockParameter.Name});
+        ConstructorBuilder.CreateAndAdd(builder)
+            .InitializeFieldWithParameters((mockField, "mock"))
+            .Public();
     }
 }

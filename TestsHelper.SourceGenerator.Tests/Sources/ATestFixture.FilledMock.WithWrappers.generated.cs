@@ -1,6 +1,7 @@
-﻿using TestsHelper.SourceGenerator.MockWrapping;
-using Moq;
+﻿using Moq;
 using TestsHelper.SourceGenerator.MockWrapping.Converters;
+using MyNamespace;
+using TestsHelper.SourceGenerator.MockWrapping;
 
 namespace MyNamespace
 {
