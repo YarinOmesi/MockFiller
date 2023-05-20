@@ -88,7 +88,7 @@ public static class StringPartialCreator
             .Select(parameter => parameterNameToFieldInitializer[parameter.Name])
             .JoinToString(", ");
 
-        buildMethodBuilder.AddBodyStatements($"return {testedClassType.New(arguments)});");
+        buildMethodBuilder.AddBodyStatements($"return {testedClassType.New(arguments)};");
 
         partialClassFile.AddUsings(FindAllUsingsNamespaces(partialClassFile));
 
