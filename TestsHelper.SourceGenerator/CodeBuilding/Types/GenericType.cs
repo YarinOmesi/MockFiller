@@ -20,9 +20,6 @@ public record GenericType(NamespacedType Type, IReadOnlyList<IType> TypedArgumen
         return typeSyntax switch {
             IdentifierNameSyntax identifierNameSyntax => SyntaxFactory.GenericName(identifierNameSyntax.Identifier)
                 .AddTypeArgumentListArguments(typeArguments),
-            QualifiedNameSyntax qualifiedNameSyntax => qualifiedNameSyntax.WithRight(
-                SyntaxFactory.GenericName(qualifiedNameSyntax.Right.Identifier).AddTypeArgumentListArguments(typeArguments)
-            ),
             _ => SyntaxFactory.GenericName(Name).AddTypeArgumentListArguments(typeArguments)
         };
     }

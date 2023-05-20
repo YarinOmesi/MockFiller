@@ -11,7 +11,6 @@ public static class Extensions
 
     public static string MakeString(this IType type) => type.Build().NormalizeWhitespace().ToFullString();
     public static NamespacedType Type(this string @namespace, string name) => new(@namespace, name);
-    public static QualifiedNamespacedType Qualify(this IType type) => new(type.Namespace, type.Name);
     public static GenericType Generic(this NamespacedType type, params IType[] typeArguments) => new(type, typeArguments);
     public static NullableType Nullable(this IType type) => new(type);
     public static IType Type(this TypeBuilder typeBuilder) => new TypeBuilderType(typeBuilder);
