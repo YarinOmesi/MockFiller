@@ -12,9 +12,9 @@ namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
 public static class StringPartialCreator
 {
-    private static readonly Dictionary<WrapperGenerationMode, BaseDependencyWrapperGenerator> DependencyWrapperGenerators = new() {
+    private static readonly Dictionary<WrapperGenerationMode, IDependencyWrapperGenerator> DependencyWrapperGenerators = new() {
         [WrapperGenerationMode.MethodsWrap] = new DependencyWrapperGenerator(new DependencyMethodWrapperClassGenerator()),
-        [WrapperGenerationMode.OnlyMockWrap] = new NoWrappingDependencyWrapperGenerator(new NoWrappingDependencyMethodGenerator())
+        [WrapperGenerationMode.OnlyMockWrap] = new NoWrappingDependencyWrapperGenerator()
     };
 
     public static List<FileBuilder> Create(
@@ -25,7 +25,7 @@ public static class StringPartialCreator
         IType testedClassType
     )
     {
-        BaseDependencyWrapperGenerator dependencyWrapperGenerator = DependencyWrapperGenerators[generationMode];
+        IDependencyWrapperGenerator dependencyWrapperGenerator = DependencyWrapperGenerators[generationMode];
 
         List<FileBuilder> fileBuilders = new();
 
