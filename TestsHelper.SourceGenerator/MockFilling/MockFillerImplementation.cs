@@ -31,20 +31,20 @@ public class MockFillerImplementation
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
 
-        Dictionary<string, IDependencyBehavior> dependencyBehaviors = new();
+        Dictionary<string, IDependencyInitializationBehavior> dependencyBehaviors = new();
 
         // Default Values
         dependencyBehaviors.AddKeysIfNotExists(
             FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor),
             pair => pair.Key,
-            pair => new PredefinedValueDependencyBehavior(pair.Value.Name)
+            pair => new PredefinedValueDependencyInitialization(pair.Value.Name)
         );
 
         // Add Mocks For Parameters With No Default Value
         dependencyBehaviors.AddKeysIfNotExists(
             selectedConstructor.Parameters,
             symbol => symbol.Name,
-            symbol => new MockDependencyBehavior(symbol.Type)
+            symbol => new MockDependencyInitialization(symbol.Type)
         );
 
         List<FileBuilder> fileBuilders = StringPartialCreator.Create(

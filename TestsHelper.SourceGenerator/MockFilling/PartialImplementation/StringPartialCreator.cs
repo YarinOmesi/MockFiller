@@ -18,7 +18,7 @@ public static class StringPartialCreator
     };
 
     public static List<FileBuilder> Create(
-        Dictionary<string, IDependencyBehavior> dependencyBehaviors,
+        Dictionary<string, IDependencyInitializationBehavior> dependencyBehaviors,
         ClassDeclarationSyntax containingClassSyntax,
         WrapperGenerationMode generationMode,
         IMethodSymbol selectedTestedClassConstructor,
@@ -56,9 +56,9 @@ public static class StringPartialCreator
 
         foreach (string parameterName in dependencyBehaviors.Keys)
         {
-            IDependencyBehavior behavior = dependencyBehaviors[parameterName];
+            IDependencyInitializationBehavior initializationBehavior = dependencyBehaviors[parameterName];
 
-            if (behavior is MockDependencyBehavior mockDependencyBehavior)
+            if (initializationBehavior is MockDependencyInitialization mockDependencyBehavior)
             {
                 var wrapperFile = FileBuilder.Create($"Wrapper.{mockDependencyBehavior.Type.Name}.generated.cs");
                 fileBuilders.Add(wrapperFile);
@@ -77,11 +77,12 @@ public static class StringPartialCreator
                 
                 buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(dependencyWrapperType.Type().New(parameters.ToArray())));
 
+                // TODO: remove coupling from moq
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
 
                 wrapperFile.AddUsings(FindAllUsingsNamespaces(wrapperFile));
             }
-            else if (behavior is PredefinedValueDependencyBehavior valueDependencyBehavior)
+            else if (initializationBehavior is PredefinedValueDependencyInitialization valueDependencyBehavior)
             {
                 parameterNameToFieldInitializer[parameterName] = valueDependencyBehavior.VariableName;
             }
@@ -105,47 +106,31 @@ public static class StringPartialCreator
 
     private static class TypesFinder
     {
-        private static IEnumerable<IType> FindAllTypesFromType(IType type)
+        private static IReadOnlyList<IType> FindAllTypesFromType(IType type)
         {
-            if (type is not VoidType)
-                yield return type;
-            if (type is GenericType genericType)
-                foreach (IType t in genericType.TypedArguments.SelectMany(FindAllTypesFromType))
-                    yield return t;
+            List<IType> types = new List<IType>();
+            if (type is not VoidType) types.Add(type);
+            if (type is GenericType genericType) types.AddRange(genericType.TypedArguments.SelectMany(FindAllTypesFromType));
+            return types;
         }
 
         private static IEnumerable<IType> FindAllFromMember(MemberBuilder memberBuilder)
         {
-            if (memberBuilder is PropertyBuilder propertyBuilder)
-                yield return propertyBuilder.Type;
-            else if (memberBuilder is FieldBuilder fieldBuilder)
-                yield return fieldBuilder.Type;
-            else if (memberBuilder is TypeBuilder typeBuilder)
-                foreach (IType type in FindAllTypes(typeBuilder))
-                    yield return type;
-            else if (memberBuilder is MethodLikeBuilder methodLikeBuilder)
-                foreach (ParameterBuilder parameterBuilder in methodLikeBuilder.Parameters)
-                    yield return parameterBuilder.Type;
-            if (memberBuilder is MethodBuilder methodBuilder)
-                yield return methodBuilder.ReturnType;
+            List<IType> types = new List<IType>();
+            if (memberBuilder is PropertyBuilder propertyBuilder) types.Add(propertyBuilder.Type);
+            else if (memberBuilder is FieldBuilder fieldBuilder) types.Add(fieldBuilder.Type);
+            else if (memberBuilder is TypeBuilder typeBuilder) types.AddRange(FindAllTypes(typeBuilder));
+            else if (memberBuilder is MethodLikeBuilder methodLikeBuilder) 
+                types.AddRange(methodLikeBuilder.Parameters.Select(builder => builder.Type));
+            if (memberBuilder is MethodBuilder methodBuilder) types.Add(methodBuilder.ReturnType);
+            return types;
         }
 
         public static IEnumerable<IType> FindAllTypes(TypeBuilder typeBuilder)
         {
-            return typeBuilder.Members
-                .SelectMany(FindAllFromMember)
-                .SelectMany(FindAllTypesFromType)
-                .ToList();
+            return typeBuilder.Members.SelectMany(FindAllFromMember).SelectMany(FindAllTypesFromType).ToList();
         }
 
         public static IEnumerable<IType> FindAllTypes(FileBuilder builder) => builder.Types.SelectMany(FindAllTypes).ToList();
     }
 }
-
-public interface IDependencyBehavior
-{
-}
-
-public record PredefinedValueDependencyBehavior(string VariableName) : IDependencyBehavior;
-
-public record MockDependencyBehavior(ITypeSymbol Type) : IDependencyBehavior;
