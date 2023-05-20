@@ -15,8 +15,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         builder.Public();
 
         IType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
-            ? "System".Type("Action").Generic(dependencyTypeName)
-            : "System".Type("Func").Generic(dependencyTypeName, method.ReturnType.Type());
+            ? CommonTypes.SystemAction.Generic(dependencyTypeName)
+            : CommonTypes.SystemFunc.Generic(dependencyTypeName, method.ReturnType.Type());
 
         FieldBuilder expressionField = FieldBuilder.Create(
             CommonTypes.LinqExpression.Generic(moqCallbackType),
