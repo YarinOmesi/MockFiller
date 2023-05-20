@@ -5,27 +5,14 @@ namespace TestsHelper.SourceGenerator.CodeBuilding;
 
 public static class Extensions
 {
-    public static T Public<T>(this T builder) where T : MemberBuilder
-    {
-        builder.AddModifiers(SyntaxKind.PublicKeyword);
-        return builder;
-    }
+    public static T Partial<T>(this T builder) where T : MemberBuilder => builder.AddModifiers<T>(SyntaxKind.PartialKeyword);
+    public static T Readonly<T>(this T builder) where T : MemberBuilder => builder.AddModifiers<T>(SyntaxKind.ReadOnlyKeyword);
+    public static T Private<T>(this T builder) where T : MemberBuilder => builder.AddModifiers<T>(SyntaxKind.PrivateKeyword);
+    public static T Public<T>(this T builder) where T : MemberBuilder => builder.AddModifiers<T>(SyntaxKind.PublicKeyword);
 
-    public static T Private<T>(this T builder) where T : MemberBuilder
+    public static T AddModifiers<T>(this T builder, params SyntaxKind[] modifiers) where T : MemberBuilder
     {
-        builder.AddModifiers(SyntaxKind.PrivateKeyword);
-        return builder;
-    }
-
-    public static T Readonly<T>(this T builder) where T : MemberBuilder
-    {
-        builder.AddModifiers(SyntaxKind.ReadOnlyKeyword);
-        return builder;
-    }
-
-    public static T Partial<T>(this T builder) where T : MemberBuilder
-    {
-        builder.AddModifiers(SyntaxKind.PartialKeyword);
+        builder.AddModifiers(modifiers);
         return builder;
     }
 
