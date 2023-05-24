@@ -45,7 +45,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         string patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
 
         // Setup()
-        var setupReturnType = moqCallbackType with {Type = Moq.ISetup};
+        var setupReturnType = new GenericType(Moq.ISetup, moqCallbackType.TypedArguments);
 
         var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder)
             .Public();
