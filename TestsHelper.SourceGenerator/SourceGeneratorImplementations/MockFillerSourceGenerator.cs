@@ -5,8 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.Diagnostics;
-using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
-using TestsHelper.SourceGenerator.Diagnostics.Reporters;
 using TestsHelper.SourceGenerator.MockFilling;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 
@@ -18,49 +16,30 @@ public class MockFillerSourceGenerator : ISourceGenerator
     private static readonly MockFillerImplementation MockFillerImplementation = new();
     private static readonly ClassToFillMockInFactory ClassToFillMockInFactory = new();
 
-
     public void Initialize(GeneratorInitializationContext context)
     {
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var reporter = new DiagnosticReporter(context);
-        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
+        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(new ActionDiagnosticReporter(context.ReportDiagnostic));
 
-        IEnumerable<ClassToFillMockIn> classesToFillMockIn;
-        try
+        List<ClassToFillMockIn> classesToFillMockIn = new List<ClassToFillMockIn>();
+
+        ReportCatcher.RunCode(() =>
         {
-            classesToFillMockIn = GetClassesToFillMockIn(context);
-        }
-        catch (DiagnosticException e)
-        {
-            reporter.Report(e.Diagnostic);
-            return;
-        }
-        catch (MultipleDiagnosticsException e)
-        {
-            reporter.ReportMultiple(e.Diagnostics);
-            return;
-        }
+            classesToFillMockIn = GetClassesToFillMockIn(context).ToList();
+        });
 
         foreach (ClassToFillMockIn classToFillMockIn in classesToFillMockIn)
         {
-            try
+            ReportCatcher.RunCode(() =>
             {
                 foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
                 {
-                    context.AddSource(result.FileName, result.SourceCode);    
+                    context.AddSource(result.FileName, result.SourceCode);
                 }
-            }
-            catch (DiagnosticException e)
-            {
-                reporter.Report(e.Diagnostic);
-            }
-            catch (MultipleDiagnosticsException e)
-            {
-                reporter.ReportMultiple(e.Diagnostics);
-            }
+            });
         }
     }
 
@@ -94,17 +73,5 @@ public class MockFillerSourceGenerator : ISourceGenerator
         return syntaxNodes
             .Where(node => node.IsKind(SyntaxKind.ClassDeclaration))
             .OfType<ClassDeclarationSyntax>();
-    }
-
-    private class DiagnosticReporter : IDiagnosticReporter
-    {
-        private readonly GeneratorExecutionContext _context;
-
-        public DiagnosticReporter(GeneratorExecutionContext context)
-        {
-            _context = context;
-        }
-
-        public void Report(Diagnostic diagnostic) => _context.ReportDiagnostic(diagnostic);
     }
 }

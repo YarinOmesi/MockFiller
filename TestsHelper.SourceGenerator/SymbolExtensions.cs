@@ -17,6 +17,6 @@ public static class SymbolExtensions
         }
 
         namespaces.Reverse();
-        return string.Join(".", namespaces);
+        return namespaces.JoinToString(".");
     }
 }

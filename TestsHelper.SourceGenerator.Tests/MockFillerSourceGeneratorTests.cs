@@ -71,8 +71,8 @@ public class MockFillerSourceGeneratorTests
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs"),
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs")
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs"),
+                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs")
                 }
             }
         };
@@ -99,12 +99,13 @@ public class MockFillerSourceGeneratorTests
                 },
                 GeneratedSources = {
                     CreateExpectedSource<MockFillerSourceGenerator>(
+                        path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
+                        overrideFileName: "ATestFixture.FilledMock.generated.cs"
+                    ),
+                    CreateExpectedSource<MockFillerSourceGenerator>(
                         path: "Sources/Wrapper.IDependency.WithWrappers.generated.cs",
                         overrideFileName: "Wrapper.IDependency.generated.cs"
                     ),
-                    CreateExpectedSource<MockFillerSourceGenerator>(
-                        path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
-                        overrideFileName: "ATestFixture.FilledMock.generated.cs")
                 }
             }
         };
@@ -219,7 +220,7 @@ public class MockFillerSourceGeneratorTests
 
     private static (string Filename, SourceText content) CreateSource(string path, string? overrideFileName = null)
     {
-        SourceText sourceText = SourceText.From(File.ReadAllText(path), Encoding.UTF8);
+        SourceText sourceText = SourceText.From(File.ReadAllText(path).ReplaceLineEndings(Environment.NewLine), Encoding.UTF8);
         return (overrideFileName ?? Path.GetFileName(path), sourceText);
     }
 

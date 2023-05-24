@@ -1,12 +1,10 @@
-﻿using TestsHelper.SourceGenerator.MockWrapping;
-using Moq;
-using Moq.Language.Flow;
+﻿using Moq;
+using MyNamespace;
+using TestsHelper.SourceGenerator.MockWrapping;
+using TestsHelper.SourceGenerator.MockWrapping.Converters;
 using System.Linq.Expressions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using TestsHelper.SourceGenerator.MockWrapping.Converters;
-using MyNamespace;
+using Moq.Language.Flow;
 
 namespace TestsHelper.SourceGenerator.MockWrapping
 {
@@ -18,16 +16,16 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
         public Method_Add Add { get; }
 
-        public Wrapper_IDependency(Mock<IDependency> dependencyMock, IValueConverter converter)
+        public Wrapper_IDependency(Mock<IDependency> mock, IValueConverter converter)
         {
-            Mock = dependencyMock;
-            MakeString = new Method_MakeString(dependencyMock, converter);
-            Add = new Method_Add(dependencyMock, converter);
+            Mock = mock;
+            MakeString = new Method_MakeString(mock, converter);
+            Add = new Method_Add(mock, converter);
         }
 
         public class Method_MakeString
         {
-            private readonly Expression<Func<IDependency, String>> _expression = _expression => _expression.MakeString(Cyber.Fill<Int32>());
+            private readonly Expression<Func<IDependency, String>> _expression = p => p.MakeString(Cyber.Fill<Int32>());
             private readonly Mock<IDependency> _mock;
             private readonly IValueConverter _converter;
             public Method_MakeString(Mock<IDependency> mock, IValueConverter converter)
@@ -51,7 +49,7 @@ namespace TestsHelper.SourceGenerator.MockWrapping
 
         public class Method_Add
         {
-            private readonly Expression<Action<IDependency>> _expression = _expression => _expression.Add(Cyber.Fill<String>());
+            private readonly Expression<Action<IDependency>> _expression = p => p.Add(Cyber.Fill<String>());
             private readonly Mock<IDependency> _mock;
             private readonly IValueConverter _converter;
             public Method_Add(Mock<IDependency> mock, IValueConverter converter)

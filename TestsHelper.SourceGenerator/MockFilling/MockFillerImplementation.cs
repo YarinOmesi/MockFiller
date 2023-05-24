@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using TestsHelper.SourceGenerator.Attributes;
+using TestsHelper.SourceGenerator.CodeBuilding;
+using TestsHelper.SourceGenerator.CodeBuilding.Types;
 using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
 using TestsHelper.SourceGenerator.MockFilling.Models;
@@ -15,8 +20,6 @@ public class MockFillerImplementation
 {
     public IReadOnlyList<FileResult> Generate(ClassToFillMockIn classToFillMockIn)
     {
-        IMockedFilledPartialClassCreator partialImplementation = new SyntaxTreeMockedFilledPartialClassCreator();
-
         ImmutableList<IMethodSymbol> constructors = classToFillMockIn.TestedClassMember
             .GetMembers()
             .Where(symbol => symbol.Kind == SymbolKind.Method)
@@ -24,33 +27,46 @@ public class MockFillerImplementation
             .Where(methodSymbol => methodSymbol.MethodKind == MethodKind.Constructor)
             .ToImmutableList();
 
-        partialImplementation.SetGenerateMockWrapper(classToFillMockIn.GenerateMockWrappers);
 
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
-        partialImplementation.SetClassInfo(classToFillMockIn.DeclarationSyntax, selectedConstructor);
 
-        ImmutableDictionary<string, IFieldSymbol> defaultValueFields =
-            FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor);
+        Dictionary<string, IDependencyInitializationBehavior> dependencyBehaviors = new();
 
-
-        foreach (KeyValuePair<string, IFieldSymbol> defaultValueField in defaultValueFields)
-        {
-            string parameterName = defaultValueField.Key;
-            IFieldSymbol field = defaultValueField.Value;
-            partialImplementation.AddValueForParameter(field.Name, parameterName);
-        }
+        // Default Values
+        dependencyBehaviors.AddKeysIfNotExists(
+            FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor),
+            pair => pair.Key,
+            pair => new PredefinedValueDependencyInitialization(pair.Value.Name)
+        );
 
         // Add Mocks For Parameters With No Default Value
-        foreach (IParameterSymbol parameterSymbol in selectedConstructor.Parameters)
-        {
-            if (!defaultValueFields.ContainsKey(parameterSymbol.Name))
-            {
-                partialImplementation.AddMockForType(parameterSymbol.Type, parameterSymbol.Name);
-            }
-        }
+        dependencyBehaviors.AddKeysIfNotExists(
+            selectedConstructor.Parameters,
+            symbol => symbol.Name,
+            symbol => new MockDependencyInitialization(symbol.Type)
+        );
 
-        return partialImplementation.Build();
+        List<FileBuilder> fileBuilders = PartialClassCreator.Create(
+            dependencyBehaviors,
+            classToFillMockIn.DeclarationSyntax,
+            classToFillMockIn.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
+            selectedConstructor,
+            selectedConstructor.ContainingType.Type()
+        );
+
+        return GetFilesResults(fileBuilders).ToList();
+    }
+
+    [Pure]
+    private static IEnumerable<FileResult> GetFilesResults(IEnumerable<FileBuilder> fileBuilders)
+    {
+        foreach (FileBuilder fileBuilder in fileBuilders.OrderBy(builder => builder.Name))
+        {
+            string code = fileBuilder.Build().NormalizeWhitespace(eol:Environment.NewLine).ToFullString();
+
+            yield return new FileResult(fileBuilder.Name, SourceText.From(code, Encoding.UTF8));
+        }
     }
 
     private static ImmutableDictionary<string, IFieldSymbol> FindDefaultValueFields(INamedTypeSymbol declaration, IMethodSymbol constructor)

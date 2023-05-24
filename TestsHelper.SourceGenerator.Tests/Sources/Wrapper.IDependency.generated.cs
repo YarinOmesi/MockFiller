@@ -1,10 +1,4 @@
-﻿using TestsHelper.SourceGenerator.MockWrapping;
-using Moq;
-using Moq.Language.Flow;
-using System.Linq.Expressions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Moq;
 using MyNamespace;
 
 namespace TestsHelper.SourceGenerator.MockWrapping
@@ -13,9 +7,9 @@ namespace TestsHelper.SourceGenerator.MockWrapping
     {
         public Mock<IDependency> Mock { get; }
 
-        public Wrapper_IDependency(Mock<IDependency> dependencyMock)
+        public Wrapper_IDependency(Mock<IDependency> mock)
         {
-            Mock = dependencyMock;
+            Mock = mock;
         }
     }
 }
