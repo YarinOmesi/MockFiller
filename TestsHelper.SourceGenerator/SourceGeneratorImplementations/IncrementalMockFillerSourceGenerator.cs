@@ -15,7 +15,7 @@ namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
-    private static readonly ClassToFillMockInFactory ClassToFillMockInFactory = new();
+    private static readonly TestClassMockCandidateFactory TestClassMockCandidateFactory = new();
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -38,7 +38,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
         try
         {
-            if (ClassToFillMockInFactory.TryCreate(declarationSyntax, context.SemanticModel, out ClassToFillMockIn classToFillMockIn))
+            if (TestClassMockCandidateFactory.TryCreate(declarationSyntax, context.SemanticModel, out TestClassMockCandidate classToFillMockIn))
             {
                 return new ResultClass(reporter.Diagnostics, classToFillMockIn);
             }
@@ -81,5 +81,5 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, ClassToFillMockIn? ClassToFillMockIn = null);
+    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, TestClassMockCandidate? ClassToFillMockIn = null);
 }

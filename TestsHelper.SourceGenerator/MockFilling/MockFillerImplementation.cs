@@ -18,9 +18,9 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class MockFillerImplementation
 {
-    public IReadOnlyList<FileResult> Generate(ClassToFillMockIn classToFillMockIn)
+    public IReadOnlyList<FileResult> Generate(TestClassMockCandidate testClassMockCandidate)
     {
-        ImmutableList<IMethodSymbol> constructors = classToFillMockIn.TestedClassMember
+        ImmutableList<IMethodSymbol> constructors = testClassMockCandidate.TestedClassMember
             .GetMembers()
             .Where(symbol => symbol.Kind == SymbolKind.Method)
             .OfType<IMethodSymbol>()
@@ -35,7 +35,7 @@ public class MockFillerImplementation
 
         // Default Values
         dependencyBehaviors.AddKeysIfNotExists(
-            FindDefaultValueFields(classToFillMockIn.DeclarationSymbol, selectedConstructor),
+            FindDefaultValueFields(testClassMockCandidate.ContainingClassSymbol, selectedConstructor),
             pair => pair.Key,
             pair => new PredefinedValueDependencyInitialization(pair.Value.Name)
         );
@@ -49,8 +49,8 @@ public class MockFillerImplementation
 
         List<FileBuilder> fileBuilders = PartialClassCreator.Create(
             dependencyBehaviors,
-            classToFillMockIn.ContainingClassSyntax,
-            classToFillMockIn.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
+            testClassMockCandidate.ContainingClassSyntax,
+            testClassMockCandidate.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
             selectedConstructor,
             selectedConstructor.ContainingType.Type()
         );

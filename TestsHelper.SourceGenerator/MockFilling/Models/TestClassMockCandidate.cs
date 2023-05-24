@@ -3,9 +3,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestsHelper.SourceGenerator.MockFilling.Models;
 
-public readonly record struct ClassToFillMockIn(
+public readonly record struct TestClassMockCandidate(
     ClassDeclarationSyntax ContainingClassSyntax,
-    INamedTypeSymbol DeclarationSymbol,
+    INamedTypeSymbol ContainingClassSymbol,
     ITypeSymbol TestedClassMember,
     bool GenerateMockWrappers
 );

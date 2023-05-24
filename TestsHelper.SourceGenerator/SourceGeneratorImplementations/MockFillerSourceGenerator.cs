@@ -14,7 +14,7 @@ namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 public class MockFillerSourceGenerator : ISourceGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
-    private static readonly ClassToFillMockInFactory ClassToFillMockInFactory = new();
+    private static readonly TestClassMockCandidateFactory TestClassMockCandidateFactory = new();
 
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -24,14 +24,14 @@ public class MockFillerSourceGenerator : ISourceGenerator
     {
         using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(new ActionDiagnosticReporter(context.ReportDiagnostic));
 
-        List<ClassToFillMockIn> classesToFillMockIn = new List<ClassToFillMockIn>();
+        List<TestClassMockCandidate> classesToFillMockIn = new List<TestClassMockCandidate>();
 
         ReportCatcher.RunCode(() =>
         {
             classesToFillMockIn = GetClassesToFillMockIn(context).ToList();
         });
 
-        foreach (ClassToFillMockIn classToFillMockIn in classesToFillMockIn)
+        foreach (TestClassMockCandidate classToFillMockIn in classesToFillMockIn)
         {
             ReportCatcher.RunCode(() =>
             {
@@ -43,9 +43,9 @@ public class MockFillerSourceGenerator : ISourceGenerator
         }
     }
 
-    private static IEnumerable<ClassToFillMockIn> GetClassesToFillMockIn(GeneratorExecutionContext context)
+    private static IEnumerable<TestClassMockCandidate> GetClassesToFillMockIn(GeneratorExecutionContext context)
     {
-        var classesToFillMockIn = new List<ClassToFillMockIn>();
+        var classesToFillMockIn = new List<TestClassMockCandidate>();
 
         IEnumerable<SyntaxNode> allNodes = GetAllDescendantNodes(context);
         IEnumerable<ClassDeclarationSyntax> classDeclarations = GetAllClassDeclarations(allNodes);
@@ -54,7 +54,7 @@ public class MockFillerSourceGenerator : ISourceGenerator
         {
             SemanticModel model = context.Compilation.GetSemanticModel(containingClassSyntax.SyntaxTree);
 
-            if (ClassToFillMockInFactory.TryCreate(containingClassSyntax, model, out ClassToFillMockIn classToFillMockIn))
+            if (TestClassMockCandidateFactory.TryCreate(containingClassSyntax, model, out TestClassMockCandidate classToFillMockIn))
             {
                 classesToFillMockIn.Add(classToFillMockIn);
             }

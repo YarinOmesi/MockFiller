@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,11 +9,11 @@ using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.MockFilling;
 
-public class ClassToFillMockInFactory
+public class TestClassMockCandidateFactory
 {
     private const string MockWrappersAttributeFullName = "TestsHelper.SourceGenerator.MockWrapping.FillMocksWithWrappersAttribute";
 
-    public bool TryCreate(ClassDeclarationSyntax containingClassSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
+    public bool TryCreate(ClassDeclarationSyntax containingClassSyntax, SemanticModel model, out TestClassMockCandidate testClassMockCandidate)
     {
         string[] attributes = {MockWrappersAttributeFullName, typeof(FillMocksAttribute).FullName};
 
@@ -24,7 +23,7 @@ public class ClassToFillMockInFactory
         switch (membersToAttributes.Count)
         {
             case 0:
-                classToFillMockIn = default;
+                testClassMockCandidate = default;
                 return false;
             case > 1:
                 throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, containingClassSyntax.Identifier.GetLocation());
@@ -50,7 +49,7 @@ public class ClassToFillMockInFactory
         INamedTypeSymbol declarationSymbol = model.GetDeclaredSymbol(containingClassSyntax)!;
         // TODO: diagnostic if there are null
 
-        classToFillMockIn = new ClassToFillMockIn(containingClassSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
+        testClassMockCandidate = new TestClassMockCandidate(containingClassSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
         return true;
     }
 
