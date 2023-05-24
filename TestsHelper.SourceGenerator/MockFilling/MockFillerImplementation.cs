@@ -47,7 +47,7 @@ public class MockFillerImplementation
             symbol => new MockDependencyInitialization(symbol.Type)
         );
 
-        List<FileBuilder> fileBuilders = StringPartialCreator.Create(
+        List<FileBuilder> fileBuilders = PartialClassCreator.Create(
             dependencyBehaviors,
             classToFillMockIn.DeclarationSyntax,
             classToFillMockIn.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,

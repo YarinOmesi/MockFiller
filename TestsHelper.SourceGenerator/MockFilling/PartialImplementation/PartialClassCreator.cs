@@ -10,7 +10,7 @@ using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation;
 
-public static class StringPartialCreator
+public static class PartialClassCreator
 {
     private static readonly Dictionary<WrapperGenerationMode, IDependencyWrapperGenerator> DependencyWrapperGenerators = new() {
         [WrapperGenerationMode.MethodsWrap] = new DependencyWrapperGenerator(new DependencyMethodWrapperClassGenerator()),
