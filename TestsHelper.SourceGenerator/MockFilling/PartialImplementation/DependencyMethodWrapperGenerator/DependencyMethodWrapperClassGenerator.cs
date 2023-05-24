@@ -7,9 +7,9 @@ using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 
-public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGenerator
+public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperClassGenerator
 {
-    public void CreateMethodWrapperClass(TypeBuilder builder, IType dependencyTypeName, IMethodSymbol method)
+    public void Generate(TypeBuilder builder, IType dependencyTypeName, IMethodSymbol method)
     {
         builder.Name = $"Method_{method.Name}";
         builder.Public();

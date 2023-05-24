@@ -10,11 +10,11 @@ namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Dependen
 
 public class DependencyWrapperGenerator : IDependencyWrapperGenerator
 {
-    private readonly IDependencyMethodClassGenerator _dependencyMethodClassGenerator;
+    private readonly IDependencyMethodWrapperClassGenerator _dependencyMethodWrapperClassGenerator;
 
-    public DependencyWrapperGenerator(IDependencyMethodClassGenerator dependencyMethodClassGenerator)
+    public DependencyWrapperGenerator(IDependencyMethodWrapperClassGenerator dependencyMethodWrapperClassGenerator)
     {
-        _dependencyMethodClassGenerator = dependencyMethodClassGenerator;
+        _dependencyMethodWrapperClassGenerator = dependencyMethodWrapperClassGenerator;
     }
 
     public void GenerateCode(TypeBuilder builder, ITypeSymbol dependencyType)
@@ -56,7 +56,7 @@ public class DependencyWrapperGenerator : IDependencyWrapperGenerator
 
             // Method_type
             TypeBuilder methodWrapperClass = builder.AddClass();
-            _dependencyMethodClassGenerator.CreateMethodWrapperClass(methodWrapperClass, dependencyType.Type(), method);
+            _dependencyMethodWrapperClassGenerator.Generate(methodWrapperClass, dependencyType.Type(), method);
 
             PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter: true).Add(builder)
                 .Public();

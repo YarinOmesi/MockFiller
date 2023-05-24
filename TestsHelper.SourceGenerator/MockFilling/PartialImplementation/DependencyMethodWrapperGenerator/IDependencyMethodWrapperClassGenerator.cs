@@ -4,7 +4,7 @@ using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
 namespace TestsHelper.SourceGenerator.MockFilling.PartialImplementation.DependencyMethodWrapperGenerator;
 
-public interface IDependencyMethodClassGenerator
+public interface IDependencyMethodWrapperClassGenerator
 {
-    public void CreateMethodWrapperClass(TypeBuilder builder, IType dependencyTypeName, IMethodSymbol method);
+    public void Generate(TypeBuilder builder, IType dependencyTypeName, IMethodSymbol method);
 }
