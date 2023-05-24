@@ -57,8 +57,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         // Verify()
         var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder)
             .Public();
-        ParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null")
-            .Add(verifyBuilder);
+        ParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null");
+        verifyBuilder.AddParameters(timesParameter);
 
         verifyBuilder.AddBodyStatements(
             $"var expression = {patchedExpression};",

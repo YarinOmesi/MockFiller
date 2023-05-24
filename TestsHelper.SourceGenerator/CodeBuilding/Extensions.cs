@@ -50,19 +50,14 @@ public static class Extensions
         return builder;
     }
 
-    public static ParameterBuilder Add(this ParameterBuilder builder, MethodLikeBuilder methodLikeBuilder)
-    {
-        methodLikeBuilder.AddParameters(builder);
-        return builder;
-    }
-
     public static ParameterBuilder InitializeFieldWithParameter(
         this ConstructorBuilder builder,
         FieldBuilder field,
         string parameterName
     )
     {
-        ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName).Add(builder);
+        ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName);
+        builder.AddParameters(parameterBuilder);
         builder.AddBodyStatements(field.Assign(parameterName));
         return parameterBuilder;
     }

@@ -31,14 +31,15 @@ public class DependencyWrapperGenerator : IDependencyWrapperGenerator
         constructorBuilder.Public();
 
         ParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
-        ParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.IValueConverter, "converter").Add(constructorBuilder);
+        ParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.IValueConverter, "converter");
+        constructorBuilder.AddParameters(converterParameter);
 
         // Create Method Wrappers
-        CreateMethodWrappers(builder, dependencyType, constructorBuilder, new[] {mockParameter.Name, converterParameter.Name});
+        CreateMethodWrappers(builder, dependencyType, constructorBuilder, mockParameter.Name, converterParameter.Name);
     }
 
     private void CreateMethodWrappers(TypeBuilder builder, ITypeSymbol dependencyType, ConstructorBuilder constructorBuilder,
-        string[] methodWrapperClassParameters)
+        params string[] methodWrapperClassParameters)
     {
 #pragma warning disable RS1024
         Dictionary<string, IReadOnlyList<IMethodSymbol>> publicMethodsByName = dependencyType.GetMembers()
