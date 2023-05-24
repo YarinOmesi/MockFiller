@@ -49,7 +49,7 @@ public class MockFillerImplementation
 
         List<FileBuilder> fileBuilders = PartialClassCreator.Create(
             dependencyBehaviors,
-            classToFillMockIn.DeclarationSyntax,
+            classToFillMockIn.ContainingClassSyntax,
             classToFillMockIn.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
             selectedConstructor,
             selectedConstructor.ContainingType.Type()

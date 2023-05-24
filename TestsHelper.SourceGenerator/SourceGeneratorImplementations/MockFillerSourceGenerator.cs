@@ -50,11 +50,11 @@ public class MockFillerSourceGenerator : ISourceGenerator
         IEnumerable<SyntaxNode> allNodes = GetAllDescendantNodes(context);
         IEnumerable<ClassDeclarationSyntax> classDeclarations = GetAllClassDeclarations(allNodes);
 
-        foreach (ClassDeclarationSyntax classDeclarationSyntax in classDeclarations)
+        foreach (ClassDeclarationSyntax containingClassSyntax in classDeclarations)
         {
-            SemanticModel model = context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
+            SemanticModel model = context.Compilation.GetSemanticModel(containingClassSyntax.SyntaxTree);
 
-            if (ClassToFillMockInFactory.TryCreate(classDeclarationSyntax, model, out ClassToFillMockIn classToFillMockIn))
+            if (ClassToFillMockInFactory.TryCreate(containingClassSyntax, model, out ClassToFillMockIn classToFillMockIn))
             {
                 classesToFillMockIn.Add(classToFillMockIn);
             }

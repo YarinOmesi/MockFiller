@@ -14,53 +14,43 @@ public class ClassToFillMockInFactory
 {
     private const string MockWrappersAttributeFullName = "TestsHelper.SourceGenerator.MockWrapping.FillMocksWithWrappersAttribute";
 
-    public bool TryCreate(ClassDeclarationSyntax declarationSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
+    public bool TryCreate(ClassDeclarationSyntax containingClassSyntax, SemanticModel model, out ClassToFillMockIn classToFillMockIn)
     {
-        Dictionary<MemberDeclarationSyntax, bool> membersToGenerateWrappers = new();
-        
-        AddMembers(
-            membersToGenerateWrappers,
-            declarationSyntax.GetMembersWithAttribute<FillMocksAttribute>(model),
-            generateWrappers: false
-        );
-        
-        AddMembers(
-            membersToGenerateWrappers,
-            declarationSyntax.GetMembersWithAttribute(model, MockWrappersAttributeFullName),
-            generateWrappers: true
-        );
+        string[] attributes = {MockWrappersAttributeFullName, typeof(FillMocksAttribute).FullName};
+
+        var membersToAttributes = containingClassSyntax.MembersWithAttribute(model, attributes);
 
         // Check That Only One Member Have The Attribute
-        switch (membersToGenerateWrappers.Count)
+        switch (membersToAttributes.Count)
         {
             case 0:
                 classToFillMockIn = default;
                 return false;
             case > 1:
-                throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, declarationSyntax.Identifier.GetLocation());
+                throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, containingClassSyntax.Identifier.GetLocation());
         }
 
         // Error If Class Is Not Partial
-        if (!declarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword))
+        if (!containingClassSyntax.Modifiers.Any(SyntaxKind.PartialKeyword))
         {
             throw new DiagnosticException(
                 DiagnosticRegistry.ClassIsNotPartial,
-                declarationSyntax.Identifier.GetLocation(),
-                declarationSyntax.Identifier.Text
+                containingClassSyntax.Identifier.GetLocation(),
+                containingClassSyntax.Identifier.Text
             );
         }
 
-        var pair = membersToGenerateWrappers.First();
+        var pair = membersToAttributes.First();
         MemberDeclarationSyntax testedClassMember = pair.Key;
-        bool generateMockWrappers = pair.Value;
-        
+        bool generateMockWrappers = pair.Value.Contains(MockWrappersAttributeFullName);
+
         TypeSyntax type = GetTypeFromFieldOrProperty(testedClassMember)!;
 
         ITypeSymbol testedClassTypeSymbol = model.GetTypeInfo(type).Type!;
-        INamedTypeSymbol declarationSymbol = model.GetDeclaredSymbol(declarationSyntax)!;
+        INamedTypeSymbol declarationSymbol = model.GetDeclaredSymbol(containingClassSyntax)!;
         // TODO: diagnostic if there are null
 
-        classToFillMockIn = new ClassToFillMockIn(declarationSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
+        classToFillMockIn = new ClassToFillMockIn(containingClassSyntax, declarationSymbol, testedClassTypeSymbol, generateMockWrappers);
         return true;
     }
 
@@ -71,16 +61,5 @@ public class ClassToFillMockInFactory
             (int) SyntaxKind.FieldDeclaration => ((BaseFieldDeclarationSyntax) member).Declaration.Type,
             _ => default
         };
-    }
-
-    private static void AddMembers(
-        Dictionary<MemberDeclarationSyntax, bool> dictionary, 
-        IEnumerable<MemberDeclarationSyntax> members,
-        bool generateWrappers)
-    {
-        foreach (MemberDeclarationSyntax member in members)
-        {
-            dictionary[member] = generateWrappers;
-        }
     }
 }
