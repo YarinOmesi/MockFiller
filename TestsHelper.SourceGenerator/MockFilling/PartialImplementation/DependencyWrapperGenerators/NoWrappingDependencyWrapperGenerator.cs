@@ -13,7 +13,7 @@ public class NoWrappingDependencyWrapperGenerator : IDependencyWrapperGenerator
         builder.Public();
 
         //TODO: make this not coupled to moq
-        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType.Type()), "Mock", autoGetter: true)
+        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType), "Mock", autoGetter: true)
             .Add(builder);
         mockField.Public();
 

@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -12,6 +13,7 @@ public static class Extensions
     public static string MakeString(this IType type) => type.Build().NormalizeWhitespace().ToFullString();
     public static NamespacedType Type(this string @namespace, string name) => new(@namespace, name);
     public static GenericType Generic(this NamespacedType type, params IType[] typeArguments) => new(type, typeArguments);
+    public static GenericType Generic(this NamespacedType type, params ITypeSymbol[] typeArguments) => new(type, typeArguments.Select(Type).ToArray());
     public static NullableType Nullable(this IType type) => new(type);
     public static IType Type(this TypeBuilder typeBuilder) => new TypeBuilderType(typeBuilder);
 

@@ -72,7 +72,7 @@ public static class StringPartialCreator
                     .Add(partialClassBuilder)
                     .Private();
 
-                List<string> parameters = new() {Moq.Mock.Generic(mockDependencyBehavior.Type.Type()).New()};
+                List<string> parameters = new() {Moq.Mock.Generic(mockDependencyBehavior.Type).New()};
                 if(generationMode == WrapperGenerationMode.MethodsWrap) parameters.Add("converter");
                 
                 buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(dependencyWrapperType.Type().New(parameters.ToArray())));

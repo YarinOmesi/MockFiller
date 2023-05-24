@@ -14,7 +14,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         builder.Name = $"Method_{method.Name}";
         builder.Public();
 
-        IType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
+        GenericType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
             ? CommonTypes.SystemAction.Generic(dependencyTypeName)
             : CommonTypes.SystemFunc.Generic(dependencyTypeName, method.ReturnType.Type());
 
@@ -27,7 +27,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
         mockField.Private().Readonly();
 
-        FieldBuilder converterField = FieldBuilder.Create(CommonTypes.ConverterType, "_converter").Add(builder);
+        FieldBuilder converterField = FieldBuilder.Create(CommonTypes.IValueConverter, "_converter").Add(builder);
         converterField.Private().Readonly();
 
         ConstructorBuilder.CreateAndAdd(builder)
@@ -35,8 +35,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
             .Public();
 
         ParameterBuilder[] parameters = method.Parameters
-            .Select(parameter => (ParameterBuilder) ParameterBuilder.Create(
-                type: CommonTypes.ValueType.Generic(parameter.Type.Type()),
+            .Select(parameter => ParameterBuilder.Create(
+                type: CommonTypes.Value.Generic(parameter.Type),
                 name: parameter.Name,
                 initializer: "default"
             ))
@@ -45,9 +45,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
         string patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
 
         // Setup()
-        var setupReturnType = method.ReturnType.SpecialType == SpecialType.System_Void
-            ? Moq.ISetup.Generic(dependencyTypeName)
-            : Moq.ISetup.Generic(dependencyTypeName, method.ReturnType.Type());
+        var setupReturnType = moqCallbackType with {Type = Moq.ISetup};
 
         var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder)
             .Public();
@@ -70,18 +68,15 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodClassGener
 
     private static string CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
     {
-        List<string> allParameterTypesFilled = method.Parameters
-            .Select(parameter => Cyber_Fill(parameter.Type.Name))
-            .ToList();
+        IEnumerable<string> allParameterTypesFilled = method.Parameters.Select(parameter => Cyber_Fill(parameter.Type.Name));
 
         return $"{parameterName} => {parameterName}.{method.Name}({allParameterTypesFilled.JoinToString(", ")})";
     }
 
     private static string Cyber_CretePatchedExpression(IMethodSymbol method, string variableName, string converterFieldName)
     {
-        List<string> parameters = new();
-        parameters.Add(variableName);
-        parameters.AddRange(method.Parameters.Select(parameter => $"{converterFieldName}.Convert({parameter.Name})"));
+        IEnumerable<string> converterParameters = method.Parameters.Select(parameter => $"{converterFieldName}.Convert({parameter.Name})");
+        IEnumerable<string> parameters = converterParameters.Prepend(variableName);
 
         return $"Cyber.UpdateExpressionWithParameters({parameters.JoinToString(", ")})";
     }

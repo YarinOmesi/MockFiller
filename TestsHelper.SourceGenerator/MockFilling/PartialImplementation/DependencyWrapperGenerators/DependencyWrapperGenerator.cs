@@ -23,7 +23,7 @@ public class DependencyWrapperGenerator : IDependencyWrapperGenerator
         builder.Public();
 
         //TODO: make this not coupled to moq
-        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType.Type()), "Mock", autoGetter: true)
+        PropertyBuilder mockField = PropertyBuilder.Create(Moq.Mock.Generic(dependencyType), "Mock", autoGetter: true)
             .Add(builder);
         mockField.Public();
 
@@ -31,7 +31,7 @@ public class DependencyWrapperGenerator : IDependencyWrapperGenerator
         constructorBuilder.Public();
 
         ParameterBuilder mockParameter = constructorBuilder.InitializeFieldWithParameter(mockField, "mock");
-        ParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.ConverterType, "converter").Add(constructorBuilder);
+        ParameterBuilder converterParameter = ParameterBuilder.Create(CommonTypes.IValueConverter, "converter").Add(constructorBuilder);
 
         // Create Method Wrappers
         CreateMethodWrappers(builder, dependencyType, constructorBuilder, new[] {mockParameter.Name, converterParameter.Name});
