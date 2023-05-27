@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -9,15 +9,7 @@ namespace TestsHelper.SourceGenerator;
 
 public static class AttributeHelpers
 {
-    public static bool ContainsAttribute(
-        this SyntaxList<AttributeListSyntax> attributeListSyntax,
-        SemanticModel semanticModel,
-        string fullName)
-    {
-        return attributeListSyntax.Any(list => list.Attributes.Any(syntax => IsAttributeSame(syntax, semanticModel, fullName)));
-    }
-
-    private static bool IsAttributeSame(AttributeSyntax attributeSyntax, SemanticModel semanticModel, string attributeFullName)
+    private static string GetAttributeFullName(AttributeSyntax attributeSyntax, SemanticModel semanticModel)
     {
         TypeInfo typeInfo = semanticModel.GetTypeInfo(attributeSyntax);
         if (typeInfo.Type is IErrorTypeSymbol errorTypeSymbol)
@@ -25,23 +17,25 @@ public static class AttributeHelpers
             throw new ArgumentException($"Error Get Symbol {errorTypeSymbol}");
         }
 
-        string fullName = typeInfo.Type!.ToDisplayString();
-        return attributeFullName == fullName;
+        return typeInfo.Type!.ToDisplayString();
     }
 
-    public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute<T>(
-        this TypeDeclarationSyntax classDeclarationSyntax,
-        SemanticModel semanticModel
-    ) where T : Attribute
+    public static Dictionary<MemberDeclarationSyntax, List<string>> MembersWithAttribute(
+        this TypeDeclarationSyntax classDeclarationSyntax, SemanticModel model, string[] onlyAttributes)
     {
-        return classDeclarationSyntax.GetMembersWithAttribute(semanticModel, typeof(T).FullName);
-    }
+        Dictionary<MemberDeclarationSyntax, List<string>> dictionary = new();
 
-    public static ImmutableList<MemberDeclarationSyntax> GetMembersWithAttribute(this TypeDeclarationSyntax classDeclarationSyntax,
-        SemanticModel semanticModel, string attributeFullName)
-    {
-        return classDeclarationSyntax.Members
-            .Where(member => member.AttributeLists.ContainsAttribute(semanticModel, attributeFullName))
-            .ToImmutableList();
+        foreach (MemberDeclarationSyntax member in classDeclarationSyntax.Members)
+        {
+            List<string> attributes = member.AttributeLists.SelectMany(syntax => syntax.Attributes)
+                .Select(syntax => GetAttributeFullName(syntax, model))
+                .ToList();
+            if (attributes.Any(onlyAttributes.Contains))
+            {
+                dictionary[member] = attributes;    
+            }
+        }
+
+        return dictionary;
     }
 }

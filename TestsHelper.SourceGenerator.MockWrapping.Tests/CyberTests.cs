@@ -34,7 +34,7 @@ public class CyberTests
         Expression<Action> expectedExpression = () => MockMethod(It.IsAny<int>(), It.IsAny<string>());
 
         // Act
-        Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments);
+        Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments.ToArray());
 
         // Assert
         _expressionComparison.AssertEquals(patchedExpression, expectedExpression);
@@ -53,7 +53,7 @@ public class CyberTests
         Expression<Action> expectedExpression = () => MockMethod(It.Is(10, EqualityComparer<int>.Default), It.IsAny<string>());
 
         // Act
-        Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments);
+        Expression<Action> patchedExpression = Cyber.UpdateExpressionWithParameters(method, arguments.ToArray());
 
         // Assert
         _expressionComparison.AssertEquals(patchedExpression, expectedExpression);

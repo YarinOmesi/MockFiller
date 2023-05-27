@@ -5,8 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.Diagnostics;
-using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
-using TestsHelper.SourceGenerator.Diagnostics.Reporters;
 using TestsHelper.SourceGenerator.MockFilling;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 
@@ -16,8 +14,7 @@ namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 public class MockFillerSourceGenerator : ISourceGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
-    private static readonly ClassToFillMockInFactory ClassToFillMockInFactory = new();
-
+    private static readonly TestClassMockCandidateFactory TestClassMockCandidateFactory = new();
 
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -25,57 +22,39 @@ public class MockFillerSourceGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        var reporter = new DiagnosticReporter(context);
-        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
+        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(new ActionDiagnosticReporter(context.ReportDiagnostic));
 
-        IEnumerable<ClassToFillMockIn> classesToFillMockIn;
-        try
-        {
-            classesToFillMockIn = GetClassesToFillMockIn(context);
-        }
-        catch (DiagnosticException e)
-        {
-            reporter.Report(e.Diagnostic);
-            return;
-        }
-        catch (MultipleDiagnosticsException e)
-        {
-            reporter.ReportMultiple(e.Diagnostics);
-            return;
-        }
+        List<TestClassMockCandidate> classesToFillMockIn = new List<TestClassMockCandidate>();
 
-        foreach (ClassToFillMockIn classToFillMockIn in classesToFillMockIn)
+        ReportCatcher.RunCode(() =>
         {
-            try
+            classesToFillMockIn = GetClassesToFillMockIn(context).ToList();
+        });
+
+        foreach (TestClassMockCandidate classToFillMockIn in classesToFillMockIn)
+        {
+            ReportCatcher.RunCode(() =>
             {
                 foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
                 {
-                    context.AddSource(result.FileName, result.SourceCode);    
+                    context.AddSource(result.FileName, result.SourceCode);
                 }
-            }
-            catch (DiagnosticException e)
-            {
-                reporter.Report(e.Diagnostic);
-            }
-            catch (MultipleDiagnosticsException e)
-            {
-                reporter.ReportMultiple(e.Diagnostics);
-            }
+            });
         }
     }
 
-    private static IEnumerable<ClassToFillMockIn> GetClassesToFillMockIn(GeneratorExecutionContext context)
+    private static IEnumerable<TestClassMockCandidate> GetClassesToFillMockIn(GeneratorExecutionContext context)
     {
-        var classesToFillMockIn = new List<ClassToFillMockIn>();
+        var classesToFillMockIn = new List<TestClassMockCandidate>();
 
         IEnumerable<SyntaxNode> allNodes = GetAllDescendantNodes(context);
         IEnumerable<ClassDeclarationSyntax> classDeclarations = GetAllClassDeclarations(allNodes);
 
-        foreach (ClassDeclarationSyntax classDeclarationSyntax in classDeclarations)
+        foreach (ClassDeclarationSyntax containingClassSyntax in classDeclarations)
         {
-            SemanticModel model = context.Compilation.GetSemanticModel(classDeclarationSyntax.SyntaxTree);
+            SemanticModel model = context.Compilation.GetSemanticModel(containingClassSyntax.SyntaxTree);
 
-            if (ClassToFillMockInFactory.TryCreate(classDeclarationSyntax, model, out ClassToFillMockIn classToFillMockIn))
+            if (TestClassMockCandidateFactory.TryCreate(containingClassSyntax, model, out TestClassMockCandidate classToFillMockIn))
             {
                 classesToFillMockIn.Add(classToFillMockIn);
             }
@@ -94,17 +73,5 @@ public class MockFillerSourceGenerator : ISourceGenerator
         return syntaxNodes
             .Where(node => node.IsKind(SyntaxKind.ClassDeclaration))
             .OfType<ClassDeclarationSyntax>();
-    }
-
-    private class DiagnosticReporter : IDiagnosticReporter
-    {
-        private readonly GeneratorExecutionContext _context;
-
-        public DiagnosticReporter(GeneratorExecutionContext context)
-        {
-            _context = context;
-        }
-
-        public void Report(Diagnostic diagnostic) => _context.ReportDiagnostic(diagnostic);
     }
 }

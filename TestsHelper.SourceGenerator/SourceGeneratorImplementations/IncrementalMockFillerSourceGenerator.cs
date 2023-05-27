@@ -15,7 +15,7 @@ namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();
-    private static readonly ClassToFillMockInFactory ClassToFillMockInFactory = new();
+    private static readonly TestClassMockCandidateFactory TestClassMockCandidateFactory = new();
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -38,7 +38,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
         try
         {
-            if (ClassToFillMockInFactory.TryCreate(declarationSyntax, context.SemanticModel, out ClassToFillMockIn classToFillMockIn))
+            if (TestClassMockCandidateFactory.TryCreate(declarationSyntax, context.SemanticModel, out TestClassMockCandidate classToFillMockIn))
             {
                 return new ResultClass(reporter.Diagnostics, classToFillMockIn);
             }
@@ -59,51 +59,27 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 
     private static void Execute(SourceProductionContext context, ImmutableArray<ResultClass> classesToFill)
     {
-        var reporter = new DiagnosticReporter(context);
+        var reporter = new ActionDiagnosticReporter(context.ReportDiagnostic);
         using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
 
         foreach (ResultClass resultClass in classesToFill)
         {
             // Report All Diagnostics From First Phase
-            foreach (Diagnostic diagnostic in resultClass.Diagnostics)
-            {
-                reporter.Report(diagnostic);
-            }
+            reporter.ReportMultiple(resultClass.Diagnostics);
             
             // Continue if there is no class to fill mock in
-            ClassToFillMockIn classToFillMockIn = resultClass.ClassToFillMockIn ?? default;
-            if (classToFillMockIn == default)
+            if(resultClass.ClassToFillMockIn is not { } classToFillMockIn)
                 continue;
 
-            try
+            ReportCatcher.RunCode(() =>
             {
                 foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
                 {
-                    context.AddSource(result.FileName, result.SourceCode);    
+                    context.AddSource(result.FileName, result.SourceCode);
                 }
-            }
-            catch (DiagnosticException e)
-            {
-                reporter.Report(e.Diagnostic);
-            }
-            catch (MultipleDiagnosticsException e)
-            {
-                reporter.ReportMultiple(e.Diagnostics);
-            }
+            });
         }
     }
 
-    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, ClassToFillMockIn? ClassToFillMockIn = null);
-
-    private class DiagnosticReporter : IDiagnosticReporter
-    {
-        private readonly SourceProductionContext _context;
-
-        public DiagnosticReporter(SourceProductionContext context)
-        {
-            _context = context;
-        }
-
-        public void Report(Diagnostic diagnostic) => _context.ReportDiagnostic(diagnostic);
-    }
+    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, TestClassMockCandidate? ClassToFillMockIn = null);
 }
