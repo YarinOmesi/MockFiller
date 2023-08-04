@@ -1,26 +1,30 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
-using TestsHelper.SourceGenerator.Diagnostics.Reporters;
 
 namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 
 public static class ReportCatcher
 {
-    public static void RunCode(Action action)
+    public static void RunCode(Action action, Action<Diagnostic> reporter)
     {
-        IDiagnosticReporter reporter = GlobalDiagnosticReporter.Reporter!;
         try
         {
             action();
         }
         catch (DiagnosticException e)
         {
-            reporter.Report(e.Diagnostic);
+            reporter(e.Diagnostic);
         }
         catch (MultipleDiagnosticsException e)
         {
-            reporter.ReportMultiple(e.Diagnostics);
+            foreach (Diagnostic diagnostic in e.Diagnostics)
+            {
+                reporter(diagnostic);
+            }
         }
     }
 }

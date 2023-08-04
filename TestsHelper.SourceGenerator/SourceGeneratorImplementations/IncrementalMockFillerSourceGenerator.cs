@@ -6,9 +6,6 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.Diagnostics;
-using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
-using TestsHelper.SourceGenerator.Diagnostics.Reporters;
 using TestsHelper.SourceGenerator.MockFilling;
 using TestsHelper.SourceGenerator.MockFilling.Models;
 
@@ -43,9 +40,6 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 
     private static void Execute(SourceProductionContext context, ImmutableArray<TestClassMockCandidate> classMockCandidates)
     {
-        var reporter = new ActionDiagnosticReporter(context.ReportDiagnostic);
-        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
-
         foreach (TestClassMockCandidate testClassMockCandidate in classMockCandidates)
         {
             ReportCatcher.RunCode(() =>
@@ -54,7 +48,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
                 {
                     context.AddSource(result.FileName, result.SourceCode);
                 }
-            });
+            }, context.ReportDiagnostic);
         }
     }
 
