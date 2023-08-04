@@ -12,7 +12,7 @@ public class ParameterBuilder
 
     private ParameterBuilder(){}
 
-    public ParameterSyntax Build()
+    public ParameterSyntax Build(BuildContext context)
     {
         return SyntaxFactory.Parameter(SyntaxFactory.Identifier(Name))
             .WithType(Type.Build())

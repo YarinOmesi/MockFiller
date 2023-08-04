@@ -17,8 +17,8 @@ public abstract class MethodLikeBuilder : MemberBuilder
 
     protected BlockSyntax BuildBody() => SyntaxFactory.Block(Body.Select(s=> SyntaxFactory.ParseStatement(s)));
 
-    protected ParameterListSyntax BuildParameters()
+    protected ParameterListSyntax BuildParameters(BuildContext context)
     {
-        return SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList<ParameterSyntax>(Parameters.Select(builder => builder.Build())));
+        return SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList<ParameterSyntax>(Parameters.Select(builder => builder.Build(context))));
     }
 }

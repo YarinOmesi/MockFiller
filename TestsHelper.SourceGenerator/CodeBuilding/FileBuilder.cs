@@ -30,8 +30,10 @@ public class FileBuilder
 
     public CompilationUnitSyntax Build()
     {
+        BuildContext context = new BuildContext(this);
+        
         var namespaceSyntax = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Namespace))
-            .AddMembers(_types.Select(builder => builder.Build()).ToArray());
+            .AddMembers(_types.Select(builder => builder.Build(context)).ToArray());
 
         return SyntaxFactory.CompilationUnit()
             .AddUsings(_usings.ToArray())

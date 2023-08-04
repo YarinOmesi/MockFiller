@@ -13,11 +13,11 @@ public class ConstructorBuilder : MethodLikeBuilder
         _typeBuilder = typeBuilder;
     }
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
         return SyntaxFactory.ConstructorDeclaration(SyntaxFactory.Identifier(_typeBuilder.Name))
             .WithModifiers(BuildModifiers())
-            .WithParameterList(BuildParameters())
+            .WithParameterList(BuildParameters(context))
             .WithBody(BuildBody());
     }
 

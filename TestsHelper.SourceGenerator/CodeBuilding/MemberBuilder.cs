@@ -16,5 +16,5 @@ public abstract class MemberBuilder
     protected SyntaxTokenList BuildModifiers() => SyntaxFactory.TokenList(SyntaxKindModifiers);
 
     [Pure]
-    public abstract MemberDeclarationSyntax Build();
+    public abstract MemberDeclarationSyntax Build(BuildContext context);
 }

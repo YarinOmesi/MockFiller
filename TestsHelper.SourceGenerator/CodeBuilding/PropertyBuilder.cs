@@ -17,7 +17,7 @@ internal class PropertyBuilder : FieldBuilder
         propertySyntax.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(kind)
             .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
         PropertyDeclarationSyntax syntax = SyntaxFactory.PropertyDeclaration(Type.Build(), Name)
             .WithModifiers(BuildModifiers())

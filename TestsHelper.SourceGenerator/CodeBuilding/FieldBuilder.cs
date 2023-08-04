@@ -14,7 +14,7 @@ public class FieldBuilder : MemberBuilder
 
     protected EqualsValueClauseSyntax? BuildInitializer() => Initializer == null ? null : EqualsValueClause(ParseExpression(Initializer));
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
         return FieldDeclaration(VariableDeclaration(Type.Build())
             .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer()))).WithModifiers(BuildModifiers());

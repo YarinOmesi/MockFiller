@@ -50,12 +50,12 @@ public class TypeBuilder : MemberBuilder
         }
     }
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
         return SyntaxFactory.ClassDeclaration(Name)
             .WithModifiers(BuildModifiers())
             .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<MemberBuilder>())
-                .Select(builder => builder.Build())
+                .Select(builder => builder.Build(context))
                 .ToArray());
     }
 
