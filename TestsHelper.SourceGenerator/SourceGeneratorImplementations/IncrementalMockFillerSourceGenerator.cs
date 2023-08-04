@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.Diagnostics.Exceptions;
@@ -30,7 +31,7 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 
     private static bool Predicate(SyntaxNode node, CancellationToken cancellationToken)
     {
-        return node is ClassDeclarationSyntax;
+        return node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
     }
 
     private static ResultClass Transform(GeneratorSyntaxContext context, CancellationToken token)

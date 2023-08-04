@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -29,15 +30,7 @@ public class TestClassMockCandidateFactory
                 throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage, containingClassSyntax.Identifier.GetLocation());
         }
 
-        // Error If Class Is Not Partial
-        if (!containingClassSyntax.Modifiers.Any(SyntaxKind.PartialKeyword))
-        {
-            throw new DiagnosticException(
-                DiagnosticRegistry.ClassIsNotPartial,
-                containingClassSyntax.Identifier.GetLocation(),
-                containingClassSyntax.Identifier.Text
-            );
-        }
+        Debug.Assert(containingClassSyntax.Modifiers.Any(SyntaxKind.PartialKeyword));
 
         var pair = membersToAttributes.First();
         MemberDeclarationSyntax testedClassMember = pair.Key;
