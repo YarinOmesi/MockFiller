@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,7 +22,8 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         IncrementalValuesProvider<ResultClass> syntaxProvider = context.SyntaxProvider
-            .CreateSyntaxProvider(Predicate, Transform);
+            .CreateSyntaxProvider(Predicate, Transform)
+            .WithComparer(ResultClassEqualityComparer.Instance);
 
         context.RegisterSourceOutput(syntaxProvider.Collect(), Execute);
     }
@@ -83,4 +85,15 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
     }
 
     private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, TestClassMockCandidate? ClassToFillMockIn = null);
+
+    private sealed class ResultClassEqualityComparer : IEqualityComparer<ResultClass>
+    {
+        public static ResultClassEqualityComparer Instance { get; } = new ResultClassEqualityComparer();
+        public bool Equals(ResultClass x, ResultClass y)
+        {
+            return x.Diagnostics.SequenceEqual(y.Diagnostics) && 
+                   Nullable.Equals(x.ClassToFillMockIn, y.ClassToFillMockIn);
+        }
+        public int GetHashCode(ResultClass obj) => throw new NotImplementedException();
+    }
 }
