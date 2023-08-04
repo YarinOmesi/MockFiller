@@ -19,7 +19,8 @@ public static class PartialClassCreator
 
     public static List<FileBuilder> Create(
         Dictionary<string, IDependencyInitializationBehavior> dependencyBehaviors,
-        ClassDeclarationSyntax containingClassSyntax,
+        string containingClassName,
+        string containingNamespace,
         WrapperGenerationMode generationMode,
         IMethodSymbol selectedTestedClassConstructor,
         IType testedClassType
@@ -29,14 +30,10 @@ public static class PartialClassCreator
 
         List<FileBuilder> fileBuilders = new();
 
-        string containingClassName = containingClassSyntax.Identifier.Text;
-
         var partialClassFile = FileBuilder.Create($"{containingClassName}.FilledMock.generated.cs");
         fileBuilders.Add(partialClassFile);
 
-        partialClassFile.Namespace = containingClassSyntax.Parent is BaseNamespaceDeclarationSyntax parentNamespace
-            ? parentNamespace.Name.ToString()
-            : string.Empty;
+        partialClassFile.Namespace = containingNamespace;
 
         TypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
             .Public().Partial();

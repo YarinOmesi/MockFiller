@@ -22,9 +22,9 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<ResultClass> syntaxProvider = context.SyntaxProvider
+        IncrementalValuesProvider<TestClassMockCandidate> syntaxProvider = context.SyntaxProvider
             .CreateSyntaxProvider(Predicate, Transform)
-            .WithComparer(ResultClassEqualityComparer.Instance);
+            .WithComparer(TestClassMockCandidateEqualityComparer.Instance);
 
         context.RegisterSourceOutput(syntaxProvider.Collect(), Execute);
     }
@@ -34,50 +34,23 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         return node is ClassDeclarationSyntax classDeclarationSyntax && classDeclarationSyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
     }
 
-    private static ResultClass Transform(GeneratorSyntaxContext context, CancellationToken token)
+    private static TestClassMockCandidate Transform(GeneratorSyntaxContext context, CancellationToken token)
     {
         ClassDeclarationSyntax declarationSyntax = (ClassDeclarationSyntax) context.Node;
 
-        var reporter = new MemoryDiagnosticReporter();
-        using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
-        try
-        {
-            if (TestClassMockCandidateFactory.TryCreate(declarationSyntax, context.SemanticModel, out TestClassMockCandidate classToFillMockIn))
-            {
-                return new ResultClass(reporter.Diagnostics, classToFillMockIn);
-            }
-        }
-        catch (DiagnosticException e)
-        {
-            reporter.Report(e.Diagnostic);
-            return new ResultClass(reporter.Diagnostics);
-        }
-        catch (MultipleDiagnosticsException e)
-        {
-            reporter.ReportMultiple(e.Diagnostics);
-            return new ResultClass(reporter.Diagnostics);
-        }
-
-        return new ResultClass(reporter.Diagnostics);
+        return TestClassMockCandidateFactory.Create(declarationSyntax, context.SemanticModel);
     }
 
-    private static void Execute(SourceProductionContext context, ImmutableArray<ResultClass> classesToFill)
+    private static void Execute(SourceProductionContext context, ImmutableArray<TestClassMockCandidate> classMockCandidates)
     {
         var reporter = new ActionDiagnosticReporter(context.ReportDiagnostic);
         using IDisposable _ = GlobalDiagnosticReporter.SetReporterForScope(reporter);
 
-        foreach (ResultClass resultClass in classesToFill)
+        foreach (TestClassMockCandidate testClassMockCandidate in classMockCandidates)
         {
-            // Report All Diagnostics From First Phase
-            reporter.ReportMultiple(resultClass.Diagnostics);
-            
-            // Continue if there is no class to fill mock in
-            if(resultClass.ClassToFillMockIn is not { } classToFillMockIn)
-                continue;
-
             ReportCatcher.RunCode(() =>
             {
-                foreach (FileResult result in MockFillerImplementation.Generate(classToFillMockIn))
+                foreach (FileResult result in MockFillerImplementation.Generate(testClassMockCandidate))
                 {
                     context.AddSource(result.FileName, result.SourceCode);
                 }
@@ -85,16 +58,18 @@ public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
         }
     }
 
-    private readonly record struct ResultClass(IReadOnlyList<Diagnostic> Diagnostics, TestClassMockCandidate? ClassToFillMockIn = null);
-
-    private sealed class ResultClassEqualityComparer : IEqualityComparer<ResultClass>
+    private sealed class TestClassMockCandidateEqualityComparer : IEqualityComparer<TestClassMockCandidate>
     {
-        public static ResultClassEqualityComparer Instance { get; } = new ResultClassEqualityComparer();
-        public bool Equals(ResultClass x, ResultClass y)
+        public static TestClassMockCandidateEqualityComparer Instance { get; } = new TestClassMockCandidateEqualityComparer();
+
+        public bool Equals(TestClassMockCandidate x, TestClassMockCandidate y)
         {
-            return x.Diagnostics.SequenceEqual(y.Diagnostics) && 
-                   Nullable.Equals(x.ClassToFillMockIn, y.ClassToFillMockIn);
+            return x.ContainingClassIdentifier.Equals(y.ContainingClassIdentifier) 
+                   && x.ContainsClassNamespace == y.ContainsClassNamespace 
+                   && SymbolEqualityComparer.Default.Equals(x.ContainingClassSymbol, y.ContainingClassSymbol)
+                   && x.AttributedTestClassMembers.SequenceEqual(y.AttributedTestClassMembers);
         }
-        public int GetHashCode(ResultClass obj) => throw new NotImplementedException();
+
+        public int GetHashCode(TestClassMockCandidate obj) => throw new NotImplementedException();
     }
 }
