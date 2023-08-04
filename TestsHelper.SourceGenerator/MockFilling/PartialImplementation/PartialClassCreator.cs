@@ -38,16 +38,13 @@ public static class PartialClassCreator
         TypeBuilder partialClassBuilder = partialClassFile.AddClass(name: containingClassName)
             .Public().Partial();
 
-        partialClassFile.AddUsingFor(Moq.Mock);
-        
         Dictionary<string, string> parameterNameToFieldInitializer = new Dictionary<string, string>();
 
-
-        MethodBuilder buildMethodBuilder = MethodBuilder.Create(testedClassType, "Build").Add(partialClassBuilder)
+        IType returnType = testedClassType.TryRegisterAlias(partialClassBuilder.ParentFileBuilder);
+        MethodBuilder buildMethodBuilder = MethodBuilder.Create(returnType, "Build").Add(partialClassBuilder)
             .Private();
         if (generationMode == WrapperGenerationMode.MethodsWrap)
         {
-            partialClassFile.AddUsingFor(CommonTypes.MoqValueConverter);
             buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.MakeString()}.Instance;");
         }
 
@@ -65,19 +62,19 @@ public static class PartialClassCreator
                 TypeBuilder dependencyWrapperType = wrapperFile.AddClass();
                 dependencyWrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
 
-                FieldBuilder dependencyWrapperField = FieldBuilder.Create(dependencyWrapperType.Type(), $"_{parameterName}")
+                IType type = dependencyWrapperType.Type().TryRegisterAlias(partialClassBuilder.ParentFileBuilder);
+                FieldBuilder dependencyWrapperField = FieldBuilder.Create(type, $"_{parameterName}")
                     .Add(partialClassBuilder)
                     .Private();
 
                 List<string> parameters = new() {Moq.Mock.Generic(mockDependencyBehavior.Type).New()};
                 if(generationMode == WrapperGenerationMode.MethodsWrap) parameters.Add("converter");
                 
-                buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(dependencyWrapperType.Type().New(parameters.ToArray())));
+                buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(type.New(parameters.ToArray())));
 
                 // TODO: remove coupling from moq
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
 
-                wrapperFile.AddUsings(FindAllUsingsNamespaces(wrapperFile));
             }
             else if (initializationBehavior is PredefinedValueDependencyInitialization valueDependencyBehavior)
             {
@@ -89,45 +86,8 @@ public static class PartialClassCreator
             .Select(parameter => parameterNameToFieldInitializer[parameter.Name])
             .ToArray();
 
-        buildMethodBuilder.AddBodyStatements(testedClassType.New(arguments).Return());
-
-        partialClassFile.AddUsings(FindAllUsingsNamespaces(partialClassFile));
+        buildMethodBuilder.AddBodyStatements(returnType.New(arguments).Return());
 
         return fileBuilders;
-    }
-
-    private static string[] FindAllUsingsNamespaces(FileBuilder builder)
-    {
-        return TypesFinder.FindAllTypes(builder).Select(type => type.Namespace).Distinct().ToArray();
-    }
-
-    private static class TypesFinder
-    {
-        private static IReadOnlyList<IType> FindAllTypesFromType(IType type)
-        {
-            List<IType> types = new List<IType>();
-            if (type is not VoidType) types.Add(type);
-            if (type is RegularType genericType) types.AddRange(genericType.TypedArguments.SelectMany(FindAllTypesFromType));
-            return types;
-        }
-
-        private static IEnumerable<IType> FindAllFromMember(MemberBuilder memberBuilder)
-        {
-            List<IType> types = new List<IType>();
-            if (memberBuilder is PropertyBuilder propertyBuilder) types.Add(propertyBuilder.Type);
-            else if (memberBuilder is FieldBuilder fieldBuilder) types.Add(fieldBuilder.Type);
-            else if (memberBuilder is TypeBuilder typeBuilder) types.AddRange(FindAllTypes(typeBuilder));
-            else if (memberBuilder is MethodLikeBuilder methodLikeBuilder) 
-                types.AddRange(methodLikeBuilder.Parameters.Select(builder => builder.Type));
-            if (memberBuilder is MethodBuilder methodBuilder) types.Add(methodBuilder.ReturnType);
-            return types;
-        }
-
-        public static IEnumerable<IType> FindAllTypes(TypeBuilder typeBuilder)
-        {
-            return typeBuilder.Members.SelectMany(FindAllFromMember).SelectMany(FindAllTypesFromType).ToList();
-        }
-
-        public static IEnumerable<IType> FindAllTypes(FileBuilder builder) => builder.Types.SelectMany(FindAllTypes).ToList();
     }
 }

@@ -58,10 +58,11 @@ public class DependencyWrapperGenerator : IDependencyWrapperGenerator
             TypeBuilder methodWrapperClass = builder.AddClass();
             _dependencyMethodWrapperClassGenerator.Generate(methodWrapperClass, dependencyType.Type(), method);
 
-            PropertyBuilder methodProperty = PropertyBuilder.Create(methodWrapperClass.Type(), name, autoGetter: true).Add(builder)
+            IType type = methodWrapperClass.Type().TryRegisterAlias(builder.ParentFileBuilder);
+            PropertyBuilder methodProperty = PropertyBuilder.Create(type, name, autoGetter: true).Add(builder)
                 .Public();
 
-            constructorBuilder.AddBodyStatements(methodProperty.Assign(methodWrapperClass.Type().New(methodWrapperClassParameters)));
+            constructorBuilder.AddBodyStatements(methodProperty.Assign(type.New(methodWrapperClassParameters)));
         }
     }
 }

@@ -18,10 +18,13 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
             ? CommonTypes.SystemAction.Generic(dependencyTypeName)
             : CommonTypes.SystemFunc.Generic(dependencyTypeName, method.ReturnType.Type());
 
+
+        IEnumerable<IType> methodParameter = method.Parameters.Select(symbol => symbol.Type.Type().TryRegisterAlias(builder.ParentFileBuilder));
+        
         FieldBuilder expressionField = FieldBuilder.Create(
             CommonTypes.LinqExpression.Generic(moqCallbackType),
             "_expression",
-            CreateMoqExpressionLambda("p", method)
+            CreateMoqExpressionLambda("p", method.Name ,methodParameter)
         ).Add(builder).Private().Readonly();
 
         FieldBuilder mockField = FieldBuilder.Create(Moq.Mock.Generic(dependencyTypeName), "_mock").Add(builder);
@@ -60,17 +63,18 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         ParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null");
         verifyBuilder.AddParameters(timesParameter);
 
+        string timesTypeName = Moq.Times.TryRegisterAlias(builder.ParentFileBuilder).Name;
         verifyBuilder.AddBodyStatements(
             $"var expression = {patchedExpression};",
-            $"{mockField.Name}.Verify(expression, {timesParameter.Name} ?? Times.AtLeastOnce());"
+            $"{mockField.Name}.Verify(expression, {timesParameter.Name} ?? {timesTypeName}.AtLeastOnce());"
         );
     }
 
-    private static string CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
+    private static string CreateMoqExpressionLambda(string parameterName,string methodName, IEnumerable<IType> method)
     {
-        IEnumerable<string> allParameterTypesFilled = method.Parameters.Select(parameter => Cyber_Fill(parameter.Type.Name));
+        IEnumerable<string> allParameterTypesFilled = method.Select(parameter => Cyber_Fill(parameter.Name));
 
-        return $"{parameterName} => {parameterName}.{method.Name}({allParameterTypesFilled.JoinToString(", ")})";
+        return $"{parameterName} => {parameterName}.{methodName}({allParameterTypesFilled.JoinToString(", ")})";
     }
 
     private static string Cyber_CretePatchedExpression(IMethodSymbol method, string variableName, string converterFieldName)

@@ -3,7 +3,6 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Types;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -21,10 +20,7 @@ public class FileBuilder
         Name = name;
     }
 
-    public void AddUsingFor(IType type) => AddUsings(type.Namespace);
-
-    public void AddUsings(params string[] usings) =>
-        _usings.AddRange(usings.Select(s => SyntaxFactory.ParseName(s)).Select(SyntaxFactory.UsingDirective));
+    public void AddUsing(UsingDirectiveSyntax @using) => _usings.Add(@using);
 
     public void AddTypes(params TypeBuilder[] typeBuilders) => _types.AddRange(typeBuilders);
 

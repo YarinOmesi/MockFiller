@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 
 [DebuggerDisplay("{Namespace}.{Name}`{TypedArguments.Count}")]
-public record RegularType(string Namespace, string Name, IReadOnlyList<IType> TypedArguments) : IType<SimpleNameSyntax>
+public record RegularType(string Namespace, string Name, IReadOnlyList<IType> TypedArguments) : IType<QualifiedNameSyntax>
 {
     private static readonly IReadOnlyList<IType> EmptyList = new List<IType>();
 
@@ -17,13 +17,13 @@ public record RegularType(string Namespace, string Name, IReadOnlyList<IType> Ty
 
     TypeSyntax IType.Build() => Build();
 
-    public SimpleNameSyntax Build()
+    public QualifiedNameSyntax Build()
     {
         SimpleNameSyntax nameSyntax = TypedArguments.Count switch {
             0 => SyntaxFactory.IdentifierName(Name),
             _ => SyntaxFactory.GenericName(Name).AddTypeArgumentListArguments(TypedArguments.Select(type => type.Build()).ToArray())
         };
 
-        return nameSyntax;
+        return SyntaxFactory.QualifiedName(SyntaxFactory.ParseName($"global::{Namespace}"), nameSyntax);
     }
 }

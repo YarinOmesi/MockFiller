@@ -14,8 +14,10 @@ public class ParameterBuilder
 
     public ParameterSyntax Build(BuildContext context)
     {
+        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder, out AliasType? aliasType) ? aliasType.Build() : Type.Build();
+
         return SyntaxFactory.Parameter(SyntaxFactory.Identifier(Name))
-            .WithType(Type.Build())
+            .WithType(type)
             .WithDefault(Initializer == null ? null : SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression(Initializer)));
     }
 
