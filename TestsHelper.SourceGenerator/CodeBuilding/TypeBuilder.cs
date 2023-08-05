@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -52,7 +54,18 @@ public class TypeBuilder : MemberBuilder
 
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        return SyntaxFactory.ClassDeclaration(Name)
+        QualifiedNameSyntax generatedCodeAttributeType = CommonTypes.GeneratedCodeAttribute.Build();
+
+        AttributeArgumentSyntax[] attributeArguments = new [] {
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(BuildInfo.Name))),
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(BuildInfo.Version.ToString())))
+        };
+        AttributeSyntax attribute = Attribute(generatedCodeAttributeType)
+            .WithArgumentList(AttributeArgumentList(SeparatedList(attributeArguments)));
+
+        AttributeListSyntax attributeListSyntax = AttributeList(SingletonSeparatedList(attribute));
+        return ClassDeclaration(Name)
+            .AddAttributeLists(attributeListSyntax)
             .WithModifiers(BuildModifiers())
             .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<MemberBuilder>())
                 .Select(builder => builder.Build(context))
