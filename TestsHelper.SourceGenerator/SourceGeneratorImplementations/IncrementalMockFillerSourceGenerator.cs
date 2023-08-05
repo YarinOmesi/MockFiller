@@ -12,6 +12,7 @@ using TestsHelper.SourceGenerator.MockFilling.Models;
 
 namespace TestsHelper.SourceGenerator.SourceGeneratorImplementations;
 
+[Generator(LanguageNames.CSharp)]
 public class IncrementalMockFillerSourceGenerator : IIncrementalGenerator
 {
     private static readonly MockFillerImplementation MockFillerImplementation = new();

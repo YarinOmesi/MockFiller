@@ -3,20 +3,18 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
 using NUnit.Framework;
 using TestsHelper.SourceGenerator.Diagnostics;
 using TestsHelper.SourceGenerator.SourceGeneratorImplementations;
-using VerifyCS =
-    TestsHelper.SourceGenerator.Tests.CSharpSourceGeneratorVerifier<
-        TestsHelper.SourceGenerator.SourceGeneratorImplementations.MockFillerSourceGenerator>;
 
 namespace TestsHelper.SourceGenerator.Tests;
 
-[TestFixture]
-public class MockFillerSourceGeneratorTests
+[TestFixture(typeof(IncrementalMockFillerSourceGenerator))]
+public class MockFillerSourceGeneratorTests<TSourceGenerator> where TSourceGenerator: IIncrementalGenerator, new()
 {
     private ImmutableArray<string> _referencedAssemblies;
     private ImmutableArray<PackageIdentity> _referencedPackages;
@@ -59,7 +57,7 @@ public class MockFillerSourceGeneratorTests
     public async Task TestHappyFlow_OnValidClass_GenerateImplementation()
     {
         // Arrange
-        var test = new VerifyCS.Test {
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
@@ -71,8 +69,8 @@ public class MockFillerSourceGeneratorTests
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs"),
-                    CreateExpectedSource<MockFillerSourceGenerator>("Sources/Wrapper.IDependency.generated.cs")
+                    CreateExpectedSource<TSourceGenerator>("Sources/ATestFixture.FilledMock.generated.cs"),
+                    CreateExpectedSource<TSourceGenerator>("Sources/Wrapper.IDependency.generated.cs")
                 }
             }
         };
@@ -84,8 +82,9 @@ public class MockFillerSourceGeneratorTests
     public async Task TestHappyFlow_OnValidClassWithGenerateMockWrappersAttribute_GenerateImplementationAndWrappers()
     {
         // Arrange
-        var generateMockProjectPath = $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping";
-        var test = new VerifyCS.Test {
+        var generateMockProjectPath =
+            $"{_currentDirectoryInfo.FullName}/TestsHelper.SourceGenerator.MockWrapping/bin/{Configuration}/netstandard2.0/TestsHelper.SourceGenerator.MockWrapping";
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
@@ -98,11 +97,11 @@ public class MockFillerSourceGeneratorTests
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = {
-                    CreateExpectedSource<MockFillerSourceGenerator>(
+                    CreateExpectedSource<TSourceGenerator>(
                         path: "Sources/ATestFixture.FilledMock.WithWrappers.generated.cs",
                         overrideFileName: "ATestFixture.FilledMock.generated.cs"
                     ),
-                    CreateExpectedSource<MockFillerSourceGenerator>(
+                    CreateExpectedSource<TSourceGenerator>(
                         path: "Sources/Wrapper.IDependency.WithWrappers.generated.cs",
                         overrideFileName: "Wrapper.IDependency.generated.cs"
                     ),
@@ -117,7 +116,7 @@ public class MockFillerSourceGeneratorTests
     public async Task ClassNotPartial_DoNotGenerate_ReportError()
     {
         // Arrange
-        var test = new VerifyCS.Test {
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
@@ -143,7 +142,7 @@ public class MockFillerSourceGeneratorTests
     public async Task MoreThanOneFillMocksAttributeUsage_DoNotGenerate_ReportError()
     {
         // Arrange
-        var test = new VerifyCS.Test {
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
@@ -151,7 +150,7 @@ public class MockFillerSourceGeneratorTests
                     .AddPackages(_referencedPackages),
                 Sources = {
                     CreateSource("Sources/IDependency.cs"),
-                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs",  overrideFileName: "ATestFixture.cs"),
+                    CreateSource("Sources/ATestFixture_MoreThanOneFillMocks.cs", overrideFileName: "ATestFixture.cs"),
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
@@ -170,7 +169,7 @@ public class MockFillerSourceGeneratorTests
     public async Task DefaultValue_GivenNonExistingParameterName_ReportError()
     {
         // Arrange
-        var test = new VerifyCS.Test {
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
@@ -196,7 +195,7 @@ public class MockFillerSourceGeneratorTests
     public async Task DefaultValue_GivenWrongTypeExistingParameter_ReportError()
     {
         // Arrange
-        var test = new VerifyCS.Test {
+        var test = new Test<TSourceGenerator> {
             LanguageVersion = LanguageVersion.CSharp10,
             TestState = {
                 ReferenceAssemblies = ReferenceAssemblies.Default
