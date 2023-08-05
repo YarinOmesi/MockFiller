@@ -68,7 +68,7 @@ public static class Extensions
 
     private static readonly Dictionary<string, ISet<string>> _fileNameToAliasName = new();
 
-    public static bool TryRegisterAlias(this IType type, FileBuilder builder, [NotNullWhen(true)] out AliasType? aliasType)
+    private static bool TryRegisterAlias(this IType type, FileBuilder builder, [NotNullWhen(true)] out AliasType? aliasType)
     {
         if (!_fileNameToAliasName.TryGetValue(builder.Name, out var names))
         {

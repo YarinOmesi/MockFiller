@@ -14,7 +14,7 @@ public class ParameterBuilder
 
     public ParameterSyntax Build(BuildContext context)
     {
-        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder, out AliasType? aliasType) ? aliasType.Build() : Type.Build();
+        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder).Build();
 
         return SyntaxFactory.Parameter(SyntaxFactory.Identifier(Name))
             .WithType(type)

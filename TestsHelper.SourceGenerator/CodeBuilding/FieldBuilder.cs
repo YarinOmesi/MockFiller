@@ -16,7 +16,7 @@ public class FieldBuilder : MemberBuilder
 
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder, out AliasType? aliasType) ? aliasType.Build() : Type.Build();
+        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder).Build();
 
         return FieldDeclaration(VariableDeclaration(type)
             .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer()))).WithModifiers(BuildModifiers());

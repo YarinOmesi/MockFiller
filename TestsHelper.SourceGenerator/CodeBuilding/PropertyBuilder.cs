@@ -19,7 +19,7 @@ internal class PropertyBuilder : FieldBuilder
 
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder, out AliasType? aliasType) ? aliasType.Build() : Type.Build();
+        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder).Build();
 
         PropertyDeclarationSyntax syntax = SyntaxFactory.PropertyDeclaration(type, Name)
             .WithModifiers(BuildModifiers())
