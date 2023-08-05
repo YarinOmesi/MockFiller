@@ -23,8 +23,6 @@ public readonly ref struct StringWithTypesInterpolatedStringHandler
 
     public void AppendFormatted(ParameterBuilder parameterBuilder) => StringWithTypes.Add(parameterBuilder.Name);
 
-    public void AppendFormatted(TypeBuilder typeBuilder) => StringWithTypes.Add(typeBuilder.Name);
-
     public void AppendFormatted(StringWithTypes stringWithTypes) => StringWithTypes.Add(stringWithTypes);
 
     public void AppendFormatted(IEnumerable<string> array, string format) => StringWithTypes.Add(string.Join(format, array));

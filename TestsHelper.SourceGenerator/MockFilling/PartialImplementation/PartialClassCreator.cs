@@ -70,7 +70,7 @@ public static class PartialClassCreator
                     StringWithTypes.Format($"converter").TakeIf(generationMode == WrapperGenerationMode.MethodsWrap)
                 };
                 
-                buildMethodBuilder.AddBodyStatement($"{dependencyWrapperField} = new {dependencyWrapperType}({parameters:,});");
+                buildMethodBuilder.AddBodyStatement($"{dependencyWrapperField} = new {dependencyWrapperType.Type()}({parameters:,});");
 
                 // TODO: remove coupling from moq
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
