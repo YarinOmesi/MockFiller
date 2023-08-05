@@ -54,7 +54,7 @@ public class TypeBuilder : MemberBuilder
 
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        QualifiedNameSyntax generatedCodeAttributeType = CommonTypes.GeneratedCodeAttribute.Build();
+        NameSyntax generatedCodeAttributeType = (NameSyntax) context.TryRegisterAlias(CommonTypes.GeneratedCodeAttribute).Build();
 
         AttributeArgumentSyntax[] attributeArguments = new [] {
             AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(BuildInfo.Name))),
