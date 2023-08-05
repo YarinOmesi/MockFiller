@@ -74,8 +74,8 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         IEnumerable<string> converterParameters = method.Parameters.Select(parameter => $"{converterFieldName}.Convert({parameter.Name})");
         IEnumerable<string> parameters = converterParameters.Prepend(variableName);
 
-        return StringWithTypes.Format($"Cyber.UpdateExpressionWithParameters({parameters:,})");
+        return StringWithTypes.Format($"{CommonTypes.Cyber}.UpdateExpressionWithParameters({parameters:,})");
     }
 
-    private static StringWithTypes Cyber_Fill(IType type) => StringWithTypes.Format($"Cyber.Fill<{type}>()");
+    private static StringWithTypes Cyber_Fill(IType type) => StringWithTypes.Format($"{CommonTypes.Cyber}.Fill<{type}>()");
 }
