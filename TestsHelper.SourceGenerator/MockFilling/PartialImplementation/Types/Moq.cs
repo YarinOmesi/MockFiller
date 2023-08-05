@@ -6,7 +6,7 @@ public static class Moq
 {
     public static readonly string Namespace = "Moq";
     public static readonly string MoqLanguageFlow = "Moq.Language.Flow";
-    public static readonly NamespacedType Mock = Namespace.Type("Mock");
-    public static readonly NamespacedType Times = Namespace.Type("Times");
-    public static readonly NamespacedType ISetup = MoqLanguageFlow.Type("ISetup");
+    public static readonly RegularType Mock = Namespace.Type("Mock");
+    public static readonly RegularType Times = Namespace.Type("Times");
+    public static readonly RegularType ISetup = MoqLanguageFlow.Type("ISetup");
 }
