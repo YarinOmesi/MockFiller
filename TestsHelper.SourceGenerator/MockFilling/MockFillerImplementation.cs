@@ -18,15 +18,21 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class MockFillerImplementation
 {
+    private static readonly List<FileResult> EmptyResult = new List<FileResult>(0);
+
     public IReadOnlyList<FileResult> Generate(TestClassMockCandidate testClassMockCandidate)
     {
-        ImmutableList<IMethodSymbol> constructors = testClassMockCandidate.TestedClassMember
+        if (!TryExtractOneTestedClassMember(testClassMockCandidate, out AttributedTestClassMember member))
+        {
+            return EmptyResult;
+        }
+
+        ImmutableList<IMethodSymbol> constructors = member.Symbol
             .GetMembers()
             .Where(symbol => symbol.Kind == SymbolKind.Method)
             .OfType<IMethodSymbol>()
             .Where(methodSymbol => methodSymbol.MethodKind == MethodKind.Constructor)
             .ToImmutableList();
-
 
         // TODO: make this smarter
         IMethodSymbol selectedConstructor = constructors[0];
@@ -49,13 +55,29 @@ public class MockFillerImplementation
 
         List<FileBuilder> fileBuilders = PartialClassCreator.Create(
             dependencyBehaviors,
-            testClassMockCandidate.ContainingClassSyntax,
-            testClassMockCandidate.GenerateMockWrappers ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
+            testClassMockCandidate.ContainingClassIdentifier.Text, 
+            testClassMockCandidate.ContainsClassNamespace, 
+            member.GenerateMockWrapper ? WrapperGenerationMode.MethodsWrap : WrapperGenerationMode.OnlyMockWrap,
             selectedConstructor,
             selectedConstructor.ContainingType.Type()
         );
 
         return GetFilesResults(fileBuilders).ToList();
+    }
+
+    private static bool TryExtractOneTestedClassMember(TestClassMockCandidate candidate, out AttributedTestClassMember member)
+    {
+        switch (candidate.AttributedTestClassMembers.Length)
+        {
+            case 0:
+                member = default;
+                return false;
+            case 1:
+                member = candidate.AttributedTestClassMembers[0];
+                return true;
+            default:
+                throw new DiagnosticException(DiagnosticRegistry.MoreThanOneFillMockUsage,candidate.ContainingClassIdentifier.GetLocation());
+        }
     }
 
     [Pure]

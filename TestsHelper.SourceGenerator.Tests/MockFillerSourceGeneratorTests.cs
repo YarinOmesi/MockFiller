@@ -113,7 +113,7 @@ public class MockFillerSourceGeneratorTests<TSourceGenerator> where TSourceGener
     }
 
     [Test]
-    public async Task ClassNotPartial_DoNotGenerate_ReportError()
+    public async Task ClassNotPartial_DoNotGenerate()
     {
         // Arrange
         var test = new Test<TSourceGenerator> {
@@ -128,10 +128,7 @@ public class MockFillerSourceGeneratorTests<TSourceGenerator> where TSourceGener
                     CreateSource("Sources/TestedClass.cs"),
                 },
                 GeneratedSources = { },
-                ExpectedDiagnostics = {
-                    (DiagnosticResult.CompilerError(DiagnosticRegistry.ClassIsNotPartial.Id)
-                        .WithLocation("ATestFixture.cs", 8, 14))
-                }
+                ExpectedDiagnostics = {}
             }
         };
         // Act + Assert
