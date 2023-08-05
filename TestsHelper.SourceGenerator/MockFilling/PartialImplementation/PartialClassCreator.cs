@@ -56,7 +56,7 @@ public static class PartialClassCreator
                 var wrapperFile = FileBuilder.Create($"Wrapper.{mockDependencyBehavior.Type.Name}.generated.cs");
                 fileBuilders.Add(wrapperFile);
 
-                wrapperFile.Namespace = "TestsHelper.SourceGenerator.MockWrapping";
+                wrapperFile.Namespace = containingNamespace;
 
                 TypeBuilder dependencyWrapperType = wrapperFile.AddClass();
                 dependencyWrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
