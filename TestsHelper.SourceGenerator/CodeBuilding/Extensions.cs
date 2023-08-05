@@ -26,7 +26,7 @@ public static class Extensions
 
     public static TypeBuilder AddClass(this TypeBuilder type)
     {
-        var classBuilder = TypeBuilder.ClassBuilder(type.ParentFileBuilder);
+        var classBuilder = TypeBuilder.ClassBuilder(type);
         type.AddMembers(classBuilder);
         return classBuilder;
     }

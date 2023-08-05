@@ -17,6 +17,8 @@ public class TypeBuilder : MemberBuilder
     };
 
     public FileBuilder ParentFileBuilder { get; }
+    
+    public TypeBuilder? ParentType { get; }
 
     public string Name { get; set; } = null!;
 
@@ -26,10 +28,11 @@ public class TypeBuilder : MemberBuilder
 
     private readonly string _kind;
 
-    private TypeBuilder(string kind, FileBuilder builder)
+    private TypeBuilder(string kind, FileBuilder builder, TypeBuilder? parentType = null)
     {
         _kind = kind;
         ParentFileBuilder = builder;
+        ParentType = parentType;
     }
 
     public void AddMembers(params MemberBuilder[] memberBuilders)
@@ -57,4 +60,5 @@ public class TypeBuilder : MemberBuilder
     }
 
     public static TypeBuilder ClassBuilder(FileBuilder fileBuilder) => new("class", fileBuilder);
+    public static TypeBuilder ClassBuilder(TypeBuilder parentType) => new("class", parentType.ParentFileBuilder, parentType);
 }
