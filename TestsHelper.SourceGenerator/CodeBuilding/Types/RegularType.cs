@@ -9,9 +9,7 @@ namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 [DebuggerDisplay("{Namespace}.{Name}`{TypedArguments.Count}")]
 public record RegularType(string Namespace, string Name, IReadOnlyList<IType> TypedArguments) : IType<QualifiedNameSyntax>
 {
-    private static readonly IReadOnlyList<IType> EmptyList = new List<IType>();
-
-    public RegularType(string Namespace, string Name) : this(Namespace, Name, EmptyList)
+    public RegularType(string Namespace, string Name) : this(Namespace, Name, EmptyList<IType>.Instance)
     {
     }
 
