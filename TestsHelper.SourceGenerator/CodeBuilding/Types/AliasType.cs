@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding.Types;
 
-public record AliasType(string Name, QualifiedNameSyntax AliasTo) : IType
+public record AliasType(string Name, NameSyntax AliasTo) : IType
 {
     public string Namespace => string.Empty;
 

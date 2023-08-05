@@ -83,12 +83,12 @@ public static class Extensions
         }
     }
 
-    private sealed record TypeBuilderType(TypeBuilder TypeBuilder) : IType<QualifiedNameSyntax>
+    private sealed record TypeBuilderType(TypeBuilder TypeBuilder) : IType<NameSyntax>
     {
         public string Namespace => TypeBuilder.ParentFileBuilder.Namespace;
         public string Name => TypeBuilder.QualifiedName();
         public RegularType RegularType => new(Namespace, Name);
-        public QualifiedNameSyntax Build() => RegularType.Build();
+        public NameSyntax Build() => RegularType.Build();
         TypeSyntax IType.Build() => Build();
     }
 }
