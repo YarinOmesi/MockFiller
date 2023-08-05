@@ -14,7 +14,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         builder.Name = $"Method_{method.Name}";
         builder.Public();
 
-        GenericType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
+        RegularType moqCallbackType = method.ReturnType.SpecialType == SpecialType.System_Void
             ? CommonTypes.SystemAction.Generic(dependencyTypeName)
             : CommonTypes.SystemFunc.Generic(dependencyTypeName, method.ReturnType.Type());
 
@@ -45,7 +45,7 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         string patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
 
         // Setup()
-        var setupReturnType = new GenericType(Moq.ISetup, moqCallbackType.TypedArguments);
+        var setupReturnType = Moq.ISetup with {TypedArguments = moqCallbackType.TypedArguments};
 
         var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder)
             .Public();

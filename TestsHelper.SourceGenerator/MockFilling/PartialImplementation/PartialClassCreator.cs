@@ -110,7 +110,7 @@ public static class PartialClassCreator
         {
             List<IType> types = new List<IType>();
             if (type is not VoidType) types.Add(type);
-            if (type is GenericType genericType) types.AddRange(genericType.TypedArguments.SelectMany(FindAllTypesFromType));
+            if (type is RegularType genericType) types.AddRange(genericType.TypedArguments.SelectMany(FindAllTypesFromType));
             return types;
         }
 

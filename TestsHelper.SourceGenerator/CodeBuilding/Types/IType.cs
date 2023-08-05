@@ -9,3 +9,9 @@ public interface IType
 
     public TypeSyntax Build();
 }
+
+public interface IType<out T> : IType 
+    where T : TypeSyntax
+{
+    public new T Build();
+}
