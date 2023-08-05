@@ -17,7 +17,7 @@ public class ConstructorBuilder : MethodLikeBuilder
         return SyntaxFactory.ConstructorDeclaration(SyntaxFactory.Identifier(_typeBuilder.Name))
             .WithModifiers(BuildModifiers())
             .WithParameterList(BuildParameters(context))
-            .WithBody(BuildBody());
+            .WithBody(BuildBody(context));
     }
 
     public static ConstructorBuilder CreateAndAdd(TypeBuilder type, params ParameterBuilder[] parameters)

@@ -40,12 +40,11 @@ public static class PartialClassCreator
 
         Dictionary<string, string> parameterNameToFieldInitializer = new Dictionary<string, string>();
 
-        IType returnType = testedClassType.TryRegisterAlias(partialClassBuilder.ParentFileBuilder);
-        MethodBuilder buildMethodBuilder = MethodBuilder.Create(returnType, "Build").Add(partialClassBuilder)
+        MethodBuilder buildMethodBuilder = MethodBuilder.Create(testedClassType, "Build").Add(partialClassBuilder)
             .Private();
         if (generationMode == WrapperGenerationMode.MethodsWrap)
         {
-            buildMethodBuilder.AddBodyStatements($"var converter = {CommonTypes.MoqValueConverter.MakeString()}.Instance;");
+            buildMethodBuilder.AddBodyStatement($"var converter = {CommonTypes.MoqValueConverter}.Instance;");
         }
 
         foreach (string parameterName in dependencyBehaviors.Keys)
@@ -62,15 +61,16 @@ public static class PartialClassCreator
                 TypeBuilder dependencyWrapperType = wrapperFile.AddClass();
                 dependencyWrapperGenerator.GenerateCode(dependencyWrapperType, mockDependencyBehavior.Type);
 
-                IType type = dependencyWrapperType.Type().TryRegisterAlias(partialClassBuilder.ParentFileBuilder);
-                FieldBuilder dependencyWrapperField = FieldBuilder.Create(type, $"_{parameterName}")
+                FieldBuilder dependencyWrapperField = FieldBuilder.Create(dependencyWrapperType.Type(), $"_{parameterName}")
                     .Add(partialClassBuilder)
                     .Private();
 
-                List<string> parameters = new() {Moq.Mock.Generic(mockDependencyBehavior.Type).New()};
-                if(generationMode == WrapperGenerationMode.MethodsWrap) parameters.Add("converter");
+                StringWithTypes[] parameters = new StringWithTypes[] {
+                    StringWithTypes.Format($"new {Moq.Mock.Generic(mockDependencyBehavior.Type)}()"),
+                    StringWithTypes.Format($"converter").TakeIf(generationMode == WrapperGenerationMode.MethodsWrap)
+                };
                 
-                buildMethodBuilder.AddBodyStatements(dependencyWrapperField.Assign(type.New(parameters.ToArray())));
+                buildMethodBuilder.AddBodyStatement($"{dependencyWrapperField} = new {dependencyWrapperType}({parameters:,});");
 
                 // TODO: remove coupling from moq
                 parameterNameToFieldInitializer[parameterName] = $"{dependencyWrapperField.Name}.Mock.Object";
@@ -86,7 +86,7 @@ public static class PartialClassCreator
             .Select(parameter => parameterNameToFieldInitializer[parameter.Name])
             .ToArray();
 
-        buildMethodBuilder.AddBodyStatements(returnType.New(arguments).Return());
+        buildMethodBuilder.AddBodyStatement($"return new {testedClassType}({arguments:,});");
 
         return fileBuilders;
     }

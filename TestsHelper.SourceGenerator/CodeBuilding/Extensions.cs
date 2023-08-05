@@ -62,7 +62,7 @@ public static class Extensions
     {
         ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName);
         builder.AddParameters(parameterBuilder);
-        builder.AddBodyStatements(field.Assign(parameterName));
+        builder.AddBodyStatement($"{field} = {parameterName};");
         return parameterBuilder;
     }
 

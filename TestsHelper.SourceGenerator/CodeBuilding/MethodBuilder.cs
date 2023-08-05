@@ -20,7 +20,7 @@ internal class MethodBuilder : MethodLikeBuilder
         
         return SyntaxFactory.MethodDeclaration(returnType, identifier: SyntaxFactory.Identifier(Name))
             .WithModifiers(BuildModifiers())
-            .WithBody(BuildBody())
+            .WithBody(BuildBody(context))
             .WithParameterList(BuildParameters(context));
     }
 
