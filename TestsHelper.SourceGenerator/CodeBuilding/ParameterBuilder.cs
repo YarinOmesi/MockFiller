@@ -14,11 +14,11 @@ public class ParameterBuilder
 
     public ParameterSyntax Build(BuildContext context)
     {
-        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder).Build();
+        TypeSyntax type = context.TryRegisterAlias(Type).Build();
 
         return Parameter(Identifier(Name))
             .WithType(type)
-            .WithDefault(Initializer.IsEmpty ? null : EqualsValueClause(ParseExpression(Initializer.ToString(context.FileBuilder))));
+            .WithDefault(Initializer.IsEmpty ? null : EqualsValueClause(ParseExpression(Initializer.ToString(context))));
     }
 
     public static ParameterBuilder Create(IType type, string name, StringWithTypes? initializer = null) => 

@@ -1,9 +1,4 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using TestsHelper.SourceGenerator.CodeBuilding.Types;
-using TestsHelper.SourceGenerator.MockFilling;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -64,36 +59,5 @@ public static class Extensions
         builder.AddParameters(parameterBuilder);
         builder.AddBodyStatement($"{field} = {parameterName};");
         return parameterBuilder;
-    }
-
-    private static readonly Dictionary<string, ISet<string>> _fileNameToAliasName = new();
-
-    private static bool TryRegisterAlias(this IType type, FileBuilder builder, [NotNullWhen(true)] out AliasType? aliasType)
-    {
-        if (!_fileNameToAliasName.TryGetValue(builder.Name, out var names))
-        {
-            _fileNameToAliasName[builder.Name] = names = new HashSet<string>();
-        }
-
-        if (type.TryCreateAlias(out aliasType))
-        {
-            if (names.Contains(aliasType.Name))
-            {
-                return true;
-            }
-            UsingDirectiveSyntax usingDirectiveSyntax = SyntaxFactory.UsingDirective(aliasType.AliasTo)
-                .WithAlias(SyntaxFactory.NameEquals(SyntaxFactory.IdentifierName(aliasType.Name)));
-
-            builder.AddUsing(usingDirectiveSyntax);
-            names.Add(aliasType.Name);
-            return true;
-        }
-
-        return false;
-    }
-
-    public static IType TryRegisterAlias(this IType type, FileBuilder builder)
-    {
-        return type.TryRegisterAlias(builder, out AliasType? aliasType) ? aliasType : type;
     }
 }

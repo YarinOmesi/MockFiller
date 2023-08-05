@@ -14,12 +14,12 @@ public class FieldBuilder : MemberBuilder
 
     protected EqualsValueClauseSyntax? BuildInitializer(BuildContext context)
     {
-        return Initializer.IsEmpty ? null : EqualsValueClause(ParseExpression(Initializer.ToString(context.FileBuilder)));
+        return Initializer.IsEmpty ? null : EqualsValueClause(ParseExpression(Initializer.ToString(context)));
     }
 
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        TypeSyntax type = Type.TryRegisterAlias(context.FileBuilder).Build();
+        TypeSyntax type = context.TryRegisterAlias(Type).Build();
 
         return FieldDeclaration(VariableDeclaration(type)
             .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer(context)))).WithModifiers(BuildModifiers());

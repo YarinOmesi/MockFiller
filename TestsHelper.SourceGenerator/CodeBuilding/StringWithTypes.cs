@@ -22,7 +22,7 @@ public sealed class StringWithTypes
     public void Add(OneOf<string, IType, StringWithTypes, MultipleValues<StringWithTypes>> a) => _components.Add(a);
     public StringWithTypes TakeIf(bool condition) => condition ? this : Empty;
 
-    public string ToString(FileBuilder fileBuilder)
+    public string ToString(BuildContext context)
     {
         StringBuilder builder = new StringBuilder();
 
@@ -30,12 +30,12 @@ public sealed class StringWithTypes
         {
             string? text = oneOf.Match(
                 static s => s,
-                type => type.TryRegisterAlias(fileBuilder).MakeString(),
-                stringWithTypes => stringWithTypes.IsEmpty ? null : stringWithTypes.ToString(fileBuilder),
+                type => context.TryRegisterAlias(type).MakeString(),
+                stringWithTypes => stringWithTypes.IsEmpty ? null : stringWithTypes.ToString(context),
                 multipleStrings =>
                     string.Join(multipleStrings.Separator, multipleStrings.Values
                         .Where(types => !types.IsEmpty)
-                        .Select(types => types.ToString(fileBuilder))
+                        .Select(types => types.ToString(context))
                     )
             );
             if (text != null)

@@ -17,7 +17,7 @@ public abstract class MethodLikeBuilder : MemberBuilder
     protected BlockSyntax BuildBody(BuildContext context)
     {
         return SyntaxFactory.Block(Body
-            .Select(stringWithTypes => stringWithTypes.ToString(context.FileBuilder))
+            .Select(stringWithTypes => stringWithTypes.ToString(context))
             .Select(static s => SyntaxFactory.ParseStatement(s)));
     }
     protected ParameterListSyntax BuildParameters(BuildContext context)

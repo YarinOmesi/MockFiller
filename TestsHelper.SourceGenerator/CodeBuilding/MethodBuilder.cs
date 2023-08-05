@@ -16,7 +16,7 @@ internal class MethodBuilder : MethodLikeBuilder
     
     public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        TypeSyntax returnType = ReturnType.TryRegisterAlias(context.FileBuilder).Build();
+        TypeSyntax returnType = context.TryRegisterAlias(ReturnType).Build();
         
         return SyntaxFactory.MethodDeclaration(returnType, identifier: SyntaxFactory.Identifier(Name))
             .WithModifiers(BuildModifiers())
