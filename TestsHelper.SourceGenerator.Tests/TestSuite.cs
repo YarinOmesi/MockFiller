@@ -24,6 +24,14 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
         References.AddRange(Net60.References.All);
     }
 
+    private static Dictionary<string, string> TryReadFilesFromDirOrEmpty(string baseDirectory, string directory)
+    {
+        string path = Path.Combine(baseDirectory, directory);
+        return Directory.Exists(path)
+            ? Directory.EnumerateFiles(path).ToDictionary(filePath => Path.GetFileName(filePath)!, File.ReadAllText)
+            : new Dictionary<string, string>();
+    }
+
     protected GeneratorDriverRunResult RunGenerator(string testDirectory)
     {
         CSharpGeneratorDriver generatorDriver = CreateDriver();
@@ -31,32 +39,20 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
         string testCasesDirectoryPath = Path.Join(Environment.CurrentDirectory, TestCasesDirectoryName);
         
         // Copy Test Case Base Classes
-        string baseFilesDirectory = Path.Combine(testCasesDirectoryPath, "Base");
-        IEnumerable<string> baseFilePaths = Directory.EnumerateFiles(baseFilesDirectory);
-        Dictionary<string, string> baseFileNameToContent = baseFilePaths.ToDictionary(path => Path.GetFileName(path)!, File.ReadAllText);
+        Dictionary<string, string> baseFiles = TryReadFilesFromDirOrEmpty(testCasesDirectoryPath, "Base");
 
         // Validate Test Directory
         string basePath = Path.Join(testCasesDirectoryPath, testDirectory);
         Assert.That(Directory.Exists(basePath), Is.True, () => $"Base Path Not Exists {basePath}");
 
         // Validate Sources Exists
-        string sourceFilesDirectory = Path.Combine(basePath, "Source");
-        IEnumerable<string> sourceFilePaths = Directory.EnumerateFiles(sourceFilesDirectory);
-        Dictionary<string, string> inputNameToContent = DictionaryHelper.MergeRight(
-            baseFileNameToContent,
-            sourceFilePaths.ToDictionary(path => Path.GetFileName(path)!, File.ReadAllText)  
-        );
-        
-        Assert.That(inputNameToContent, Is.Not.Empty, () => $"No Source File Was Found In {sourceFilesDirectory}");
+        Dictionary<string, string> sourceFiles = TryReadFilesFromDirOrEmpty(basePath, "Source");
+        Dictionary<string, string> inputNameToContent = baseFiles.Concat(sourceFiles).ToDictionary(pair => pair.Key, pair => pair.Value);
+
+        Assert.That(inputNameToContent, Is.Not.Empty, () => "No Source File Was Found In Source Directory");
 
         // Read Output
-        string outputFilesDirectory = Path.Combine(basePath, "Output");
-        IEnumerable<string> outputFilePaths = Directory.Exists(outputFilesDirectory)
-            ? Directory.EnumerateFiles(outputFilesDirectory)
-            : Enumerable.Empty<string>();
-
-        Dictionary<string, string> expectedOutputNameToContent =
-            outputFilePaths.ToDictionary(path => Path.GetFileName(path)!, File.ReadAllText);
+        Dictionary<string, string> expectedOutputNameToContent = TryReadFilesFromDirOrEmpty(basePath, "Output");
 
         // Create Compilation
         Compilation compilation = CreateCompilation(inputNameToContent.Values);
@@ -71,6 +67,7 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
 
         Assert.That(nameToActualOutput.Keys, Is.EquivalentTo(expectedOutputNameToContent.Keys), static () => "Expected File Names");
 
+        // Run Differences
         foreach ((string fileName, string expectedContent) in expectedOutputNameToContent)
         {
             SourceText actualContent = nameToActualOutput[fileName];
@@ -88,7 +85,7 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
         return result;
     }
 
-    protected Compilation CreateCompilation(IEnumerable<string> files)
+    private Compilation CreateCompilation(IEnumerable<string> files)
     {
         return CSharpCompilation.Create(
             "compilation",
@@ -98,7 +95,7 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
         );
     }
 
-    protected CSharpGeneratorDriver CreateDriver()
+    private CSharpGeneratorDriver CreateDriver()
     {
         var sourceGenerator = new TSourceGenerator();
 
