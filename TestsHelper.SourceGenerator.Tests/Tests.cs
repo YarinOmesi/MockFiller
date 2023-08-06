@@ -23,6 +23,7 @@ public class Tests : TestSuite<IncrementalMockFillerSourceGenerator>
         });
         IgnoredDiagnostics.Add("CS0169");
         IgnoredDiagnostics.Add("CS0414");
+        IgnoredDiagnostics.Add("CS8019");
     }
 
     [Test]

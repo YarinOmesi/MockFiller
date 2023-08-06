@@ -15,7 +15,7 @@ public abstract class TestSuite<TSourceGenerator> where TSourceGenerator : IIncr
     protected CSharpCompilationOptions CompilationOptions { get; set; } = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
     protected CSharpParseOptions ParseOptions { get; set; } = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp10);
     protected List<MetadataReference> References { get; set; } = new List<MetadataReference>();
-    protected HashSet<string> IgnoredDiagnostics { get; } = new HashSet<string>() {"CS8019"};
+    protected HashSet<string> IgnoredDiagnostics { get; } = new HashSet<string>();
 
     private const string TestCasesDirectoryName = "TestsCases";
 
