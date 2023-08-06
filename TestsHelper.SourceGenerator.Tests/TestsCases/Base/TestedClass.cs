@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace MyNamespace;
+namespace TestsHelper.SourceGenerator.Tests.TestsCases.Base;
 
 public class TestedClass
 {
@@ -11,5 +11,10 @@ public class TestedClass
     {
         _dependency = dependency;
         _logger = factory.CreateLogger<TestedClass>();
+    }
+
+    public string VeryComplicatedLogic(int number)
+    {
+        return _dependency.MakeString(number + 1);
     }
 }
