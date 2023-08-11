@@ -57,8 +57,8 @@ public class TypeBuilder : MemberBuilder
         NameSyntax generatedCodeAttributeType = (NameSyntax) context.TryRegisterAlias(CommonTypes.GeneratedCodeAttribute).Build();
 
         AttributeArgumentSyntax[] attributeArguments = new [] {
-            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(BuildInfo.Name))),
-            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(BuildInfo.Version.ToString())))
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Name))),
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Version.ToString())))
         };
         AttributeSyntax attribute = Attribute(generatedCodeAttributeType)
             .WithArgumentList(AttributeArgumentList(SeparatedList(attributeArguments)));
