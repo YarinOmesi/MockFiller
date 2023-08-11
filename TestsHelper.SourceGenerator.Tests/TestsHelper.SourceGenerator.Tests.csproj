@@ -7,21 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Basic.Reference.Assemblies.Net60" Version="1.4.2" />
+        <PackageReference Include="DiffPlex" Version="1.7.1" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.NUnit" Version="1.1.1" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\TestsHelper.SourceGenerator.Attributes\TestsHelper.SourceGenerator.Attributes.csproj" />
+      <ProjectReference Include="..\TestsHelper.SourceGenerator.MockWrapping.Tests\TestsHelper.SourceGenerator.MockWrapping.Tests.csproj" />
       <ProjectReference Include="..\TestsHelper.SourceGenerator\TestsHelper.SourceGenerator.csproj" />
     </ItemGroup>
-
+    
     <ItemGroup>
-      <Compile Remove="Sources\*" />
-      <None Include="Sources\*">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Include="TestsCases\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-
 </Project>
