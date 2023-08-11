@@ -67,7 +67,7 @@ public class TypeBuilder : MemberBuilder
         return ClassDeclaration(Name)
             .AddAttributeLists(attributeListSyntax)
             .WithModifiers(BuildModifiers())
-            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<MemberBuilder>())
+            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : EmptyList<MemberBuilder>.Instance)
                 .Select(builder => builder.Build(context))
                 .ToArray());
     }

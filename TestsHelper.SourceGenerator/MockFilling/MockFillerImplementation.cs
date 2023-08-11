@@ -18,13 +18,11 @@ namespace TestsHelper.SourceGenerator.MockFilling;
 
 public class MockFillerImplementation
 {
-    private static readonly List<FileResult> EmptyResult = new List<FileResult>(0);
-
     public IReadOnlyList<FileResult> Generate(TestClassMockCandidate testClassMockCandidate)
     {
         if (!TryExtractOneTestedClassMember(testClassMockCandidate, out AttributedTestClassMember member))
         {
-            return EmptyResult;
+            return EmptyList<FileResult>.Instance;
         }
 
         ImmutableList<IMethodSymbol> constructors = member.Symbol
