@@ -14,12 +14,14 @@ internal class MethodBuilder : MethodLikeBuilder
     {
     }
     
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        return SyntaxFactory.MethodDeclaration(returnType: ReturnType.Build(), identifier: SyntaxFactory.Identifier(Name))
+        TypeSyntax returnType = context.TryRegisterAlias(ReturnType).Build();
+        
+        return SyntaxFactory.MethodDeclaration(returnType, identifier: SyntaxFactory.Identifier(Name))
             .WithModifiers(BuildModifiers())
-            .WithBody(BuildBody())
-            .WithParameterList(BuildParameters());
+            .WithBody(BuildBody(context))
+            .WithParameterList(BuildParameters(context));
     }
 
     [Pure]

@@ -1,4 +1,3 @@
-using System.Diagnostics.Contracts;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -13,22 +12,18 @@ public class ConstructorBuilder : MethodLikeBuilder
         _typeBuilder = typeBuilder;
     }
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
         return SyntaxFactory.ConstructorDeclaration(SyntaxFactory.Identifier(_typeBuilder.Name))
             .WithModifiers(BuildModifiers())
-            .WithParameterList(BuildParameters())
-            .WithBody(BuildBody());
+            .WithParameterList(BuildParameters(context))
+            .WithBody(BuildBody(context));
     }
 
-    public static ConstructorBuilder CreateAndAdd(TypeBuilder type, params ParameterBuilder[] parameters) =>
-        Create(type, parameters).Add(type);
-
-    [Pure]
-    public static ConstructorBuilder Create(TypeBuilder type, params ParameterBuilder[] parameters)
+    public static ConstructorBuilder CreateAndAdd(TypeBuilder type, params ParameterBuilder[] parameters)
     {
         var constructorBuilder = new ConstructorBuilder(type);
         constructorBuilder.AddParameters(parameters);
-        return constructorBuilder;
+        return constructorBuilder.Add(type);
     }
 }

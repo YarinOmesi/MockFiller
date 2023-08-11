@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis.CSharp;
-using TestsHelper.SourceGenerator.MockFilling;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -26,7 +25,7 @@ public static class Extensions
 
     public static TypeBuilder AddClass(this TypeBuilder type)
     {
-        var classBuilder = TypeBuilder.ClassBuilder(type.ParentFileBuilder);
+        var classBuilder = TypeBuilder.ClassBuilder(type);
         type.AddMembers(classBuilder);
         return classBuilder;
     }
@@ -58,7 +57,7 @@ public static class Extensions
     {
         ParameterBuilder parameterBuilder = ParameterBuilder.Create(field.Type, parameterName);
         builder.AddParameters(parameterBuilder);
-        builder.AddBodyStatements(field.Assign(parameterName));
+        builder.AddBodyStatement($"{field} = {parameterName};");
         return parameterBuilder;
     }
 }

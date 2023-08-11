@@ -15,4 +15,8 @@ public static class CommonTypes
     public static readonly string System = "System";
     public static readonly RegularType SystemFunc = System.Type("Func");
     public static readonly RegularType SystemAction = System.Type("Action");
+
+    public static readonly RegularType GeneratedCodeAttribute = "System.CodeDom.Compiler".Type("GeneratedCodeAttribute");
+
+    public static readonly RegularType Cyber = "TestsHelper.SourceGenerator.MockWrapping".Type("Cyber");
 }

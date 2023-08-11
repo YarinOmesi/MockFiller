@@ -8,18 +8,23 @@ public class FieldBuilder : MemberBuilder
 {
     public string Name { get; set; } = null!;
     public IType Type { get; set; } = null!;
-    public string? Initializer { get; set; } = null;
+    public StringWithTypes Initializer { get; set; } = StringWithTypes.Empty;
 
     protected FieldBuilder() { }
 
-    protected EqualsValueClauseSyntax? BuildInitializer() => Initializer == null ? null : EqualsValueClause(ParseExpression(Initializer));
-
-    public override MemberDeclarationSyntax Build()
+    protected EqualsValueClauseSyntax? BuildInitializer(BuildContext context)
     {
-        return FieldDeclaration(VariableDeclaration(Type.Build())
-            .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer()))).WithModifiers(BuildModifiers());
+        return Initializer.IsEmpty ? null : EqualsValueClause(ParseExpression(Initializer.ToString(context)));
     }
 
-    public static FieldBuilder Create(IType type, string name, string? initializer = null) =>
-        new() {Type = type, Name = name, Initializer = initializer};
+    public override MemberDeclarationSyntax Build(BuildContext context)
+    {
+        TypeSyntax type = context.TryRegisterAlias(Type).Build();
+
+        return FieldDeclaration(VariableDeclaration(type)
+            .AddVariables(VariableDeclarator(Name).WithInitializer(BuildInitializer(context)))).WithModifiers(BuildModifiers());
+    }
+
+    public static FieldBuilder Create(IType type, string name, StringWithTypes? initializer = null) =>
+        new() {Type = type, Name = name, Initializer = initializer ?? StringWithTypes.Empty};
 }

@@ -42,17 +42,15 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
             ))
             .ToArray();
 
-        string patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
+        StringWithTypes patchedExpression = Cyber_CretePatchedExpression(method, expressionField.Name, converterField.Name);
 
         // Setup()
         var setupReturnType = Moq.ISetup with {TypedArguments = moqCallbackType.TypedArguments};
 
         var setupBuilder = MethodBuilder.Create(setupReturnType, "Setup", parameters).Add(builder)
             .Public();
-        setupBuilder.AddBodyStatements(
-            $"var expression = {patchedExpression};",
-            $"return {mockField.Name}.Setup(expression);"
-        );
+        setupBuilder.AddBodyStatement($"var expression = {patchedExpression};");
+        setupBuilder.AddBodyStatement($"return {mockField}.Setup(expression);");
 
         // Verify()
         var verifyBuilder = MethodBuilder.Create(VoidType.Instance, "Verify", parameters).Add(builder)
@@ -60,26 +58,24 @@ public class DependencyMethodWrapperClassGenerator : IDependencyMethodWrapperCla
         ParameterBuilder timesParameter = ParameterBuilder.Create(Moq.Times.Nullable(), "times", "null");
         verifyBuilder.AddParameters(timesParameter);
 
-        verifyBuilder.AddBodyStatements(
-            $"var expression = {patchedExpression};",
-            $"{mockField.Name}.Verify(expression, {timesParameter.Name} ?? Times.AtLeastOnce());"
-        );
+        verifyBuilder.AddBodyStatement($"var expression = {patchedExpression};");
+        verifyBuilder.AddBodyStatement($"{mockField}.Verify(expression, {timesParameter} ?? {Moq.Times}.AtLeastOnce());");
     }
 
-    private static string CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
+    private static StringWithTypes CreateMoqExpressionLambda(string parameterName, IMethodSymbol method)
     {
-        IEnumerable<string> allParameterTypesFilled = method.Parameters.Select(parameter => Cyber_Fill(parameter.Type.Name));
+        IEnumerable<IType> methodParameters = method.Parameters.Select(symbol => symbol.Type.Type());
 
-        return $"{parameterName} => {parameterName}.{method.Name}({allParameterTypesFilled.JoinToString(", ")})";
+        return StringWithTypes.Format($"{parameterName} => {parameterName}.{method.Name}({methodParameters.Select(Cyber_Fill):,})");
     }
 
-    private static string Cyber_CretePatchedExpression(IMethodSymbol method, string variableName, string converterFieldName)
+    private static StringWithTypes Cyber_CretePatchedExpression(IMethodSymbol method, string variableName, string converterFieldName)
     {
         IEnumerable<string> converterParameters = method.Parameters.Select(parameter => $"{converterFieldName}.Convert({parameter.Name})");
         IEnumerable<string> parameters = converterParameters.Prepend(variableName);
 
-        return $"Cyber.UpdateExpressionWithParameters({parameters.JoinToString(", ")})";
+        return StringWithTypes.Format($"{CommonTypes.Cyber}.UpdateExpressionWithParameters({parameters:,})");
     }
 
-    private static string Cyber_Fill(string type) => $"Cyber.Fill<{type}>()";
+    private static StringWithTypes Cyber_Fill(IType type) => StringWithTypes.Format($"{CommonTypes.Cyber}.Fill<{type}>()");
 }

@@ -17,11 +17,13 @@ internal class PropertyBuilder : FieldBuilder
         propertySyntax.AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(kind)
             .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        PropertyDeclarationSyntax syntax = SyntaxFactory.PropertyDeclaration(Type.Build(), Name)
+        TypeSyntax type = context.TryRegisterAlias(Type).Build();
+
+        PropertyDeclarationSyntax syntax = SyntaxFactory.PropertyDeclaration(type, Name)
             .WithModifiers(BuildModifiers())
-            .WithInitializer(BuildInitializer());
+            .WithInitializer(BuildInitializer(context));
 
         if (AutoSetter)
             syntax = AddAccessor(syntax, SyntaxKind.SetAccessorDeclaration);
@@ -32,11 +34,11 @@ internal class PropertyBuilder : FieldBuilder
     }
 
     [Pure]
-    public static PropertyBuilder Create(IType type, string name, string? initializer = null, bool autoGetter = false,
+    public static PropertyBuilder Create(IType type, string name, StringWithTypes? initializer = null, bool autoGetter = false,
         bool autoSetter = false)
     {
         return new PropertyBuilder() {
-            Type = type, Name = name, Initializer = initializer, AutoGetter = autoGetter, AutoSetter = autoSetter
+            Type = type, Name = name, Initializer = initializer?? StringWithTypes.Empty, AutoGetter = autoGetter, AutoSetter = autoSetter
         };
     }
 }

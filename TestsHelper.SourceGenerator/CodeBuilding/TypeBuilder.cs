@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestsHelper.SourceGenerator.MockFilling.PartialImplementation.Types;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace TestsHelper.SourceGenerator.CodeBuilding;
 
@@ -17,6 +19,8 @@ public class TypeBuilder : MemberBuilder
     };
 
     public FileBuilder ParentFileBuilder { get; }
+    
+    public TypeBuilder? ParentType { get; }
 
     public string Name { get; set; } = null!;
 
@@ -26,10 +30,11 @@ public class TypeBuilder : MemberBuilder
 
     private readonly string _kind;
 
-    private TypeBuilder(string kind, FileBuilder builder)
+    private TypeBuilder(string kind, FileBuilder builder, TypeBuilder? parentType = null)
     {
         _kind = kind;
         ParentFileBuilder = builder;
+        ParentType = parentType;
     }
 
     public void AddMembers(params MemberBuilder[] memberBuilders)
@@ -47,14 +52,26 @@ public class TypeBuilder : MemberBuilder
         }
     }
 
-    public override MemberDeclarationSyntax Build()
+    public override MemberDeclarationSyntax Build(BuildContext context)
     {
-        return SyntaxFactory.ClassDeclaration(Name)
+        NameSyntax generatedCodeAttributeType = (NameSyntax) context.TryRegisterAlias(CommonTypes.GeneratedCodeAttribute).Build();
+
+        AttributeArgumentSyntax[] attributeArguments = new [] {
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Name))),
+            AttributeArgument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(AssemblyInfo.Version.ToString())))
+        };
+        AttributeSyntax attribute = Attribute(generatedCodeAttributeType)
+            .WithArgumentList(AttributeArgumentList(SeparatedList(attributeArguments)));
+
+        AttributeListSyntax attributeListSyntax = AttributeList(SingletonSeparatedList(attribute));
+        return ClassDeclaration(Name)
+            .AddAttributeLists(attributeListSyntax)
             .WithModifiers(BuildModifiers())
-            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : new List<MemberBuilder>())
-                .Select(builder => builder.Build())
+            .AddMembers(MembersOrder.SelectMany(type => _members.TryGetValue(type, out var list)? list : EmptyList<MemberBuilder>.Instance)
+                .Select(builder => builder.Build(context))
                 .ToArray());
     }
 
     public static TypeBuilder ClassBuilder(FileBuilder fileBuilder) => new("class", fileBuilder);
+    public static TypeBuilder ClassBuilder(TypeBuilder parentType) => new("class", parentType.ParentFileBuilder, parentType);
 }
